@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.network.MessageType;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -41,12 +42,12 @@ public abstract class PlayerManagerMixin {
                 if (sender != null && !sender.hasPermissionLevel(2))
                     continue;
                 for (ServerPlayerEntity player : players) {
-                    player.playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
+                    ((ServerPlayerEntityAccess)player).pingspam$ping(message);
                 }
             } else {
                 ServerPlayerEntity player = getPlayer(username);
                 if (player != null)
-                    player.playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
+                    ((ServerPlayerEntityAccess)player).pingspam$ping(message);
             }
         }
     }
