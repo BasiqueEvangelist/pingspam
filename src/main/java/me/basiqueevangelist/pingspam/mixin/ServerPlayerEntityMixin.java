@@ -37,11 +37,13 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
 
     @Override
     public void pingspam$ping(GameMessageS2CPacket msgPacket) {
-        playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
-        pings.add(msgPacket.getMessage());
+        GameMessageS2CPacketAccessor access = (GameMessageS2CPacketAccessor) msgPacket;
 
-        Text pingMessage = msgPacket.getMessage().shallowCopy().formatted(Formatting.BLUE);
-        networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, msgPacket.getLocation(), msgPacket.getSenderUuid()));
+        playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
+        pings.add(access.pingspam$getMessage());
+
+        Text pingMessage = access.pingspam$getMessage().shallowCopy().formatted(Formatting.BLUE);
+        networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, access.pingspam$getLocation(), access.pingspam$getSenderUuid()));
     }
 
     @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))

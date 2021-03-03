@@ -29,25 +29,25 @@ public abstract class PlayerManagerMixin {
     @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9]{3,16}(\\s|$))");
 
     @Redirect(method = "broadcastChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"))
-    public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> untypedPacket) {
-        GameMessageS2CPacket packet = (GameMessageS2CPacket)untypedPacket;
-        String contents = packet.getMessage().getString();
+    public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> packet) {
+        GameMessageS2CPacketAccessor access = (GameMessageS2CPacketAccessor) packet;
+        String contents = access.pingspam$getMessage().getString();
         Matcher matcher = PING_PATTERN.matcher(contents);
         List<ServerPlayerEntity> unpingedPlayers = new ArrayList<>(players);
         while (matcher.find()) {
             String username = matcher.group(1);
             if (username.equals("everyone")) {
-                ServerPlayerEntity sender = getPlayer(packet.getSenderUuid());
+                ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
                 if (sender != null && !sender.hasPermissionLevel(2))
                     continue;
                 for (ServerPlayerEntity player : players) {
-                    ((ServerPlayerEntityAccess)player).pingspam$ping(packet);
+                    ((ServerPlayerEntityAccess)player).pingspam$ping((GameMessageS2CPacket) access);
                 }
                 unpingedPlayers.clear();
             } else {
                 ServerPlayerEntity player = getPlayer(username);
                 if (player != null) {
-                    ((ServerPlayerEntityAccess) player).pingspam$ping(packet);
+                    ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     unpingedPlayers.remove(player);
                 }
             }
