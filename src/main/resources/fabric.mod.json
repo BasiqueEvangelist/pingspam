@@ -5,11 +5,14 @@
 
   "name": "Pingspam",
   "description": "Adds discord-like pinging to Minecraft",
+  "icon": "assets/pingspam/icon.png",
   "authors": [
-    "BasiqueEvangelist"
+    "BasiqueEvangelist",
+    "HotKinkajou"
   ],
   "contact": {
-    "sources": "https://github.com/BasiqueEvangelist/pingspam"
+    "sources": "https://github.com/BasiqueEvangelist/pingspam",
+    "issues": "https://github.com/BasiqueEvangelist/pingspam/issues/"
   },
 
   "license": "LGPL-3.0-only",
