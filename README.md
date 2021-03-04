@@ -1,9 +1,5 @@
-# Fabric Example Mod
-
-## Setup
-
-For setup instructions please see the [fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) that relates to the IDE that you are using.
-
-## License
-
-This template is available under the CC0 license. Feel free to learn from it and incorporate it in your own projects.
+# Pingspam
+*Summon those pesky AFKers, alt-tabbers and chat-ignorers with this one simple trick!*  
+Pingspam makes mentions in the chat (i.e "@GreatGrayOwl" or even "@everyone") ping mentioned players by playing a bell
+sound and showing text in the actionbar. Messages containing pings can be displayed and cleared using the
+`/notifications` command.
