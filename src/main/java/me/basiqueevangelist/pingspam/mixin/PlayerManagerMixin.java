@@ -26,7 +26,7 @@ public abstract class PlayerManagerMixin {
     @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(UUID uuid);
 
     @Shadow @Final private List<ServerPlayerEntity> players;
-    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9]{3,16}(\\s|$))");
+    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{3,16})(\\s|$)");
 
     @Redirect(method = "broadcastChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"))
     public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> packet) {
