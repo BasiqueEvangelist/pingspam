@@ -1,6 +1,7 @@
 package me.basiqueevangelist.pingspam.mixin;
 
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
@@ -36,19 +37,21 @@ public abstract class PlayerManagerMixin {
         List<ServerPlayerEntity> unpingedPlayers = new ArrayList<>(players);
         while (matcher.find()) {
             String username = matcher.group(1);
+            ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
             if (username.equals("everyone")) {
-                ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
-                if (sender != null && !sender.hasPermissionLevel(2))
-                    continue;
-                for (ServerPlayerEntity player : players) {
-                    ((ServerPlayerEntityAccess)player).pingspam$ping((GameMessageS2CPacket) access);
+                if (sender == null || Permissions.check(sender, "pingspam.pingeveryone", 2)) {
+                    for (ServerPlayerEntity player : players) {
+                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                    }
+                    unpingedPlayers.clear();
                 }
-                unpingedPlayers.clear();
             } else {
-                ServerPlayerEntity player = getPlayer(username);
-                if (player != null) {
-                    ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
-                    unpingedPlayers.remove(player);
+                if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
+                    ServerPlayerEntity player = getPlayer(username);
+                    if (player != null) {
+                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                        unpingedPlayers.remove(player);
+                    }
                 }
             }
         }
