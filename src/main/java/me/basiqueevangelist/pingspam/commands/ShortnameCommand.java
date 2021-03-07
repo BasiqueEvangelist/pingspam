@@ -6,12 +6,18 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import me.basiqueevangelist.pingspam.OfflinePlayerCache;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -26,6 +32,7 @@ public class ShortnameCommand {
     private static final SimpleCommandExceptionType NO_SUCH_SHORTNAME = new SimpleCommandExceptionType(new LiteralText("You don't have that shortname!"));
     private static final DynamicCommandExceptionType NO_SUCH_SHORTNAME_OTHER = new DynamicCommandExceptionType(x ->
         ((ServerPlayerEntity) x).getDisplayName().shallowCopy().append(new LiteralText(" doesn't have that shortname!")));
+    private static final SimpleCommandExceptionType SHORTNAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("Shortname collides with other player's shortname!"));
     private static final SimpleCommandExceptionType INVALID_SHORTNAME = new SimpleCommandExceptionType(new LiteralText("Invalid shortname!"));
     private static final Pattern SHORTNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{2,16}$");
 
@@ -83,6 +90,8 @@ public class ShortnameCommand {
             throw INVALID_SHORTNAME.create();
         if (shortnames.contains(newShortname))
             throw SHORTNAME_EXISTS_OTHER.create(player);
+        if (checkShortnameForCollision(src.getMinecraftServer(), newShortname))
+            throw SHORTNAME_COLLISION.create();
         shortnames.add(newShortname);
         src.sendFeedback(
             new LiteralText("Added shortname \"" + newShortname + "\" to ")
@@ -141,6 +150,8 @@ public class ShortnameCommand {
             throw INVALID_SHORTNAME.create();
         if (shortnames.contains(newShortname))
             throw SHORTNAME_EXISTS.create();
+        if (checkShortnameForCollision(src.getMinecraftServer(), newShortname))
+            throw SHORTNAME_COLLISION.create();
         shortnames.add(newShortname);
         src.sendFeedback(new LiteralText("Added shortname \"" + newShortname + "\"."), false);
         return 0;
@@ -171,5 +182,26 @@ public class ShortnameCommand {
         src.sendFeedback(new LiteralText(sb.toString()), false);
 
         return 0;
+    }
+
+    private static boolean checkShortnameForCollision(MinecraftServer server, String shortname) {
+        for (ServerPlayerEntity onlinePlayer : server.getPlayerManager().getPlayerList()) {
+            for (String otherShortname : ((ServerPlayerEntityAccess) onlinePlayer).pingspam$getShortnames()) {
+                if (otherShortname.equals(shortname))
+                    return true;
+            }
+        }
+
+        for (CompoundTag offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().values()) {
+            if (offlineTag.contains("Shortnames")) {
+                ListTag shortnamesTag = offlineTag.getList("Shortnames", 8);
+                for (Tag shortnameTag : shortnamesTag) {
+                    if (shortnameTag.asString().equals(shortname))
+                        return true;
+                }
+            }
+        }
+
+        return false;
     }
 }

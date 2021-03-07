@@ -16,6 +16,8 @@ public class PingSpam implements ModInitializer {
     public void onInitialize() {
         LogManager.getLogger("PingSpam").info("Several people are typing...");
 
+        OfflinePlayerCache.INSTANCE.register();
+
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());
         CommandRegistrationCallback.EVENT.register(PingSpamCommands::register);
     }
