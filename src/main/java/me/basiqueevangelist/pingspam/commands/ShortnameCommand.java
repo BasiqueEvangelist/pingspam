@@ -7,19 +7,26 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.basiqueevangelist.pingspam.OfflinePlayerCache;
+import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
-import org.apache.logging.log4j.core.jmx.Server;
 
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -74,6 +81,7 @@ public class ShortnameCommand {
         if (!shortnames.contains(shortname))
             throw NO_SUCH_SHORTNAME_OTHER.create(player);
         shortnames.remove(shortname);
+        sendShortnameRemovedPacket(src.getMinecraftServer().getPlayerManager(), shortname);
         src.sendFeedback(
             new LiteralText("Removed shortname \"" + shortname + "\" from ")
                 .append(player.getDisplayName())
@@ -93,6 +101,7 @@ public class ShortnameCommand {
         if (checkShortnameForCollision(src.getMinecraftServer(), newShortname))
             throw SHORTNAME_COLLISION.create();
         shortnames.add(newShortname);
+        sendShortnameAddedPacket(src.getMinecraftServer().getPlayerManager(), newShortname);
         src.sendFeedback(
             new LiteralText("Added shortname \"" + newShortname + "\" to ")
                 .append(player.getDisplayName())
@@ -137,6 +146,7 @@ public class ShortnameCommand {
         if (!shortnames.contains(shortname))
             throw NO_SUCH_SHORTNAME.create();
         shortnames.remove(shortname);
+        sendShortnameRemovedPacket(src.getMinecraftServer().getPlayerManager(), shortname);
         src.sendFeedback(new LiteralText("Removed shortname \"" + shortname + "\"."), false);
         return 0;
     }
@@ -153,6 +163,7 @@ public class ShortnameCommand {
         if (checkShortnameForCollision(src.getMinecraftServer(), newShortname))
             throw SHORTNAME_COLLISION.create();
         shortnames.add(newShortname);
+        sendShortnameAddedPacket(src.getMinecraftServer().getPlayerManager(), newShortname);
         src.sendFeedback(new LiteralText("Added shortname \"" + newShortname + "\"."), false);
         return 0;
     }
@@ -192,9 +203,11 @@ public class ShortnameCommand {
             }
         }
 
-        for (CompoundTag offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().values()) {
-            if (offlineTag.contains("Shortnames")) {
-                ListTag shortnamesTag = offlineTag.getList("Shortnames", 8);
+        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+            if (server.getPlayerManager().getPlayer(offlineTag.getKey()) != null)
+                continue;
+            if (offlineTag.getValue().contains("Shortnames")) {
+                ListTag shortnamesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (Tag shortnameTag : shortnamesTag) {
                     if (shortnameTag.asString().equals(shortname))
                         return true;
@@ -203,5 +216,23 @@ public class ShortnameCommand {
         }
 
         return false;
+    }
+
+    private static void sendShortnameAddedPacket(PlayerManager manager, String newShortname) {
+        PacketByteBuf diffBuf = PacketByteBufs.create();
+        diffBuf.writeVarInt(1);
+        diffBuf.writeString(newShortname);
+        diffBuf.writeVarInt(0);
+        manager.sendToAll(ServerPlayNetworking.createS2CPacket(PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf));
+    }
+
+    private static void sendShortnameRemovedPacket(PlayerManager manager, String shortname) {
+        if (PlayerUtils.findPlayer(manager, shortname) == null) {
+            PacketByteBuf diffBuf = PacketByteBufs.create();
+            diffBuf.writeVarInt(0);
+            diffBuf.writeVarInt(1);
+            diffBuf.writeString(shortname);
+            manager.sendToAll(ServerPlayNetworking.createS2CPacket(PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf));
+        }
     }
 }

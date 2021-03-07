@@ -1,6 +1,7 @@
 package me.basiqueevangelist.pingspam;
 
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
+import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import me.sargunvohra.mcmods.autoconfig1u.AutoConfig;
 import me.sargunvohra.mcmods.autoconfig1u.ConfigHolder;
 import me.sargunvohra.mcmods.autoconfig1u.serializer.JanksonConfigSerializer;
@@ -17,7 +18,7 @@ public class PingSpam implements ModInitializer {
         LogManager.getLogger("PingSpam").info("Several people are typing...");
 
         OfflinePlayerCache.INSTANCE.register();
-
+        PingSpamPackets.register();
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());
         CommandRegistrationCallback.EVENT.register(PingSpamCommands::register);
     }

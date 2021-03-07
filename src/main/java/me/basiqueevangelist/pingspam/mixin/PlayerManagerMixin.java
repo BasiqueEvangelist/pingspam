@@ -1,9 +1,15 @@
 package me.basiqueevangelist.pingspam.mixin;
 
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,7 +22,9 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +39,61 @@ public abstract class PlayerManagerMixin {
     @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(UUID uuid);
 
     @Shadow @Final private List<ServerPlayerEntity> players;
+
+    @Shadow public abstract void sendToAll(Packet<?> packet);
+
     @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{2,16})(\\s|$)");
+
+    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
+    public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
+        PacketByteBuf diffBuf = PacketByteBufs.create();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
+        diffBuf.writeVarInt(shortnames.size() + 1);
+        diffBuf.writeString(player.getGameProfile().getName());
+        for (String shortname : shortnames) {
+            diffBuf.writeString(shortname);
+        }
+        diffBuf.writeVarInt(0);
+        sendToAll(ServerPlayNetworking.createS2CPacket(PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf));
+
+        PacketByteBuf newBuf = PacketByteBufs.create();
+
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingeveryone", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingplayer", 0));
+
+        List<String> possibleNames = new ArrayList<>();
+        for (ServerPlayerEntity otherPlayer : players) {
+            String playerName = otherPlayer.getGameProfile().getName();
+            if (!possibleNames.contains(playerName))
+                possibleNames.add(playerName);
+
+            for (String shortname : ((ServerPlayerEntityAccess) otherPlayer).pingspam$getShortnames()) {
+                if (!possibleNames.contains(shortname))
+                    possibleNames.add(shortname);
+            }
+        }
+        newBuf.writeVarInt(possibleNames.size());
+        for (String possibleName : possibleNames) {
+            newBuf.writeString(possibleName);
+        }
+
+        conn.send(ServerPlayNetworking.createS2CPacket(PingSpamPackets.ANNOUNCE, newBuf));
+    }
+
+    @Inject(method = "remove", at = @At("TAIL"))
+    public void onPlayerDisconnected(ServerPlayerEntity player, CallbackInfo ci) {
+        PacketByteBuf diffBuf = PacketByteBufs.create();
+        diffBuf.writeVarInt(0);
+        List<String> shortnames = new ArrayList<>(((ServerPlayerEntityAccess) player).pingspam$getShortnames());
+        shortnames.add(player.getGameProfile().getName());
+        shortnames.removeIf(shortname -> PlayerUtils.findPlayer((PlayerManager)(Object) this, shortname) == null);
+        diffBuf.writeVarInt(shortnames.size() + 1);
+        diffBuf.writeString(player.getGameProfile().getName());
+        for (String shortname : shortnames) {
+            diffBuf.writeString(shortname);
+        }
+        sendToAll(ServerPlayNetworking.createS2CPacket(PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf));
+    }
 
     @Redirect(method = "broadcastChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"))
     public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> packet) {
@@ -53,7 +115,7 @@ public abstract class PlayerManagerMixin {
                 }
             } else {
                 if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
-                    ServerPlayerEntity player = findPlayer(username);
+                    ServerPlayerEntity player = PlayerUtils.findPlayer((PlayerManager)(Object) this, username);
                     if (player != null) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                         unpingedPlayers.remove(player);
@@ -75,20 +137,5 @@ public abstract class PlayerManagerMixin {
     private void sendPingError(ServerPlayerEntity player, String text) {
         if (PingSpam.CONFIG.getConfig().sendPingErrors)
             player.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
-    }
-
-    @Unique
-    private @Nullable ServerPlayerEntity findPlayer(String name) {
-        ServerPlayerEntity namedPlayer = getPlayer(name);
-        if (namedPlayer != null)
-            return namedPlayer;
-
-        for (ServerPlayerEntity player : players) {
-            List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
-            if (shortnames.contains(name))
-                return player;
-        }
-
-        return null;
     }
 }

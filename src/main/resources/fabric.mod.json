@@ -21,6 +21,9 @@
   "entrypoints": {
     "main": [
       "me.basiqueevangelist.pingspam.PingSpam"
+    ],
+    "client": [
+      "me.basiqueevangelist.pingspam.client.PingSpamClient"
     ]
   },
   "mixins": [
