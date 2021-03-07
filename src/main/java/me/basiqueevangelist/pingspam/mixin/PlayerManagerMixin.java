@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.network.Packet;
@@ -72,7 +73,8 @@ public abstract class PlayerManagerMixin {
 
     @Unique
     private void sendPingError(ServerPlayerEntity player, String text) {
-        player.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
+        if (PingSpam.CONFIG.getConfig().sendPingErrors)
+            player.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
     }
 
     @Unique

@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -27,6 +28,8 @@ import java.util.List;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAccess {
+    @Unique private static final int ACTIONBAR_TIME = 10;
+
     @Shadow public abstract void playSound(SoundEvent event, SoundCategory category, float volume, float pitch);
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
@@ -57,7 +60,7 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
-        if (pings.size() > 0) {
+        if (pings.size() > 0 && PingSpam.CONFIG.getConfig().showUnreadMessagesInActionbar) {
             actionbarTime++;
             if (actionbarTime >= 5) {
                 actionbarTime = 0;
@@ -67,7 +70,7 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
                 ));
             }
         } else {
-            actionbarTime = 5;
+            actionbarTime = ACTIONBAR_TIME;
         }
     }
 

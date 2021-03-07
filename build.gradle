@@ -21,6 +21,7 @@ repositories {
 		url = 'https://maven.terraformersmc.com'
 	}
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+	maven { url 'https://maven.shedaniel.me' }
 }
 
 dependencies {
@@ -35,6 +36,7 @@ dependencies {
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
+	modImplementation include('me.sargunvohra.mcmods:autoconfig1u:3.3.1')
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
