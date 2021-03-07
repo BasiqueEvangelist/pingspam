@@ -10,13 +10,13 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import org.apache.logging.log4j.LogManager;
 
 public class PingSpam implements ModInitializer {
-	public static final ConfigHolder<PingSpamConfig> CONFIG = AutoConfig.register(PingSpamConfig.class, JanksonConfigSerializer::new);
+    public static final ConfigHolder<PingSpamConfig> CONFIG = AutoConfig.register(PingSpamConfig.class, JanksonConfigSerializer::new);
 
-	@Override
-	public void onInitialize() {
-		LogManager.getLogger("PingSpam").info("Several people are typing...");
+    @Override
+    public void onInitialize() {
+        LogManager.getLogger("PingSpam").info("Several people are typing...");
 
-		ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());
-		CommandRegistrationCallback.EVENT.register(PingSpamCommands::register);
-	}
+        ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());
+        CommandRegistrationCallback.EVENT.register(PingSpamCommands::register);
+    }
 }

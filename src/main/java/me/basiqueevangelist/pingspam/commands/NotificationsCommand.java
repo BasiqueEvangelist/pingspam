@@ -23,7 +23,7 @@ public class NotificationsCommand {
     public static int showNotifications(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
 
-        List<Text> notifs = ((ServerPlayerEntityAccess)src.getPlayer()).pingspam$getPings();
+        List<Text> notifs = ((ServerPlayerEntityAccess) src.getPlayer()).pingspam$getPings();
         if (!notifs.isEmpty()) {
             src.sendFeedback(new LiteralText("You have " + notifs.size() + " unread message" + (notifs.size() != 1 ? "s" : "") + ":"), false);
             for (Text notif : notifs) {

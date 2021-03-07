@@ -65,8 +65,8 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
             if (actionbarTime >= 5) {
                 actionbarTime = 0;
                 networkHandler.sendPacket(new TitleS2CPacket(
-                        TitleS2CPacket.Action.ACTIONBAR,
-                        new LiteralText("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + ".")
+                    TitleS2CPacket.Action.ACTIONBAR,
+                    new LiteralText("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + ".")
                 ));
             }
         } else {

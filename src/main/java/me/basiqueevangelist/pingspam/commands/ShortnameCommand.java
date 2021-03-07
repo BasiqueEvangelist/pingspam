@@ -22,10 +22,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class ShortnameCommand {
     private static final SimpleCommandExceptionType SHORTNAME_EXISTS = new SimpleCommandExceptionType(new LiteralText("You already have that shortname!"));
     private static final DynamicCommandExceptionType SHORTNAME_EXISTS_OTHER = new DynamicCommandExceptionType(x ->
-        ((ServerPlayerEntity)x).getDisplayName().shallowCopy().append(new LiteralText(" already has that shortname!")));
+        ((ServerPlayerEntity) x).getDisplayName().shallowCopy().append(new LiteralText(" already has that shortname!")));
     private static final SimpleCommandExceptionType NO_SUCH_SHORTNAME = new SimpleCommandExceptionType(new LiteralText("You don't have that shortname!"));
     private static final DynamicCommandExceptionType NO_SUCH_SHORTNAME_OTHER = new DynamicCommandExceptionType(x ->
-        ((ServerPlayerEntity)x).getDisplayName().shallowCopy().append(new LiteralText(" doesn't have that shortname!")));
+        ((ServerPlayerEntity) x).getDisplayName().shallowCopy().append(new LiteralText(" doesn't have that shortname!")));
     private static final SimpleCommandExceptionType INVALID_SHORTNAME = new SimpleCommandExceptionType(new LiteralText("Invalid shortname!"));
     private static final Pattern SHORTNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{2,16}$");
 
@@ -61,16 +61,16 @@ public class ShortnameCommand {
         ServerCommandSource src = ctx.getSource();
         String shortname = StringArgumentType.getString(ctx, "shortname");
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         if (!SHORTNAME_PATTERN.asPredicate().test(shortname))
             throw INVALID_SHORTNAME.create();
         if (!shortnames.contains(shortname))
             throw NO_SUCH_SHORTNAME_OTHER.create(player);
         shortnames.remove(shortname);
         src.sendFeedback(
-                new LiteralText("Removed shortname \"" + shortname + "\" from ")
-                        .append(player.getDisplayName())
-                        .append(new LiteralText(".")), true);
+            new LiteralText("Removed shortname \"" + shortname + "\" from ")
+                .append(player.getDisplayName())
+                .append(new LiteralText(".")), true);
         return 0;
     }
 
@@ -78,7 +78,7 @@ public class ShortnameCommand {
         ServerCommandSource src = ctx.getSource();
         String newShortname = StringArgumentType.getString(ctx, "shortname");
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         if (!SHORTNAME_PATTERN.asPredicate().test(newShortname))
             throw INVALID_SHORTNAME.create();
         if (shortnames.contains(newShortname))
@@ -94,7 +94,7 @@ public class ShortnameCommand {
     private static int listPlayerShortnames(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         StringBuilder sb = new StringBuilder();
         sb.append(" has ");
         sb.append(shortnames.size());
@@ -122,7 +122,7 @@ public class ShortnameCommand {
         ServerCommandSource src = ctx.getSource();
         String shortname = StringArgumentType.getString(ctx, "shortname");
         ServerPlayerEntity player = src.getPlayer();
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         if (!SHORTNAME_PATTERN.asPredicate().test(shortname))
             throw INVALID_SHORTNAME.create();
         if (!shortnames.contains(shortname))
@@ -136,7 +136,7 @@ public class ShortnameCommand {
         ServerCommandSource src = ctx.getSource();
         String newShortname = StringArgumentType.getString(ctx, "shortname");
         ServerPlayerEntity player = src.getPlayer();
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         if (!SHORTNAME_PATTERN.asPredicate().test(newShortname))
             throw INVALID_SHORTNAME.create();
         if (shortnames.contains(newShortname))
@@ -149,7 +149,7 @@ public class ShortnameCommand {
     private static int listShortnames(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+        List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
         StringBuilder sb = new StringBuilder();
         sb.append("You have ");
         sb.append(shortnames.size());

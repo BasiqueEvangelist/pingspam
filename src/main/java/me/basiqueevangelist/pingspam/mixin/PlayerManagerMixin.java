@@ -84,7 +84,7 @@ public abstract class PlayerManagerMixin {
             return namedPlayer;
 
         for (ServerPlayerEntity player : players) {
-            List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+            List<String> shortnames = ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
             if (shortnames.contains(name))
                 return player;
         }
