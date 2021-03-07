@@ -6,6 +6,9 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -44,6 +47,8 @@ public abstract class PlayerManagerMixin {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     }
                     unpingedPlayers.clear();
+                } else {
+                    sendPingError(sender, "You do not have enough permissions to ping @everyone!");
                 }
             } else {
                 if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
@@ -51,7 +56,11 @@ public abstract class PlayerManagerMixin {
                     if (player != null) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                         unpingedPlayers.remove(player);
+                    } else if (sender != null) {
+                        sendPingError(sender, "No such player: " + username + "!");
                     }
+                } else {
+                    sendPingError(sender, "You do not have enough permissions to ping @" + username + "!");
                 }
             }
         }
@@ -59,6 +68,11 @@ public abstract class PlayerManagerMixin {
         for (ServerPlayerEntity player : unpingedPlayers) {
             player.networkHandler.sendPacket(packet);
         }
+    }
+
+    @Unique
+    private void sendPingError(ServerPlayerEntity player, String text) {
+        player.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
     }
 
     @Unique
