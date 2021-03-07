@@ -7,5 +7,8 @@ import java.util.List;
 
 public interface ServerPlayerEntityAccess {
     List<Text> pingspam$getPings();
+
+    List<String> pingspam$getShortnames();
+
     void pingspam$ping(GameMessageS2CPacket msgPacket);
 }

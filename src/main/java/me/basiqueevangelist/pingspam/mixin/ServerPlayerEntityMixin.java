@@ -31,11 +31,17 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
     @Unique private final List<Text> pings = new ArrayList<>();
+    @Unique private final List<String> shortnames = new ArrayList<>();
     @Unique private int actionbarTime = 0;
 
     @Override
     public List<Text> pingspam$getPings() {
         return pings;
+    }
+
+    @Override
+    public List<String> pingspam$getShortnames() {
+        return shortnames;
     }
 
     @Override
@@ -66,7 +72,7 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
     }
 
     @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
-    private void readPingsFromTag(CompoundTag tag, CallbackInfo cb) {
+    private void readDataFromTag(CompoundTag tag, CallbackInfo cb) {
         pings.clear();
         if (tag.contains("UnreadPings")) {
             ListTag pingsTag = tag.getList("UnreadPings", 8);
@@ -74,14 +80,28 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
                 pings.add(Text.Serializer.fromJson(pingTag.asString()));
             }
         }
+
+        shortnames.clear();
+        if (tag.contains("Shortnames")) {
+            ListTag shortnamesTag = tag.getList("Shortnames", 8);
+            for (Tag shortnameTag : shortnamesTag) {
+                shortnames.add(shortnameTag.asString());
+            }
+        }
     }
 
     @Inject(method = "writeCustomDataToTag", at = @At("TAIL"))
-    private void writePingsFromTag(CompoundTag tag, CallbackInfo cb) {
+    private void writeDataToTag(CompoundTag tag, CallbackInfo cb) {
         ListTag pingsTag = new ListTag();
         for (Text ping : pings) {
             pingsTag.add(StringTag.of(Text.Serializer.toJson(ping)));
         }
         tag.put("UnreadPings", pingsTag);
+
+        ListTag shortnamesTag = new ListTag();
+        for (String shortname : shortnames) {
+            shortnamesTag.add(StringTag.of(shortname));
+        }
+        tag.put("Shortnames", shortnamesTag);
     }
 }

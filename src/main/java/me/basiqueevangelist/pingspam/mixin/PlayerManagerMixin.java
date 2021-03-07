@@ -27,7 +27,7 @@ public abstract class PlayerManagerMixin {
     @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(UUID uuid);
 
     @Shadow @Final private List<ServerPlayerEntity> players;
-    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{3,16})(\\s|$)");
+    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{2,16})(\\s|$)");
 
     @Redirect(method = "broadcastChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"))
     public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> packet) {
@@ -47,7 +47,7 @@ public abstract class PlayerManagerMixin {
                 }
             } else {
                 if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
-                    ServerPlayerEntity player = getPlayer(username);
+                    ServerPlayerEntity player = findPlayer(username);
                     if (player != null) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                         unpingedPlayers.remove(player);
@@ -59,5 +59,20 @@ public abstract class PlayerManagerMixin {
         for (ServerPlayerEntity player : unpingedPlayers) {
             player.networkHandler.sendPacket(packet);
         }
+    }
+
+    @Unique
+    private @Nullable ServerPlayerEntity findPlayer(String name) {
+        ServerPlayerEntity namedPlayer = getPlayer(name);
+        if (namedPlayer != null)
+            return namedPlayer;
+
+        for (ServerPlayerEntity player : players) {
+            List<String> shortnames = ((ServerPlayerEntityAccess)player).pingspam$getShortnames();
+            if (shortnames.contains(name))
+                return player;
+        }
+
+        return null;
     }
 }
