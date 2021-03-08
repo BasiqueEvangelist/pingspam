@@ -62,7 +62,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
         pings.add(access.pingspam$getMessage());
 
-        Text pingMessage = access.pingspam$getMessage().shallowCopy().formatted(Formatting.BLUE);
+        Text pingMessage = access.pingspam$getMessage().shallowCopy().formatted(Formatting.AQUA);
         networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, access.pingspam$getLocation(), access.pingspam$getSenderUuid()));
     }
 
