@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.OfflinePlayerCache;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
@@ -7,6 +8,10 @@ import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
@@ -14,6 +19,7 @@ import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -72,27 +79,30 @@ public abstract class PlayerManagerMixin {
                     possibleNames.add(shortname);
             }
         }
+        for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+            if (getPlayer(offlinePlayerTag.getKey()) != null)
+                continue;
+
+            if (offlinePlayerTag.getValue().contains("SavedUsername")) {
+                String offlineUsername = offlinePlayerTag.getValue().getString("SavedUsername");
+                if (!possibleNames.contains(offlineUsername))
+                    possibleNames.add(offlineUsername);
+            }
+            if (offlinePlayerTag.getValue().contains("Shortnames")) {
+                ListTag shortnamesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
+                for (Tag shortnameTag : shortnamesTag) {
+                    String shortname = shortnameTag.asString();
+                    if (!possibleNames.contains(shortname))
+                        possibleNames.add(shortname);
+                }
+            }
+        }
         newBuf.writeVarInt(possibleNames.size());
         for (String possibleName : possibleNames) {
             newBuf.writeString(possibleName);
         }
 
         conn.send(ServerPlayNetworking.createS2CPacket(PingSpamPackets.ANNOUNCE, newBuf));
-    }
-
-    @Inject(method = "remove", at = @At("TAIL"))
-    public void onPlayerDisconnected(ServerPlayerEntity player, CallbackInfo ci) {
-        PacketByteBuf diffBuf = PacketByteBufs.create();
-        diffBuf.writeVarInt(0);
-        List<String> shortnames = new ArrayList<>(((ServerPlayerEntityAccess) player).pingspam$getShortnames());
-        shortnames.add(player.getGameProfile().getName());
-        shortnames.removeIf(shortname -> PlayerUtils.findPlayer((PlayerManager)(Object) this, shortname) == null);
-        diffBuf.writeVarInt(shortnames.size() + 1);
-        diffBuf.writeString(player.getGameProfile().getName());
-        for (String shortname : shortnames) {
-            diffBuf.writeString(shortname);
-        }
-        sendToAll(ServerPlayNetworking.createS2CPacket(PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf));
     }
 
     @Redirect(method = "broadcastChatMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendToAll(Lnet/minecraft/network/Packet;)V"))
@@ -119,8 +129,13 @@ public abstract class PlayerManagerMixin {
                     if (player != null) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                         unpingedPlayers.remove(player);
-                    } else if (sender != null) {
-                        sendPingError(sender, "No such player: " + username + "!");
+                    } else {
+                        UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager)(Object) this, username);
+                        if (offlinePlayer != null) {
+                            pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                        }  else if (sender != null) {
+                            sendPingError(sender, "No such player: " + username + "!");
+                        }
                     }
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @" + username + "!");
@@ -137,5 +152,15 @@ public abstract class PlayerManagerMixin {
     private void sendPingError(ServerPlayerEntity player, String text) {
         if (PingSpam.CONFIG.getConfig().sendPingErrors)
             player.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
+    }
+
+    @Unique
+    private void pingOfflinePlayer(UUID offlinePlayer, Text message) {
+        CompoundTag tag = OfflinePlayerCache.INSTANCE.reloadFor(offlinePlayer);
+        if (tag.contains("UnreadPings")) {
+            ListTag pingsTag = tag.getList("UnreadPings", 8);
+            pingsTag.add(StringTag.of(Text.Serializer.toJson(message)));
+        }
+        OfflinePlayerCache.INSTANCE.saveFor(offlinePlayer, tag);
     }
 }

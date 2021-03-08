@@ -227,7 +227,7 @@ public class ShortnameCommand {
     }
 
     private static void sendShortnameRemovedPacket(PlayerManager manager, String shortname) {
-        if (PlayerUtils.findPlayer(manager, shortname) == null) {
+        if (!PlayerUtils.anyPlayer(manager, shortname)) {
             PacketByteBuf diffBuf = PacketByteBufs.create();
             diffBuf.writeVarInt(0);
             diffBuf.writeVarInt(1);

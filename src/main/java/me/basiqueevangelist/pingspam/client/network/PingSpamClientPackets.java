@@ -13,7 +13,9 @@ public class PingSpamClientPackets {
             data.canPingPlayers = buf.readBoolean();
             int suggestedNamesCount = buf.readVarInt();
             for (int i = 0; i < suggestedNamesCount; i++) {
-                data.possibleNames.add(buf.readString());
+                String possibleName = buf.readString();
+                if (!data.possibleNames.contains(possibleName))
+                    data.possibleNames.add(possibleName);
             }
 
             ((ClientPlayNetworkHandlerAccess) handler).pingspam$setServerData(data);

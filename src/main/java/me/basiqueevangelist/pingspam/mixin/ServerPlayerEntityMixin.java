@@ -1,7 +1,9 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -16,6 +18,8 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -27,8 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAccess {
+public abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerPlayerEntityAccess {
     @Unique private static final int ACTIONBAR_TIME = 10;
+
+    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
+        super(world, pos, yaw, profile);
+    }
 
     @Shadow public abstract void playSound(SoundEvent event, SoundCategory category, float volume, float pitch);
 
@@ -106,5 +114,7 @@ public abstract class ServerPlayerEntityMixin implements ServerPlayerEntityAcces
             shortnamesTag.add(StringTag.of(shortname));
         }
         tag.put("Shortnames", shortnamesTag);
+
+        tag.putString("SavedUsername", getGameProfile().getName());
     }
 }

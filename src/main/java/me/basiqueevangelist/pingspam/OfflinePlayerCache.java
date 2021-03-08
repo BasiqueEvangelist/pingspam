@@ -7,9 +7,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,6 +23,7 @@ public enum OfflinePlayerCache {
     INSTANCE;
 
     private final Map<UUID, CompoundTag> savedPlayers = new HashMap<>();
+    private MinecraftServer currentServer;
 
     public void register() {
         ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStart);
@@ -29,6 +31,7 @@ public enum OfflinePlayerCache {
     }
 
     private void onServerStart(MinecraftServer server) {
+        currentServer = server;
         try {
             Path savedPlayersPath = server.getSavePath(WorldSavePath.PLAYERDATA);
             for (Path savedPlayerFile : Files.list(savedPlayersPath).collect(Collectors.toList())) {
@@ -45,6 +48,7 @@ public enum OfflinePlayerCache {
     }
 
     private void onServerShutdown(MinecraftServer server) {
+        currentServer = null;
         savedPlayers.clear();
     }
 
@@ -54,5 +58,31 @@ public enum OfflinePlayerCache {
 
     public Map<UUID, CompoundTag> getPlayers() {
         return savedPlayers;
+    }
+
+    public CompoundTag reloadFor(UUID player) {
+        try {
+            Path savedPlayersPath = currentServer.getSavePath(WorldSavePath.PLAYERDATA);
+            Path savedDataPath = savedPlayersPath.resolve(player.toString() + ".dat");
+            CompoundTag tag = NbtIo.readCompressed(savedDataPath.toFile());
+            savedPlayers.put(player, tag);
+            return tag;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void saveFor(UUID player, CompoundTag newTag) {
+        try {
+            savedPlayers.put(player, newTag);
+            File savedPlayersPath = currentServer.getSavePath(WorldSavePath.PLAYERDATA).toFile();
+            File file = File.createTempFile(player.toString() + "-", ".dat", savedPlayersPath);
+            NbtIo.writeCompressed(newTag, file);
+            File newDataFile = new File(savedPlayersPath, player.toString() + ".dat");
+            File oldDataFile = new File(savedPlayersPath, player.toString() + ".dat_old");
+            Util.backupAndReplace(newDataFile, file, oldDataFile);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
