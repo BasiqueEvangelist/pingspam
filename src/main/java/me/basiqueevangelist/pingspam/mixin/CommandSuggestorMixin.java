@@ -43,6 +43,10 @@ public abstract class CommandSuggestorMixin {
         List<String> processed = new ArrayList<>(data.possibleNames);
         if (data.canPingEveryone)
             processed.add("everyone");
+        if (data.canPingOnline)
+            processed.add("online");
+        if (data.canPingOffline)
+            processed.add("offline");
         processed.sort(Comparator.naturalOrder());
         return CommandSource.suggestMatching(processed.stream().map(x -> "@" + x), builder);
     }

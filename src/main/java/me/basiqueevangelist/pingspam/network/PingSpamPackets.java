@@ -16,6 +16,8 @@ public class PingSpamPackets {
             PacketByteBuf newBuf = PacketByteBufs.create();
 
             newBuf.writeBoolean(Permissions.check(player, "pingspam.pingeveryone", 2));
+            newBuf.writeBoolean(Permissions.check(player, "pingspam.pingonline", 2));
+            newBuf.writeBoolean(Permissions.check(player, "pingspam.pingoffline", 2));
             newBuf.writeBoolean(Permissions.check(player, "pingspam.pingplayer", 0));
 
             responseSender.sendPacket(PULL_PERMISSIONS, newBuf);

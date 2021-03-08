@@ -66,6 +66,8 @@ public abstract class PlayerManagerMixin {
         PacketByteBuf newBuf = PacketByteBufs.create();
 
         newBuf.writeBoolean(Permissions.check(player, "pingspam.pingeveryone", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingonline", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingoffline", 2));
         newBuf.writeBoolean(Permissions.check(player, "pingspam.pingplayer", 0));
 
         List<String> possibleNames = new ArrayList<>();
@@ -119,9 +121,35 @@ public abstract class PlayerManagerMixin {
                     for (ServerPlayerEntity player : players) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     }
+                    for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+                        if (getPlayer(offlinePlayer) != null)
+                            continue;
+
+                        pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                    }
                     unpingedPlayers.clear();
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @everyone!");
+                }
+            } else if (username.equals("online")) {
+                if (sender == null || Permissions.check(sender, "pingspam.pingonline", 2)) {
+                    for (ServerPlayerEntity player : players) {
+                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                    }
+                    unpingedPlayers.clear();
+                } else {
+                    sendPingError(sender, "You do not have enough permissions to ping @online!");
+                }
+            } else if (username.equals("offline")) {
+                if (sender == null || Permissions.check(sender, "pingspam.pingoffline", 2)) {
+                    for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+                        if (getPlayer(offlinePlayer) != null)
+                            continue;
+
+                        pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                    }
+                } else {
+                    sendPingError(sender, "You do not have enough permissions to ping @offline!");
                 }
             } else {
                 if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {

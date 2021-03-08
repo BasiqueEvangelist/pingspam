@@ -10,6 +10,8 @@ public class PingSpamClientPackets {
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.ANNOUNCE, (client, handler, buf, responseSender) -> {
             ServerData data = new ServerData();
             data.canPingEveryone = buf.readBoolean();
+            data.canPingOnline = buf.readBoolean();
+            data.canPingOffline = buf.readBoolean();
             data.canPingPlayers = buf.readBoolean();
             int suggestedNamesCount = buf.readVarInt();
             for (int i = 0; i < suggestedNamesCount; i++) {
@@ -26,6 +28,8 @@ public class PingSpamClientPackets {
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.PULL_PERMISSIONS, (client, handler, buf, responseSender) -> {
             ServerData data = ((ClientPlayNetworkHandlerAccess) handler).pingspam$getServerData();
             data.canPingEveryone = buf.readBoolean();
+            data.canPingOnline = buf.readBoolean();
+            data.canPingOffline = buf.readBoolean();
             data.canPingPlayers = buf.readBoolean();
         });
 
