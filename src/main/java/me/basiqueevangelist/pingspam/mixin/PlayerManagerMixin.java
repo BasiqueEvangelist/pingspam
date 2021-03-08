@@ -111,11 +111,12 @@ public abstract class PlayerManagerMixin {
     public void onMessageBroadcasted(PlayerManager playerManager, Packet<?> packet) {
         GameMessageS2CPacketAccessor access = (GameMessageS2CPacketAccessor) packet;
         String contents = access.pingspam$getMessage().getString();
+        ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
         Matcher matcher = PING_PATTERN.matcher(contents);
         List<ServerPlayerEntity> unpingedPlayers = new ArrayList<>(players);
+        boolean pingSucceeded = false;
         while (matcher.find()) {
             String username = matcher.group(1);
-            ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
             if (username.equals("everyone")) {
                 if (sender == null || Permissions.check(sender, "pingspam.pingeveryone", 2)) {
                     for (ServerPlayerEntity player : players) {
@@ -128,6 +129,7 @@ public abstract class PlayerManagerMixin {
                         pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
                     }
                     unpingedPlayers.clear();
+                    pingSucceeded = true;
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @everyone!");
                 }
@@ -137,6 +139,7 @@ public abstract class PlayerManagerMixin {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     }
                     unpingedPlayers.clear();
+                    pingSucceeded = true;
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @online!");
                 }
@@ -148,6 +151,7 @@ public abstract class PlayerManagerMixin {
 
                         pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
                     }
+                    pingSucceeded = true;
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @offline!");
                 }
@@ -157,10 +161,12 @@ public abstract class PlayerManagerMixin {
                     if (player != null) {
                         ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                         unpingedPlayers.remove(player);
+                        pingSucceeded = true;
                     } else {
                         UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager)(Object) this, username);
                         if (offlinePlayer != null) {
                             pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                            pingSucceeded = true;
                         }  else if (sender != null) {
                             sendPingError(sender, "No such player: " + username + "!");
                         }
@@ -168,6 +174,17 @@ public abstract class PlayerManagerMixin {
                 } else {
                     sendPingError(sender, "You do not have enough permissions to ping @" + username + "!");
                 }
+            }
+        }
+
+        if (pingSucceeded && sender != null) {
+            if (unpingedPlayers.contains(sender)) {
+                sender.networkHandler.sendPacket(new GameMessageS2CPacket(
+                    access.pingspam$getMessage().shallowCopy().formatted(Formatting.GOLD),
+                    access.pingspam$getLocation(),
+                    access.pingspam$getSenderUuid()
+                ));
+                unpingedPlayers.remove(sender);
             }
         }
 
