@@ -114,19 +114,24 @@ public abstract class PlayerManagerMixin {
         ServerPlayerEntity sender = getPlayer(access.pingspam$getSenderUuid());
         Matcher matcher = PING_PATTERN.matcher(contents);
         List<ServerPlayerEntity> unpingedPlayers = new ArrayList<>(players);
+        List<UUID> pingedOfflinePlayers = new ArrayList<>();
         boolean pingSucceeded = false;
         while (matcher.find()) {
             String username = matcher.group(1);
             if (username.equals("everyone")) {
                 if (sender == null || Permissions.check(sender, "pingspam.pingeveryone", 2)) {
                     for (ServerPlayerEntity player : players) {
-                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                        if (unpingedPlayers.contains(player))
+                            ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     }
                     for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
                         if (getPlayer(offlinePlayer) != null)
                             continue;
 
-                        pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                        if (!pingedOfflinePlayers.contains(offlinePlayer)) {
+                            pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                            pingedOfflinePlayers.add(offlinePlayer);
+                        }
                     }
                     unpingedPlayers.clear();
                     pingSucceeded = true;
@@ -136,7 +141,8 @@ public abstract class PlayerManagerMixin {
             } else if (username.equals("online")) {
                 if (sender == null || Permissions.check(sender, "pingspam.pingonline", 2)) {
                     for (ServerPlayerEntity player : players) {
-                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                        if (unpingedPlayers.contains(player))
+                            ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
                     }
                     unpingedPlayers.clear();
                     pingSucceeded = true;
@@ -149,7 +155,10 @@ public abstract class PlayerManagerMixin {
                         if (getPlayer(offlinePlayer) != null)
                             continue;
 
-                        pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                        if (!pingedOfflinePlayers.contains(offlinePlayer)) {
+                            pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                            pingedOfflinePlayers.add(offlinePlayer);
+                        }
                     }
                     pingSucceeded = true;
                 } else {
@@ -159,14 +168,19 @@ public abstract class PlayerManagerMixin {
                 if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
                     ServerPlayerEntity player = PlayerUtils.findPlayer((PlayerManager)(Object) this, username);
                     if (player != null) {
-                        ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
-                        unpingedPlayers.remove(player);
-                        pingSucceeded = true;
+                        if (unpingedPlayers.contains(player)) {
+                            ((ServerPlayerEntityAccess) player).pingspam$ping((GameMessageS2CPacket) access);
+                            unpingedPlayers.remove(player);
+                            pingSucceeded = true;
+                        }
                     } else {
                         UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager)(Object) this, username);
                         if (offlinePlayer != null) {
-                            pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
-                            pingSucceeded = true;
+                            if (!pingedOfflinePlayers.contains(offlinePlayer)) {
+                                pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                                pingedOfflinePlayers.remove(offlinePlayer);
+                                pingSucceeded = true;
+                            }
                         }  else if (sender != null) {
                             sendPingError(sender, "No such player: " + username + "!");
                         }
@@ -204,7 +218,8 @@ public abstract class PlayerManagerMixin {
         CompoundTag tag = OfflinePlayerCache.INSTANCE.reloadFor(offlinePlayer);
         if (tag.contains("UnreadPings")) {
             ListTag pingsTag = tag.getList("UnreadPings", 8);
-            pingsTag.add(StringTag.of(Text.Serializer.toJson(message)));
+            if (pingsTag.size() < 100)
+                pingsTag.add(StringTag.of(Text.Serializer.toJson(message)));
         }
         OfflinePlayerCache.INSTANCE.saveFor(offlinePlayer, tag);
     }

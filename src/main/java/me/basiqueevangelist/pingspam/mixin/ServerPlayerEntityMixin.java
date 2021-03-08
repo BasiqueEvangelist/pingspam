@@ -64,6 +64,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
 
         Text pingMessage = access.pingspam$getMessage().shallowCopy().formatted(Formatting.AQUA);
         networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, access.pingspam$getLocation(), access.pingspam$getSenderUuid()));
+
+        while (pings.size() > 100) {
+            pings.remove(0);
+        }
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
