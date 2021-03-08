@@ -218,8 +218,9 @@ public abstract class PlayerManagerMixin {
         CompoundTag tag = OfflinePlayerCache.INSTANCE.reloadFor(offlinePlayer);
         if (tag.contains("UnreadPings")) {
             ListTag pingsTag = tag.getList("UnreadPings", 8);
-            if (pingsTag.size() < 100)
-                pingsTag.add(StringTag.of(Text.Serializer.toJson(message)));
+            while (pingsTag.size() >= 100)
+                pingsTag.remove(0);
+            pingsTag.add(StringTag.of(Text.Serializer.toJson(message)));
         }
         OfflinePlayerCache.INSTANCE.saveFor(offlinePlayer, tag);
     }
