@@ -30,6 +30,8 @@ public class ShortnameCommand {
         ((ServerPlayerEntity) x).getDisplayName().shallowCopy().append(new LiteralText(" doesn't have that shortname!")));
     private static final SimpleCommandExceptionType SHORTNAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("Shortname collides with other player's shortname!"));
     private static final SimpleCommandExceptionType INVALID_SHORTNAME = new SimpleCommandExceptionType(new LiteralText("Invalid shortname!"));
+    private static final SimpleCommandExceptionType TOO_MANY_SHORTNAMES = new SimpleCommandExceptionType(new LiteralText("Too many shortnames! (maximum is 10)"));
+    public static final int SHORTNAME_LIMIT = 10;
     private static final Pattern SHORTNAME_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{2,16}$");
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -90,6 +92,8 @@ public class ShortnameCommand {
             throw SHORTNAME_EXISTS_OTHER.create(player);
         if (ShortnameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newShortname))
             throw SHORTNAME_COLLISION.create();
+        if (shortnames.size() >= SHORTNAME_LIMIT && !Permissions.check(src, "pingspam.bypassshortnamelimit", 2))
+            throw TOO_MANY_SHORTNAMES.create();
         shortnames.add(newShortname);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newShortname);
         src.sendFeedback(
@@ -153,6 +157,8 @@ public class ShortnameCommand {
             throw SHORTNAME_EXISTS.create();
         if (ShortnameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newShortname))
             throw SHORTNAME_COLLISION.create();
+        if (shortnames.size() >= SHORTNAME_LIMIT && !Permissions.check(src, "pingspam.bypassshortnamelimit", 2))
+            throw TOO_MANY_SHORTNAMES.create();
         shortnames.add(newShortname);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newShortname);
         src.sendFeedback(new LiteralText("Added shortname \"" + newShortname + "\"."), false);
