@@ -24,24 +24,6 @@ public final class PingLogic {
 
     }
 
-    public static boolean pingPlayerByNameWithResponse(PlayerManager manager, String name, Text text, MessageType msgType, UUID senderUuid, @Nullable ServerPlayerEntity sender) {
-        ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer(manager, name);
-        if (onlinePlayer != null) {
-            pingOnlinePlayer(onlinePlayer, text, msgType, senderUuid);
-            return true;
-        }
-
-        UUID offlinePlayer = PlayerUtils.findOfflinePlayer(manager, name);
-        if (offlinePlayer != null) {
-            pingOfflinePlayer(offlinePlayer, text);
-            return true;
-        }
-
-        if (sender != null)
-        sendPingError(sender, "No such player: " + name + "!");
-        return false;
-    }
-
     public static void pingOfflinePlayer(UUID playerUuid, Text pingMsg) {
         CompoundTag tag = OfflinePlayerCache.INSTANCE.reloadFor(playerUuid);
         if (tag.contains("UnreadPings")) {
