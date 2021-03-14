@@ -120,6 +120,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         tag.put("Shortnames", shortnamesTag);
 
         tag.putString("SavedUsername", getGameProfile().getName());
-        tag.putString("PingSound", pingSound.getId().toString());
+        tag.putString("PingSound", ((SoundEventAccessor) pingSound).pingspam$getId().toString());
     }
 }

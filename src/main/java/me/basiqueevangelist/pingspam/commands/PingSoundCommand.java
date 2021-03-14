@@ -5,6 +5,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.basiqueevangelist.pingspam.PlayerUtils;
+import me.basiqueevangelist.pingspam.mixin.SoundEventAccessor;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.ServerCommandSource;
@@ -37,7 +38,7 @@ public class PingSoundCommand {
         SoundEvent event = Registry.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
 
         PlayerUtils.setPingSound(player, event);
-        src.sendFeedback(new LiteralText("Set ping sound to " + PlayerUtils.getPingSound(player).getId() + "."), false);
+        src.sendFeedback(new LiteralText("Set ping sound to " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
 
         return 0;
     }
@@ -46,7 +47,7 @@ public class PingSoundCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
 
-        src.sendFeedback(new LiteralText("Your current ping sound is " + PlayerUtils.getPingSound(player).getId() + "."), false);
+        src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
 
         return 0;
     }
