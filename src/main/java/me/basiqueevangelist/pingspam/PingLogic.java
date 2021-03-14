@@ -7,7 +7,7 @@ import net.minecraft.network.MessageType;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -34,7 +34,8 @@ public final class PingLogic {
     }
 
     public static void pingOnlinePlayer(ServerPlayerEntity player, Text message, MessageType type, UUID senderUUID) {
-        player.playSound(SoundEvents.BLOCK_BELL_USE, SoundCategory.PLAYERS, 1.5F, 1.0F);
+        SoundEvent pingSound = PlayerUtils.getPingSound(player);
+        player.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
         List<Text> unreadPings = PlayerUtils.getUnreadPingsFor(player);
         while (unreadPings.size() >= 100) {

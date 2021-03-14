@@ -13,9 +13,12 @@ import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,6 +43,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Shadow public ServerPlayNetworkHandler networkHandler;
     @Unique private final List<Text> pings = new ArrayList<>();
     @Unique private final List<String> shortnames = new ArrayList<>();
+    @Unique private SoundEvent pingSound = SoundEvents.BLOCK_BELL_USE;
     @Unique private int actionbarTime = 0;
 
     @Override
@@ -50,6 +54,16 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Override
     public List<String> pingspam$getShortnames() {
         return shortnames;
+    }
+
+    @Override
+    public SoundEvent pingspam$getPingSound() {
+        return pingSound;
+    }
+
+    @Override
+    public void pingspam$setPingSound(SoundEvent sound) {
+        this.pingSound = sound;
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
@@ -85,6 +99,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
                 shortnames.add(shortnameTag.asString());
             }
         }
+
+        if (tag.contains("PingSound")) {
+            pingSound = Registry.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE);
+        }
     }
 
     @Inject(method = "writeCustomDataToTag", at = @At("TAIL"))
@@ -102,5 +120,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         tag.put("Shortnames", shortnamesTag);
 
         tag.putString("SavedUsername", getGameProfile().getName());
+        tag.putString("PingSound", pingSound.getId().toString());
     }
 }

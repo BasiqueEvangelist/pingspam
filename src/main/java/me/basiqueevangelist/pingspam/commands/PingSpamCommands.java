@@ -7,5 +7,6 @@ public class PingSpamCommands {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher, boolean dedicated) {
         NotificationsCommand.register(dispatcher);
         ShortnameCommand.register(dispatcher);
+        PingSoundCommand.register(dispatcher);
     }
 }

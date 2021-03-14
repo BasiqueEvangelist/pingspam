@@ -6,6 +6,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
@@ -61,5 +62,13 @@ public final class PlayerUtils {
 
     public static List<String> getShortnamesOf(ServerPlayerEntity player) {
         return ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
+    }
+
+    public static SoundEvent getPingSound(ServerPlayerEntity player) {
+        return ((ServerPlayerEntityAccess) player).pingspam$getPingSound();
+    }
+
+    public static void setPingSound(ServerPlayerEntity player, SoundEvent sound) {
+        ((ServerPlayerEntityAccess) player).pingspam$setPingSound(sound);
     }
 }
