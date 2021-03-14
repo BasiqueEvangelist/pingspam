@@ -101,7 +101,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         }
 
         if (tag.contains("PingSound")) {
-            pingSound = Registry.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE);
+            if (tag.getString("PingSound").equals("null")) {
+                pingSound = null;
+            } else {
+                pingSound = Registry.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE);
+            }
         }
     }
 
@@ -120,6 +124,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         tag.put("Shortnames", shortnamesTag);
 
         tag.putString("SavedUsername", getGameProfile().getName());
-        tag.putString("PingSound", ((SoundEventAccessor) pingSound).pingspam$getId().toString());
+        if ((SoundEventAccessor) pingSound != null) {
+            tag.putString("PingSound", ((SoundEventAccessor) pingSound).pingspam$getId().toString());
+        } else {
+            tag.putString("PingSound", "null");
+        }
     }
 }
