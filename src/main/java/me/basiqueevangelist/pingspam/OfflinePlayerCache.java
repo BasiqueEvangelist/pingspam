@@ -9,6 +9,8 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 public enum OfflinePlayerCache {
     INSTANCE;
 
+    private final static Logger LOGGER = LogManager.getLogger("Pingspam/OfflinePlayerCache");
     private final Map<UUID, CompoundTag> savedPlayers = new HashMap<>();
     private MinecraftServer currentServer;
 
@@ -35,12 +38,20 @@ public enum OfflinePlayerCache {
         try {
             Path savedPlayersPath = server.getSavePath(WorldSavePath.PLAYERDATA);
             for (Path savedPlayerFile : Files.list(savedPlayersPath).collect(Collectors.toList())) {
-                CompoundTag tag = NbtIo.readCompressed(savedPlayerFile.toFile());
-                String filename = savedPlayerFile.getFileName().toString();
-                String uuidStr = filename.substring(0, filename.lastIndexOf('.'));
-                UUID uuid = UUID.fromString(uuidStr);
-                int dataVersion = tag.contains("DataVersion", 3) ? tag.getInt("DataVersion") : -1;
-                savedPlayers.put(uuid, NbtHelper.update(Schemas.getFixer(), DataFixTypes.PLAYER, tag, dataVersion));
+                if (Files.isDirectory(savedPlayerFile) || !savedPlayerFile.toString().endsWith(".dat")) {
+                    continue;
+                }
+
+                try {
+                    CompoundTag tag = NbtIo.readCompressed(savedPlayerFile.toFile());
+                    String filename = savedPlayerFile.getFileName().toString();
+                    String uuidStr = filename.substring(0, filename.lastIndexOf('.'));
+                    UUID uuid = UUID.fromString(uuidStr);
+                    int dataVersion = tag.contains("DataVersion", 3) ? tag.getInt("DataVersion") : -1;
+                    savedPlayers.put(uuid, NbtHelper.update(Schemas.getFixer(), DataFixTypes.PLAYER, tag, dataVersion));
+                } catch (IOException e) {
+                    LOGGER.error("Error while reading playerdata file {}: {}", savedPlayerFile, e);
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
