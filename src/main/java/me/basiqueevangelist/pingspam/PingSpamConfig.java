@@ -11,4 +11,7 @@ public class PingSpamConfig implements ConfigData {
 
     @Comment("Show amount of unread messages in actionbar.")
     public boolean showUnreadMessagesInActionbar = true;
+
+    @Comment("Process pings from messages with nil UUIDs. Disabling this will disallow pings from command blocks and the server console, but will also disallow random unprivileged discord users from pinging @everyone with a discord link.")
+    public boolean processPingsFromUnknownPlayers = true;
 }
