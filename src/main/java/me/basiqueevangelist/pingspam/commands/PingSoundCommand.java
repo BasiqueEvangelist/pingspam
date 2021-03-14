@@ -27,9 +27,8 @@ public class PingSoundCommand {
                 .then(argument("sound", IdentifierArgumentType.identifier())
                     .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
                     .executes(PingSoundCommand::setPingSound))
-                        .then(literal("none")
-                        .executes(PingSoundCommand::removePingSound))
-
+                .then(literal("none")
+                    .executes(PingSoundCommand::removePingSound))
                 .executes(PingSoundCommand::getPingSound)
         );
     }
