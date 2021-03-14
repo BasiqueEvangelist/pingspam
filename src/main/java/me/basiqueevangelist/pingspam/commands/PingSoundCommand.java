@@ -60,7 +60,11 @@ public class PingSoundCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
 
-        src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
+        if (PlayerUtils.getPingSound(player) != null) {
+            src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
+        } else {
+            src.sendFeedback(new LiteralText("You have disabled ping sounds."), false);
+        }
 
         return 0;
     }
