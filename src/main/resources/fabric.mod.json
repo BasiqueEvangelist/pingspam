@@ -10,6 +10,9 @@
     "BasiqueEvangelist",
     "HotKinkajou"
   ],
+  "contributors": [
+    "SpaceClouds42"
+  ],
   "contact": {
     "sources": "https://github.com/BasiqueEvangelist/pingspam",
     "issues": "https://github.com/BasiqueEvangelist/pingspam/issues/"
