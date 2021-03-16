@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface ServerPlayerEntityAccess {
     List<Text> pingspam$getPings();
 
-    List<String> pingspam$getShortnames();
+    List<String> pingspam$getAliases();
 
     SoundEvent pingspam$getPingSound();
     void pingspam$setPingSound(SoundEvent sound);

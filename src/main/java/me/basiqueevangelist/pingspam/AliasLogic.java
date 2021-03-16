@@ -9,15 +9,15 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.util.Map;
 import java.util.UUID;
 
-public final class ShortnameLogic {
-    private ShortnameLogic() {
+public final class AliasLogic {
+    private AliasLogic() {
 
     }
 
-    public static boolean checkForCollision(PlayerManager manager, String shortname) {
+    public static boolean checkForCollision(PlayerManager manager, String alias) {
         for (ServerPlayerEntity onlinePlayer : manager.getPlayerList()) {
-            for (String otherShortname : PlayerUtils.getShortnamesOf(onlinePlayer)) {
-                if (otherShortname.equals(shortname))
+            for (String otherAlias : PlayerUtils.getAliasesOf(onlinePlayer)) {
+                if (otherAlias.equals(alias))
                     return true;
             }
         }
@@ -26,9 +26,9 @@ public final class ShortnameLogic {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTag shortnamesTag = offlineTag.getValue().getList("Shortnames", 8);
-                for (Tag shortnameTag : shortnamesTag) {
-                    if (shortnameTag.asString().equals(shortname))
+                ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                for (Tag aliasTag : aliasesTag) {
+                    if (aliasTag.asString().equals(alias))
                         return true;
                 }
             }

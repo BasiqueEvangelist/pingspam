@@ -41,7 +41,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
 
     @Shadow public ServerPlayNetworkHandler networkHandler;
     @Unique private final List<Text> pings = new ArrayList<>();
-    @Unique private final List<String> shortnames = new ArrayList<>();
+    @Unique private final List<String> aliases = new ArrayList<>();
     @Unique private final List<UUID> ignoredPlayers = new ArrayList<>();
     @Unique private SoundEvent pingSound = SoundEvents.BLOCK_BELL_USE;
     @Unique private int actionbarTime = 0;
@@ -52,8 +52,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     }
 
     @Override
-    public List<String> pingspam$getShortnames() {
-        return shortnames;
+    public List<String> pingspam$getAliases() {
+        return aliases;
     }
 
     @Override
@@ -97,11 +97,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
             }
         }
 
-        shortnames.clear();
+        aliases.clear();
         if (tag.contains("Shortnames")) {
-            ListTag shortnamesTag = tag.getList("Shortnames", 8);
-            for (Tag shortnameTag : shortnamesTag) {
-                shortnames.add(shortnameTag.asString());
+            ListTag aliasesTag = tag.getList("Shortnames", 8);
+            for (Tag aliasTag : aliasesTag) {
+                aliases.add(aliasTag.asString());
             }
         }
 
@@ -130,11 +130,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         }
         tag.put("UnreadPings", pingsTag);
 
-        ListTag shortnamesTag = new ListTag();
-        for (String shortname : shortnames) {
-            shortnamesTag.add(StringTag.of(shortname));
+        ListTag aliasesTag = new ListTag();
+        for (String alias : aliases) {
+            aliasesTag.add(StringTag.of(alias));
         }
-        tag.put("Shortnames", shortnamesTag);
+        tag.put("Shortnames", aliasesTag);
 
         ListTag ignoredPlayersListTag = new ListTag();
         for (UUID ignoredPlayer : ignoredPlayers) {

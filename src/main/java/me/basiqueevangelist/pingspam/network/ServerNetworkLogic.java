@@ -38,9 +38,9 @@ public final class ServerNetworkLogic {
             if (!possibleNames.contains(playerName))
                 possibleNames.add(playerName);
 
-            for (String shortname : PlayerUtils.getShortnamesOf(otherPlayer)) {
-                if (!possibleNames.contains(shortname))
-                    possibleNames.add(shortname);
+            for (String alias : PlayerUtils.getAliasesOf(otherPlayer)) {
+                if (!possibleNames.contains(alias))
+                    possibleNames.add(alias);
             }
         }
         for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
@@ -53,11 +53,11 @@ public final class ServerNetworkLogic {
                     possibleNames.add(offlineUsername);
             }
             if (offlinePlayerTag.getValue().contains("Shortnames")) {
-                ListTag shortnamesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
-                for (Tag shortnameTag : shortnamesTag) {
-                    String shortname = shortnameTag.asString();
-                    if (!possibleNames.contains(shortname))
-                        possibleNames.add(shortname);
+                ListTag aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
+                for (Tag aliasTag : aliasesTag) {
+                    String alias = aliasTag.asString();
+                    if (!possibleNames.contains(alias))
+                        possibleNames.add(alias);
                 }
             }
         }

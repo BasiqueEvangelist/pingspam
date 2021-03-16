@@ -24,8 +24,8 @@ public final class PlayerUtils {
             if (player.getGameProfile().getName().equals(name))
                 return player;
 
-            List<String> shortnames = getShortnamesOf(player);
-            if (shortnames.contains(name))
+            List<String> aliases = getAliasesOf(player);
+            if (aliases.contains(name))
                 return player;
         }
 
@@ -42,9 +42,9 @@ public final class PlayerUtils {
             }
 
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTag shortnamesTag = offlineTag.getValue().getList("Shortnames", 8);
-                for (Tag shortnameTag : shortnamesTag) {
-                    if (shortnameTag.asString().equals(name))
+                ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                for (Tag aliasTag : aliasesTag) {
+                    if (aliasTag.asString().equals(name))
                         return offlineTag.getKey();
                 }
             }
@@ -60,8 +60,8 @@ public final class PlayerUtils {
         return ((ServerPlayerEntityAccess) player).pingspam$getPings();
     }
 
-    public static List<String> getShortnamesOf(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getShortnames();
+    public static List<String> getAliasesOf(ServerPlayerEntity player) {
+        return ((ServerPlayerEntityAccess) player).pingspam$getAliases();
     }
 
     public static SoundEvent getPingSound(ServerPlayerEntity player) {
