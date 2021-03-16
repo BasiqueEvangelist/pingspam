@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam;
 
+import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -53,5 +54,9 @@ public final class PingLogic {
     public static void sendPingError(ServerPlayerEntity sender, String text) {
         if (PingSpam.CONFIG.getConfig().sendPingErrors)
             sender.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
+    }
+
+    public static boolean pingedOnlineUserIgnoredBySender(UUID senderUuid, ServerPlayerEntityAccess pingedPlayer) {
+        return pingedPlayer.pingspam$getIgnoredPlayers().contains(senderUuid);
     }
 }

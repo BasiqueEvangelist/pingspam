@@ -4,6 +4,7 @@ import me.basiqueevangelist.pingspam.OfflinePlayerCache;
 import me.basiqueevangelist.pingspam.PingLogic;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.PlayerUtils;
+import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.network.ClientConnection;
@@ -11,6 +12,7 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -117,8 +119,16 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     default:
+                        ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
+                        if (sender != null) {
+                            if (onlinePlayer != null && PingLogic.pingedOnlineUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) onlinePlayer)) {
+                                sender.sendMessage(new LiteralText(onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.").formatted(Formatting.RED), false);
+                                break;
+                            }
+                            //TODO: Block pings to offline users that have ignored the sender
+                        }
+
                         if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
-                            ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
                             if (onlinePlayer != null) {
                                 if (unpingedPlayers.contains(onlinePlayer)) {
                                     PingLogic.pingOnlinePlayer(
