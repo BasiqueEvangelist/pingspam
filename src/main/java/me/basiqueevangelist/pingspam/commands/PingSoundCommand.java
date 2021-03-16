@@ -27,8 +27,6 @@ public class PingSoundCommand {
                 .then(argument("sound", IdentifierArgumentType.identifier())
                     .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
                     .executes(PingSoundCommand::setPingSound))
-                .then(literal("none")
-                    .executes(PingSoundCommand::removePingSound))
                 .executes(PingSoundCommand::getPingSound)
         );
     }
@@ -45,25 +43,11 @@ public class PingSoundCommand {
         return 0;
     }
 
-    private static int removePingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
-
-        PlayerUtils.setPingSound(player, null);
-        src.sendFeedback(new LiteralText("Disabled ping sound."), false);
-
-        return 0;
-    }
-
     private static int getPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
 
-        if (PlayerUtils.getPingSound(player) != null) {
-            src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
-        } else {
-            src.sendFeedback(new LiteralText("You have disabled ping sounds."), false);
-        }
+        src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
 
         return 0;
     }

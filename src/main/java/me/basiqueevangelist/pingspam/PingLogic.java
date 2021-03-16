@@ -35,10 +35,7 @@ public final class PingLogic {
 
     public static void pingOnlinePlayer(ServerPlayerEntity player, Text message, MessageType type, UUID senderUUID) {
         SoundEvent pingSound = PlayerUtils.getPingSound(player);
-
-        if (pingSound != null) {
-            player.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
-        }
+        player.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
 
         List<Text> unreadPings = PlayerUtils.getUnreadPingsFor(player);
         while (unreadPings.size() >= 100) {
