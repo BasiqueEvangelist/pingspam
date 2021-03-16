@@ -109,6 +109,7 @@ public class PingIgnoreCommand {
         /*
         This is the same as the return statement below,
         I just wasn't sure which code style was preferred
+        pls comment on this commit as to which style you prefer
 
         if (userCacheProfile != null && userCacheProfile.isComplete()) {
             return userCacheProfile.getName();
