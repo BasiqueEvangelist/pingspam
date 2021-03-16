@@ -106,17 +106,11 @@ public class PingIgnoreCommand {
 
     private static String getNameFromUuid(UUID uuid) {
         GameProfile userCacheProfile = SERVER.getUserCache().getByUuid(uuid);
-        /*
-        This is the same as the return statement below,
-        I just wasn't sure which code style was preferred
-        pls comment on this commit as to which style you prefer
 
         if (userCacheProfile != null && userCacheProfile.isComplete()) {
             return userCacheProfile.getName();
         } else {
             return SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), false).getName();
         }
-        */
-        return (userCacheProfile != null && userCacheProfile.isComplete()) ? userCacheProfile.getName() : SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), false).getName();
     }
 }

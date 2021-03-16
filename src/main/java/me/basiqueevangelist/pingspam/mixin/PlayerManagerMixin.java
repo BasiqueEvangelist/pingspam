@@ -129,7 +129,7 @@ public abstract class PlayerManagerMixin {
                         // I apologise for the cursedness of this code, ideally the entire method would be refactored
                         // for handling ignoring, but I didn't really want to do that -SpaceClouds42
                         ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
-                        if (sender != null && !Permissions.check(sender, "pingspam.overrideignore", 2)) {
+                        if (sender != null && !Permissions.check(sender, "pingspam.bypassignore", 2)) {
                             if (onlinePlayer != null && PingLogic.pingedUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) onlinePlayer)) {
                                 PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                                 break;
