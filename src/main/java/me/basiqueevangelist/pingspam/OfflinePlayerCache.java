@@ -71,6 +71,10 @@ public enum OfflinePlayerCache {
         return savedPlayers;
     }
 
+    public CompoundTag get(UUID player) {
+        return savedPlayers.get(player);
+    }
+
     public CompoundTag reloadFor(UUID player) {
         try {
             Path savedPlayersPath = currentServer.getSavePath(WorldSavePath.PLAYERDATA);

@@ -1,11 +1,7 @@
 package me.basiqueevangelist.pingspam.mixin;
 
 import com.mojang.authlib.GameProfile;
-import me.basiqueevangelist.pingspam.OfflinePlayerCache;
-import me.basiqueevangelist.pingspam.PingLogic;
-import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.PlayerUtils;
-import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.basiqueevangelist.pingspam.*;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.nbt.CompoundTag;
@@ -30,8 +26,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static me.basiqueevangelist.pingspam.PingSpam.SERVER;
 
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
@@ -126,21 +120,18 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     default:
-                        // I apologise for the cursedness of this code, ideally the entire method would be refactored
-                        // for handling ignoring, but I didn't really want to do that -SpaceClouds42
                         ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
                         if (sender != null && !Permissions.check(sender, "pingspam.bypassignore", 2)) {
-                            if (onlinePlayer != null && PingLogic.pingedUserIgnoredBySender(sender.getUuid(), onlinePlayer)) {
+                            if (onlinePlayer != null && PingLogic.isPlayerIgnoredBy(sender.getUuid(), onlinePlayer)) {
                                 PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                                 break;
                             }
 
-                            UUID offlinePlayerUuid = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
-                            if (offlinePlayerUuid != null) {
-                                ServerPlayerEntity pingedOfflinePlayer = createPlayer(SERVER.getUserCache().getByUuid(offlinePlayerUuid));
-                                loadPlayerData(pingedOfflinePlayer);
-                                if (PingLogic.pingedUserIgnoredBySender(sender.getUuid(), pingedOfflinePlayer)) {
-                                    PingLogic.sendPingError(sender, pingedOfflinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
+                            UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
+                            if (offlinePlayer != null) {
+                                CompoundTag playerTag = OfflinePlayerCache.INSTANCE.get(offlinePlayer);
+                                if (OfflineUtils.isPlayerIgnoredBy(playerTag, sender.getUuid())) {
+                                    PingLogic.sendPingError(sender, OfflineUtils.getSavedUsername(playerTag) + " has ignored you, they won't receive your ping.");
                                     break;
                                 }
                             }
