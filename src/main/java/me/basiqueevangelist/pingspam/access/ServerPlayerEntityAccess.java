@@ -4,6 +4,7 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface ServerPlayerEntityAccess {
     List<Text> pingspam$getPings();
@@ -12,4 +13,8 @@ public interface ServerPlayerEntityAccess {
 
     SoundEvent pingspam$getPingSound();
     void pingspam$setPingSound(SoundEvent sound);
+
+    List<UUID> pingspam$getIgnoredPlayers();
+    void pingspam$addIgnoredPlayer(UUID uuid);
+    void pingspam$removeIgnoredPlayer(UUID uuid);
 }
