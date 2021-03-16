@@ -122,7 +122,7 @@ public abstract class PlayerManagerMixin {
                         ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
                         if (sender != null && !Permissions.check(sender, "pingspam.overrideignore", 2)) {
                             if (onlinePlayer != null && PingLogic.pingedOnlineUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) onlinePlayer)) {
-                                sender.sendMessage(new LiteralText(onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.").formatted(Formatting.RED), false);
+                                PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                                 break;
                             }
                             //TODO: Block pings to offline users that have ignored the sender
