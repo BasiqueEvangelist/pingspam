@@ -38,34 +38,34 @@ public class PingIgnoreCommand {
 
     private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity ignorePlayer = getPlayerFromProfile(ctx);
+        GameProfile ignorePlayer = getProfile(ctx);
         ServerPlayerEntityAccess player = (ServerPlayerEntityAccess) src.getPlayer();
         List<UUID> ignoredPlayers = player.pingspam$getIgnoredPlayers();
 
-        if (ignoredPlayers.contains(ignorePlayer.getUuid())) {
+        if (ignoredPlayers.contains(ignorePlayer.getId())) {
             throw PLAYER_ALREADY_IGNORED.create();
         }
 
-        player.pingspam$addIgnoredPlayer(ignorePlayer.getUuid());
+        player.pingspam$addIgnoredPlayer(ignorePlayer.getId());
 
-        src.sendFeedback(new LiteralText("You are now ignoring " + ignorePlayer.getEntityName() + "."), false);
+        src.sendFeedback(new LiteralText("You are now ignoring " + ignorePlayer.getName() + "."), false);
 
         return 0;
     }
 
     private static int removeIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity removePlayer = getPlayerFromProfile(ctx);
+        GameProfile removePlayer = getProfile(ctx);
         ServerPlayerEntityAccess player = (ServerPlayerEntityAccess) src.getPlayer();
         List<UUID> ignoredPlayers = player.pingspam$getIgnoredPlayers();
 
-        if (!ignoredPlayers.contains(removePlayer.getUuid())) {
+        if (!ignoredPlayers.contains(removePlayer.getId())) {
             throw PLAYER_NOT_IGNORED.create();
         }
 
-        player.pingspam$removeIgnoredPlayer(removePlayer.getUuid());
+        player.pingspam$removeIgnoredPlayer(removePlayer.getId());
 
-        src.sendFeedback(new LiteralText("You are no longer ignoring " + removePlayer.getEntityName() + "."), false);
+        src.sendFeedback(new LiteralText("You are no longer ignoring " + removePlayer.getName() + "."), false);
 
         return 0;
     }
@@ -92,16 +92,14 @@ public class PingIgnoreCommand {
         return 0;
     }
 
-    private static ServerPlayerEntity getPlayerFromProfile(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static GameProfile getProfile(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         GameProfile profile = GameProfileArgumentType.getProfileArgument(ctx, "player").iterator().next();
-        ServerPlayerEntity requestedPlayer = SERVER.getPlayerManager().getPlayer(profile.getName());
 
-        if (requestedPlayer == null) {
-            requestedPlayer = SERVER.getPlayerManager().createPlayer(profile);
-            SERVER.getPlayerManager().loadPlayerData(requestedPlayer);
+        if (!profile.isComplete()) {
+            return SERVER.getSessionService().fillProfileProperties(profile, false);
         }
 
-        return requestedPlayer;
+        return profile;
     }
 
     private static String getNameFromUuid(UUID uuid) {
