@@ -8,5 +8,6 @@ public class PingSpamCommands {
         NotificationsCommand.register(dispatcher);
         ShortnameCommand.register(dispatcher);
         PingSoundCommand.register(dispatcher);
+        PingIgnoreCommand.register(dispatcher);
     }
 }
