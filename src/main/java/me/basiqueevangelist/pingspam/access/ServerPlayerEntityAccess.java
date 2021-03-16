@@ -15,6 +15,4 @@ public interface ServerPlayerEntityAccess {
     void pingspam$setPingSound(SoundEvent sound);
 
     List<UUID> pingspam$getIgnoredPlayers();
-    void pingspam$addIgnoredPlayer(UUID uuid);
-    void pingspam$removeIgnoredPlayer(UUID uuid);
 }

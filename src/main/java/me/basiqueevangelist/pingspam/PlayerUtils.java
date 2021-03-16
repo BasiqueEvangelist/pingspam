@@ -71,4 +71,8 @@ public final class PlayerUtils {
     public static void setPingSound(ServerPlayerEntity player, SoundEvent sound) {
         ((ServerPlayerEntityAccess) player).pingspam$setPingSound(sound);
     }
+
+    public static List<UUID> getIgnoredPlayersOf(ServerPlayerEntity player) {
+        return ((ServerPlayerEntityAccess) player).pingspam$getIgnoredPlayers();
+    }
 }

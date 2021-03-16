@@ -57,16 +57,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     }
 
     @Override
-    public void pingspam$addIgnoredPlayer(UUID uuid) {
-        ignoredPlayers.add(uuid);
-    }
-
-    @Override
-    public void pingspam$removeIgnoredPlayer(UUID uuid) {
-        ignoredPlayers.remove(uuid);
-    }
-
-    @Override
     public List<UUID> pingspam$getIgnoredPlayers() {
         return ignoredPlayers;
     }

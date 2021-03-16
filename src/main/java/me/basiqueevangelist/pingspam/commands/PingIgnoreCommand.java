@@ -5,9 +5,10 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.basiqueevangelist.pingspam.PlayerUtils;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class PingIgnoreCommand {
                         .then(literal("remove")
                                 .then(argument("player", GameProfileArgumentType.gameProfile())
                                         .suggests((ctx, builder) -> {
-                                                    for (UUID ignoredUuid : ((ServerPlayerEntityAccess) ctx.getSource().getPlayer()).pingspam$getIgnoredPlayers()) {
+                                                    for (UUID ignoredUuid : PlayerUtils.getIgnoredPlayersOf(ctx.getSource().getPlayer())) {
                                                         builder.suggest(getNameFromUuid(ignoredUuid));
                                                     }
                                                     return builder.buildFuture();
@@ -44,14 +45,14 @@ public class PingIgnoreCommand {
     private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile ignorePlayer = getProfile(ctx);
-        ServerPlayerEntityAccess player = (ServerPlayerEntityAccess) src.getPlayer();
-        List<UUID> ignoredPlayers = player.pingspam$getIgnoredPlayers();
+        ServerPlayerEntity player = src.getPlayer();
+        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
 
         if (ignoredPlayers.contains(ignorePlayer.getId())) {
             throw PLAYER_ALREADY_IGNORED.create();
         }
 
-        player.pingspam$addIgnoredPlayer(ignorePlayer.getId());
+        ignoredPlayers.add(ignorePlayer.getId());
 
         src.sendFeedback(new LiteralText("You are now ignoring " + ignorePlayer.getName() + "."), false);
 
@@ -61,14 +62,14 @@ public class PingIgnoreCommand {
     private static int removeIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile removePlayer = getProfile(ctx);
-        ServerPlayerEntityAccess player = (ServerPlayerEntityAccess) src.getPlayer();
-        List<UUID> ignoredPlayers = player.pingspam$getIgnoredPlayers();
+        ServerPlayerEntity player = src.getPlayer();
+        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
 
         if (!ignoredPlayers.contains(removePlayer.getId())) {
             throw PLAYER_NOT_IGNORED.create();
         }
 
-        player.pingspam$removeIgnoredPlayer(removePlayer.getId());
+        ignoredPlayers.remove(removePlayer.getId());
 
         src.sendFeedback(new LiteralText("You are no longer ignoring " + removePlayer.getName() + "."), false);
 
@@ -77,8 +78,8 @@ public class PingIgnoreCommand {
 
     private static int listIgnoredPlayers(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntityAccess player = (ServerPlayerEntityAccess) src.getPlayer();
-        List<UUID> ignoredPlayers = player.pingspam$getIgnoredPlayers();
+        ServerPlayerEntity player = src.getPlayer();
+        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
 
         if (ignoredPlayers.isEmpty()) {
             src.sendFeedback(new LiteralText("You are not ignoring any players."), false);
