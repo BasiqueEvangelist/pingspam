@@ -24,21 +24,22 @@ public class PingIgnoreCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-                literal("pingignore")
-                        .then(literal("add")
-                                .then(argument("player", GameProfileArgumentType.gameProfile())
-                                        .executes(PingIgnoreCommand::addIgnoredPlayer)))
-                        .then(literal("remove")
-                                .then(argument("player", GameProfileArgumentType.gameProfile())
-                                        .suggests((ctx, builder) -> {
-                                                    for (UUID ignoredUuid : PlayerUtils.getIgnoredPlayersOf(ctx.getSource().getPlayer())) {
-                                                        builder.suggest(getNameFromUuid(ignoredUuid));
-                                                    }
-                                                    return builder.buildFuture();
-                                                })
-                                        .executes(PingIgnoreCommand::removeIgnoredPlayer)))
-                        .then(literal("list")
-                                .executes(PingIgnoreCommand::listIgnoredPlayers))
+            literal("pingspam")
+                .then(literal("ignore")
+                    .then(literal("add")
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .executes(PingIgnoreCommand::addIgnoredPlayer)))
+                    .then(literal("remove")
+                        .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .suggests((ctx, builder) -> {
+                                for (UUID ignoredUuid : PlayerUtils.getIgnoredPlayersOf(ctx.getSource().getPlayer())) {
+                                    builder.suggest(getNameFromUuid(ignoredUuid));
+                                }
+                                return builder.buildFuture();
+                            })
+                            .executes(PingIgnoreCommand::removeIgnoredPlayer)))
+                    .then(literal("list")
+                        .executes(PingIgnoreCommand::listIgnoredPlayers)))
         );
     }
 

@@ -23,13 +23,14 @@ public class PingSoundCommand {
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
-            literal("pingsound")
-                .then(argument("sound", IdentifierArgumentType.identifier())
-                    .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
-                    .executes(PingSoundCommand::setPingSound))
-                .then(literal("none")
-                    .executes(PingSoundCommand::removePingSound))
-                .executes(PingSoundCommand::getPingSound)
+            literal("pingspam")
+                .then(literal("sound")
+                    .then(argument("sound", IdentifierArgumentType.identifier())
+                        .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
+                        .executes(PingSoundCommand::setPingSound))
+                    .then(literal("none")
+                        .executes(PingSoundCommand::removePingSound))
+                    .executes(PingSoundCommand::getPingSound))
         );
     }
 
