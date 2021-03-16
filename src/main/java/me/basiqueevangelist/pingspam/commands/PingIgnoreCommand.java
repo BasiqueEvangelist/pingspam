@@ -8,7 +8,6 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 import java.util.List;
@@ -30,6 +29,12 @@ public class PingIgnoreCommand {
                                         .executes(PingIgnoreCommand::addIgnoredPlayer)))
                         .then(literal("remove")
                                 .then(argument("player", GameProfileArgumentType.gameProfile())
+                                        .suggests((ctx, builder) -> {
+                                                    for (UUID ignoredUuid : ((ServerPlayerEntityAccess) ctx.getSource().getPlayer()).pingspam$getIgnoredPlayers()) {
+                                                        builder.suggest(getNameFromUuid(ignoredUuid));
+                                                    }
+                                                    return builder.buildFuture();
+                                                })
                                         .executes(PingIgnoreCommand::removeIgnoredPlayer)))
                         .then(literal("list")
                                 .executes(PingIgnoreCommand::listIgnoredPlayers))
