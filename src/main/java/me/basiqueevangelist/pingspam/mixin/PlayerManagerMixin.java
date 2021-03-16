@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.OfflinePlayerCache;
 import me.basiqueevangelist.pingspam.PingLogic;
 import me.basiqueevangelist.pingspam.PingSpam;
@@ -7,12 +8,12 @@ import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
@@ -30,6 +31,8 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static me.basiqueevangelist.pingspam.PingSpam.SERVER;
+
 @Mixin(PlayerManager.class)
 public abstract class PlayerManagerMixin {
     @Shadow @Nullable public abstract ServerPlayerEntity getPlayer(String name);
@@ -39,6 +42,10 @@ public abstract class PlayerManagerMixin {
     @Shadow @Final private List<ServerPlayerEntity> players;
 
     @Shadow public abstract void sendToAll(Packet<?> packet);
+
+    @Shadow public abstract ServerPlayerEntity createPlayer(GameProfile profile);
+
+    @Shadow @Nullable public abstract CompoundTag loadPlayerData(ServerPlayerEntity player);
 
     @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{2,16})(\\s|$)");
 
@@ -119,13 +126,24 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     default:
+                        // I apologise for the cursedness of this code, ideally the entire method would be refactored
+                        // for handling ignoring, but I didn't really want to do that -SpaceClouds42
                         ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
                         if (sender != null && !Permissions.check(sender, "pingspam.overrideignore", 2)) {
-                            if (onlinePlayer != null && PingLogic.pingedOnlineUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) onlinePlayer)) {
+                            if (onlinePlayer != null && PingLogic.pingedUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) onlinePlayer)) {
                                 PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                                 break;
                             }
-                            //TODO: Block pings to offline users that have ignored the sender
+
+                            UUID offlinePlayerUuid = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
+                            if (offlinePlayerUuid != null) {
+                                ServerPlayerEntity pingedOfflinePlayer = createPlayer(SERVER.getUserCache().getByUuid(offlinePlayerUuid));
+                                loadPlayerData(pingedOfflinePlayer);
+                                if (PingLogic.pingedUserIgnoredBySender(sender.getUuid(), (ServerPlayerEntityAccess) pingedOfflinePlayer)) {
+                                    PingLogic.sendPingError(sender, pingedOfflinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
+                                    break;
+                                }
+                            }
                         }
 
                         if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {

@@ -56,7 +56,7 @@ public final class PingLogic {
             sender.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
     }
 
-    public static boolean pingedOnlineUserIgnoredBySender(UUID senderUuid, ServerPlayerEntityAccess pingedPlayer) {
+    public static boolean pingedUserIgnoredBySender(UUID senderUuid, ServerPlayerEntityAccess pingedPlayer) {
         return pingedPlayer.pingspam$getIgnoredPlayers().contains(senderUuid);
     }
 }
