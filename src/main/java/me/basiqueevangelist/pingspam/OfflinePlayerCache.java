@@ -50,7 +50,7 @@ public enum OfflinePlayerCache {
                     UUID uuid = UUID.fromString(uuidStr);
                     int dataVersion = tag.contains("DataVersion", 3) ? tag.getInt("DataVersion") : -1;
                     savedPlayers.put(uuid, NbtHelper.update(Schemas.getFixer(), DataFixTypes.PLAYER, tag, dataVersion));
-                } catch (CrashException | IOException e) {
+                } catch (CrashException | IOException | IllegalArgumentException e) {
                     LOGGER.error("Error while reading playerdata file {}: {}", savedPlayerFile, e);
                 }
             }
