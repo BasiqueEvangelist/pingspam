@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam.mixin;
+package me.basiqueevangelist.pingspam.mixin.client;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;

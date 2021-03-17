@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam.mixin;
+package me.basiqueevangelist.pingspam.mixin.client;
 
 import me.basiqueevangelist.pingspam.access.ClientPlayNetworkHandlerAccess;
 import me.basiqueevangelist.pingspam.client.network.ServerData;

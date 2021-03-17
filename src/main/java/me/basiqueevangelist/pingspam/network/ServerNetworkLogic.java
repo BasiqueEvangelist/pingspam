@@ -27,10 +27,10 @@ public final class ServerNetworkLogic {
         PlayerManager manager = player.server.getPlayerManager();
         PacketByteBuf newBuf = PacketByteBufs.create();
 
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingeveryone", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingonline", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingoffline", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.pingplayer", 0));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.everyone", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.online", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.offline", 2));
+        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.player", true));
 
         List<String> possibleNames = new ArrayList<>();
         for (ServerPlayerEntity otherPlayer : manager.getPlayerList()) {

@@ -56,15 +56,15 @@ Pingspam supports LuckPerms through the Fabric Permissions API.
 
 Pingspam honors the following permissions:
 ```
-pingspam.addownalias
-pingspam.removeownalias
-pingspam.addplayeralias
-pingspam.removeplayeralias
-pingspam.bypassaliaslimit
-pingspam.pingeveryone
-pingspam.pingonline
-pingspam.pingoffline
-pingspam.bypassignore
-pingspam.pingplayer 
+pingspam.alias.addown
+pingspam.alias.removeown
+pingspam.alias.addplayer
+pingspam.alias.removeplayer
+pingspam.bypass.aliaslimit
+pingspam.bypass.ignore
+pingspam.ping.everyone
+pingspam.ping.online
+pingspam.ping.offline
+pingspam.ping.player 
 ```
 

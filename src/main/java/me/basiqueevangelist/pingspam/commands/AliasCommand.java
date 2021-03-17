@@ -41,11 +41,11 @@ public class AliasCommand {
                     .then(literal("list")
                         .executes(AliasCommand::listAliases))
                     .then(literal("add")
-                        .requires(x -> Permissions.check(x, "pingspam.addownalias", 0))
+                        .requires(x -> Permissions.check(x, "pingspam.alias.own.add", true))
                         .then(argument("alias", StringArgumentType.word())
                             .executes(AliasCommand::addAliases)))
                     .then(literal("remove")
-                        .requires(x -> Permissions.check(x, "pingspam.removeownalias", 0))
+                        .requires(x -> Permissions.check(x, "pingspam.alias.own.remove", true))
                         .then(argument("alias", StringArgumentType.word())
                             .executes(AliasCommand::removeAlias)))
                     .then(literal("player")
@@ -53,11 +53,11 @@ public class AliasCommand {
                             .then(literal("list")
                                 .executes(AliasCommand::listPlayerAliases))
                             .then(literal("add")
-                                .requires(x -> Permissions.check(x, "pingspam.addplayeralias", 2))
+                                .requires(x -> Permissions.check(x, "pingspam.alias.player.add", 2))
                                 .then(argument("alias", StringArgumentType.word())
                                     .executes(AliasCommand::addPlayerAlias)))
                             .then(literal("remove")
-                                .requires(x -> Permissions.check(x, "pingspam.removeplayeralias", 2))
+                                .requires(x -> Permissions.check(x, "pingspam.alias.player.remove", 2))
                                 .then(argument("alias", StringArgumentType.word())
                                     .executes(AliasCommand::removePlayerAlias))))))
         );
@@ -93,7 +93,7 @@ public class AliasCommand {
             throw ALIAS_EXISTS_OTHER.create(player);
         if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias))
             throw ALIAS_COLLISION.create();
-        if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypassaliaslimit", 2))
+        if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
         aliases.add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
@@ -158,7 +158,7 @@ public class AliasCommand {
             throw ALIAS_EXISTS.create();
         if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias))
             throw ALIAS_COLLISION.create();
-        if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypassaliaslimit", 2))
+        if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
         aliases.add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
