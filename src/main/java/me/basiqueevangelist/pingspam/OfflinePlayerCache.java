@@ -9,6 +9,7 @@ import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Util;
 import net.minecraft.util.WorldSavePath;
+import net.minecraft.util.crash.CrashException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,7 +50,7 @@ public enum OfflinePlayerCache {
                     UUID uuid = UUID.fromString(uuidStr);
                     int dataVersion = tag.contains("DataVersion", 3) ? tag.getInt("DataVersion") : -1;
                     savedPlayers.put(uuid, NbtHelper.update(Schemas.getFixer(), DataFixTypes.PLAYER, tag, dataVersion));
-                } catch (Exception e) {
+                } catch (CrashException | IOException e) {
                     LOGGER.error("Error while reading playerdata file {}: {}", savedPlayerFile, e);
                 }
             }
