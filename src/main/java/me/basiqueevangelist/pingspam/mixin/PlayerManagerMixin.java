@@ -63,7 +63,7 @@ public abstract class PlayerManagerMixin {
                 String username = matcher.group(1);
                 switch (username) {
                     case "everyone":
-                        if (sender == null || Permissions.check(sender, "pingspam.pingeveryone", 2)) {
+                        if (sender == null || Permissions.check(sender, "pingspam.ping.everyone", 2)) {
                             for (ServerPlayerEntity player : players) {
                                 if (unpingedPlayers.contains(player))
                                     PingLogic.pingOnlinePlayer(
@@ -88,7 +88,7 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     case "online":
-                        if (sender == null || Permissions.check(sender, "pingspam.pingonline", 2)) {
+                        if (sender == null || Permissions.check(sender, "pingspam.ping.online", 2)) {
                             for (ServerPlayerEntity player : players) {
                                 if (unpingedPlayers.contains(player))
                                     PingLogic.pingOnlinePlayer(
@@ -104,7 +104,7 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     case "offline":
-                        if (sender == null || Permissions.check(sender, "pingspam.pingoffline", 2)) {
+                        if (sender == null || Permissions.check(sender, "pingspam.ping.offline", 2)) {
                             for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
                                 if (getPlayer(offlinePlayer) != null)
                                     continue;
@@ -121,7 +121,7 @@ public abstract class PlayerManagerMixin {
                         break;
                     default:
                         ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
-                        if (sender != null && !Permissions.check(sender, "pingspam.bypassignore", 2)) {
+                        if (sender != null && !Permissions.check(sender, "pingspam.bypass.ignore", 2)) {
                             if (onlinePlayer != null && PingLogic.isPlayerIgnoredBy(sender.getUuid(), onlinePlayer)) {
                                 PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                                 break;
@@ -137,7 +137,7 @@ public abstract class PlayerManagerMixin {
                             }
                         }
 
-                        if (sender == null || Permissions.check(sender, "pingspam.pingplayer", 0)) {
+                        if (sender == null || Permissions.check(sender, "pingspam.ping.player", true)) {
                             if (onlinePlayer != null) {
                                 if (unpingedPlayers.contains(onlinePlayer)) {
                                     PingLogic.pingOnlinePlayer(

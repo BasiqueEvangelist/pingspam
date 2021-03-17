@@ -1,9 +1,11 @@
-package me.basiqueevangelist.pingspam.mixin;
+package me.basiqueevangelist.pingspam.mixin.client;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.pingspam.access.ClientPlayNetworkHandlerAccess;
 import me.basiqueevangelist.pingspam.client.network.ServerData;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
@@ -19,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Environment(EnvType.CLIENT)
 @Mixin(CommandSuggestor.class)
 public abstract class CommandSuggestorMixin {
     @Shadow @Final private TextFieldWidget textField;

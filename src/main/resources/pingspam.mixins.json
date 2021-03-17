@@ -11,8 +11,8 @@
     "WorldSaveHandlerMixin"
   ],
   "client": [
-    "ClientPlayNetworkHandlerMixin",
-    "CommandSuggestorMixin"
+    "client.ClientPlayNetworkHandlerMixin",
+    "client.CommandSuggestorMixin"
   ],
   "injectors": {
     "defaultRequire": 1
