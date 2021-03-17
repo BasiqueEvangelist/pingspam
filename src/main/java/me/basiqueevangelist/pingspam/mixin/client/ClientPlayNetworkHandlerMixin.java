@@ -3,6 +3,8 @@ package me.basiqueevangelist.pingspam.mixin.client;
 import me.basiqueevangelist.pingspam.access.ClientPlayNetworkHandlerAccess;
 import me.basiqueevangelist.pingspam.client.network.ServerData;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -10,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
+@Environment(EnvType.CLIENT)
 @Mixin(ClientPlayNetworkHandler.class)
 public class ClientPlayNetworkHandlerMixin implements ClientPlayNetworkHandlerAccess {
     @Unique private static final long MAX_TIME_SINCE_REQUEST = 1000000000L * 10;

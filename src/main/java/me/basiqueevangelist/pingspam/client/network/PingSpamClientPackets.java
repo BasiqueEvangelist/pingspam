@@ -2,9 +2,12 @@ package me.basiqueevangelist.pingspam.client.network;
 
 import me.basiqueevangelist.pingspam.access.ClientPlayNetworkHandlerAccess;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 
+@Environment(EnvType.CLIENT)
 public class PingSpamClientPackets {
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.ANNOUNCE, (client, handler, buf, responseSender) -> {
