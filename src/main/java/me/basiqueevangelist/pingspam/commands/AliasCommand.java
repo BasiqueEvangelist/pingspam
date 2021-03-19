@@ -32,7 +32,7 @@ public class AliasCommand {
     private static final SimpleCommandExceptionType INVALID_ALIAS = new SimpleCommandExceptionType(new LiteralText("Invalid alias!"));
     private static final SimpleCommandExceptionType TOO_MANY_ALIASES = new SimpleCommandExceptionType(new LiteralText("Too many aliases! (maximum is 10)"));
     public static final int ALIAS_LIMIT = 10;
-    private static final Pattern ALIAS_PATTERN = Pattern.compile("^[a-zA-Z0-9_]{2,16}$");
+    private static final Pattern ALIAS_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -42,11 +42,11 @@ public class AliasCommand {
                         .executes(AliasCommand::listAliases))
                     .then(literal("add")
                         .requires(x -> Permissions.check(x, "pingspam.alias.own.add", true))
-                        .then(argument("alias", StringArgumentType.word())
+                        .then(argument("alias", StringArgumentType.string())
                             .executes(AliasCommand::addAliases)))
                     .then(literal("remove")
                         .requires(x -> Permissions.check(x, "pingspam.alias.own.remove", true))
-                        .then(argument("alias", StringArgumentType.word())
+                        .then(argument("alias", StringArgumentType.string())
                             .executes(AliasCommand::removeAlias)))
                     .then(literal("player")
                         .then(argument("player", EntityArgumentType.player())
@@ -54,11 +54,11 @@ public class AliasCommand {
                                 .executes(AliasCommand::listPlayerAliases))
                             .then(literal("add")
                                 .requires(x -> Permissions.check(x, "pingspam.alias.player.add", 2))
-                                .then(argument("alias", StringArgumentType.word())
+                                .then(argument("alias", StringArgumentType.string())
                                     .executes(AliasCommand::addPlayerAlias)))
                             .then(literal("remove")
                                 .requires(x -> Permissions.check(x, "pingspam.alias.player.remove", 2))
-                                .then(argument("alias", StringArgumentType.word())
+                                .then(argument("alias", StringArgumentType.string())
                                     .executes(AliasCommand::removePlayerAlias))))))
         );
     }

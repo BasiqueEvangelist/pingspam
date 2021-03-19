@@ -41,7 +41,7 @@ public abstract class PlayerManagerMixin {
 
     @Shadow @Nullable public abstract CompoundTag loadPlayerData(ServerPlayerEntity player);
 
-    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([a-zA-Z0-9_]{2,16})(\\s|$)");
+    @Unique private static final Pattern PING_PATTERN = Pattern.compile("@([\\w0-9_]{2,16})(\\s|$)", Pattern.UNICODE_CHARACTER_CLASS);
 
     @Inject(method = "onPlayerConnect", at = @At("TAIL"))
     public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
