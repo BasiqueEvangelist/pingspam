@@ -2,6 +2,7 @@ package me.basiqueevangelist.pingspam.mixin;
 
 import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
@@ -148,5 +149,13 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         } else {
             tag.putString("PingSound", "null");
         }
+    }
+
+    @Inject(method = "copyFrom", at = @At("TAIL"))
+    private void copyDataFrom(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        pings.addAll(PlayerUtils.getUnreadPingsFor(oldPlayer));
+        aliases.addAll(PlayerUtils.getAliasesOf(oldPlayer));
+        ignoredPlayers.addAll(PlayerUtils.getIgnoredPlayersOf(oldPlayer));
+        pingSound = PlayerUtils.getPingSound(oldPlayer);
     }
 }
