@@ -81,17 +81,23 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
         if (pings.size() > 0 && PingSpam.CONFIG.getConfig().showUnreadMessagesInActionbar) {
-            actionbarTime++;
-            if (actionbarTime >= ACTIONBAR_TIME) {
-                actionbarTime = 0;
+            actionbarTime--;
+            if (actionbarTime <= 0) {
+                actionbarTime = ACTIONBAR_TIME;
                 networkHandler.sendPacket(new TitleS2CPacket(
                     TitleS2CPacket.Action.ACTIONBAR,
                     new LiteralText("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + ".")
                 ));
             }
         } else {
-            actionbarTime = ACTIONBAR_TIME;
+            actionbarTime = 0;
         }
+    }
+
+    @Inject(method = "sendMessage(Lnet/minecraft/text/Text;Z)V", at = @At("HEAD"))
+    private void onActionbarMessage(Text message, boolean actionBar, CallbackInfo ci) {
+        if (actionBar)
+            actionbarTime = 60;
     }
 
     @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
