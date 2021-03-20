@@ -1,4 +1,6 @@
 plugins {
+	id 'com.github.johnrengelman.shadow' version '6.1.0'
+	id 'java'
 	id 'fabric-loom' version '0.6-SNAPSHOT'
 	id 'maven-publish'
 }
@@ -9,6 +11,16 @@ targetCompatibility = JavaVersion.VERSION_1_8
 archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
+
+configurations {
+	shade
+}
+
+shadowJar {
+	configurations = [project.configurations.shadow]
+
+	relocate "blue.endless.jankson", "me.basiqueevangelist.pingspam.shadowed.blue.endless.jankson"
+}
 
 repositories {
     // Add repositories to retrieve artifacts from in here.
@@ -21,7 +33,7 @@ repositories {
 		url = 'https://maven.terraformersmc.com'
 	}
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
-	maven { url 'https://maven.shedaniel.me' }
+	mavenCentral()
 }
 
 dependencies {
@@ -36,9 +48,15 @@ dependencies {
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
-	modImplementation include('me.sargunvohra.mcmods:autoconfig1u:3.3.1')
+	shadow implementation("blue.endless:jankson:1.2.0")
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
+}
+
+remapJar {
+	dependsOn "shadowJar"
+
+	input.set shadowJar.archiveFile.get()
 }
 
 processResources {
