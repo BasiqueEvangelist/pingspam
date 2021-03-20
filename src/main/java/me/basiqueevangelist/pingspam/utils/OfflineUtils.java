@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam;
+package me.basiqueevangelist.pingspam.utils;
 
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;

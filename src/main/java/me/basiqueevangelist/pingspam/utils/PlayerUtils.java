@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam;
+package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.nbt.CompoundTag;
@@ -9,7 +9,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.CallbackI;
 
 import java.util.List;
 import java.util.Map;

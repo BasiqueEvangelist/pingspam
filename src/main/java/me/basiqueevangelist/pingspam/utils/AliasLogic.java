@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam;
+package me.basiqueevangelist.pingspam.utils;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;

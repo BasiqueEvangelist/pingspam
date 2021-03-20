@@ -1,6 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
-import me.basiqueevangelist.pingspam.OfflinePlayerCache;
+import me.basiqueevangelist.pingspam.utils.OfflinePlayerCache;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.WorldSaveHandler;

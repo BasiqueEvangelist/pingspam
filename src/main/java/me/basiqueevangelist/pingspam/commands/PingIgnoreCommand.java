@@ -5,7 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import me.basiqueevangelist.pingspam.PlayerUtils;
+import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -14,9 +14,9 @@ import net.minecraft.text.LiteralText;
 import java.util.List;
 import java.util.UUID;
 
+import static me.basiqueevangelist.pingspam.PingSpam.SERVER;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
-import static me.basiqueevangelist.pingspam.PingSpam.SERVER;
 
 public class PingIgnoreCommand {
     private static final SimpleCommandExceptionType PLAYER_NOT_IGNORED = new SimpleCommandExceptionType(new LiteralText("You are not ignoring this player!"));

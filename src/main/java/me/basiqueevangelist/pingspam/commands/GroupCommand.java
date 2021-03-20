@@ -9,9 +9,9 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.AliasLogic;
-import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
+import me.basiqueevangelist.pingspam.utils.AliasLogic;
+import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
-import static net.minecraft.server.command.CommandManager.*;
+import static net.minecraft.server.command.CommandManager.argument;
+import static net.minecraft.server.command.CommandManager.literal;
 
 public class GroupCommand {
     private static final DynamicCommandExceptionType IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->

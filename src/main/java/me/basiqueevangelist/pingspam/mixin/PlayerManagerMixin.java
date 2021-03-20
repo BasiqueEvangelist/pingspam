@@ -1,7 +1,8 @@
 package me.basiqueevangelist.pingspam.mixin;
 
-import me.basiqueevangelist.pingspam.*;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
+import me.basiqueevangelist.pingspam.utils.*;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.ClientConnection;

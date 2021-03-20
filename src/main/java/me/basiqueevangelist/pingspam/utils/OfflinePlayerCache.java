@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam;
+package me.basiqueevangelist.pingspam.utils;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.datafixer.DataFixTypes;

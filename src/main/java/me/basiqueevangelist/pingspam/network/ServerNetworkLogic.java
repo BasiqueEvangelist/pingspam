@@ -1,6 +1,6 @@
 package me.basiqueevangelist.pingspam.network;
 
-import me.basiqueevangelist.pingspam.AliasLogic;
+import me.basiqueevangelist.pingspam.utils.AliasLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

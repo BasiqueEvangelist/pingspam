@@ -2,8 +2,8 @@ package me.basiqueevangelist.pingspam.mixin;
 
 import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
+import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
