@@ -6,6 +6,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.pingspam.PlayerUtils;
 import me.basiqueevangelist.pingspam.AliasLogic;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
@@ -16,6 +18,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -47,7 +50,8 @@ public class AliasCommand {
                     .then(literal("remove")
                         .requires(x -> Permissions.check(x, "pingspam.alias.own.remove", true))
                         .then(argument("alias", StringArgumentType.string())
-                            .executes(AliasCommand::removeAlias)))
+                            .executes(AliasCommand::removeAlias)
+                            .suggests(AliasCommand::suggestOwnAliases)))
                     .then(literal("player")
                         .then(argument("player", EntityArgumentType.player())
                             .then(literal("list")
@@ -59,8 +63,25 @@ public class AliasCommand {
                             .then(literal("remove")
                                 .requires(x -> Permissions.check(x, "pingspam.alias.player.remove", 2))
                                 .then(argument("alias", StringArgumentType.string())
-                                    .executes(AliasCommand::removePlayerAlias))))))
+                                    .executes(AliasCommand::removePlayerAlias)
+                                    .suggests(AliasCommand::suggestPlayerAliases))))))
         );
+    }
+
+    private static CompletableFuture<Suggestions> suggestPlayerAliases(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
+        for (String alias : PlayerUtils.getAliasesOf(player)) {
+            builder.suggest(SuggestionsUtils.wrapString(alias));
+        }
+        return builder.buildFuture();
+    }
+
+    private static CompletableFuture<Suggestions> suggestOwnAliases(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        for (String alias : PlayerUtils.getAliasesOf(player)) {
+            builder.suggest(SuggestionsUtils.wrapString(alias));
+        }
+        return builder.buildFuture();
     }
 
     private static int removePlayerAlias(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
