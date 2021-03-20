@@ -1,10 +1,9 @@
 package me.basiqueevangelist.pingspam.utils;
 
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class PlayerList {
     private final List<ServerPlayerEntity> onlinePlayers = new ArrayList<>();
@@ -14,12 +13,50 @@ public class PlayerList {
 
     }
 
+    public static PlayerList fromAllPlayers(PlayerManager manager) {
+        PlayerList list = new PlayerList();
+        list.onlinePlayers.addAll(manager.getPlayerList());
+        for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+            if (manager.getPlayer(offlinePlayer) != null)
+                continue;
+
+            list.offlinePlayers.add(offlinePlayer);
+        }
+
+        return list;
+    }
+
+    public static PlayerList fromOnline(PlayerManager manager) {
+        PlayerList list = new PlayerList();
+        list.onlinePlayers.addAll(manager.getPlayerList());
+        return list;
+    }
+
+    public static PlayerList fromOffline(PlayerManager manager) {
+        PlayerList list = new PlayerList();
+        for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+            if (manager.getPlayer(offlinePlayer) != null)
+                continue;
+
+            list.offlinePlayers.add(offlinePlayer);
+        }
+        return list;
+    }
+
     public List<ServerPlayerEntity> getOnlinePlayers() {
         return onlinePlayers;
     }
 
     public List<UUID> getOfflinePlayers() {
         return offlinePlayers;
+    }
+
+    public void add(ServerPlayerEntity onlinePlayer) {
+        onlinePlayers.add(onlinePlayer);
+    }
+
+    public void add(UUID offlinePlayer) {
+        offlinePlayers.add(offlinePlayer);
     }
 
     public boolean isEmpty() {
