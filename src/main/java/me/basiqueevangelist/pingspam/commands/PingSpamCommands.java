@@ -9,5 +9,6 @@ public class PingSpamCommands {
         AliasCommand.register(dispatcher);
         PingSoundCommand.register(dispatcher);
         PingIgnoreCommand.register(dispatcher);
+        GroupCommand.register(dispatcher);
     }
 }

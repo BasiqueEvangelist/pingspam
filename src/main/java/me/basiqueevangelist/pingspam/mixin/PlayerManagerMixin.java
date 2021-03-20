@@ -1,6 +1,5 @@
 package me.basiqueevangelist.pingspam.mixin;
 
-import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.*;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -112,48 +111,76 @@ public abstract class PlayerManagerMixin {
                         }
                         break;
                     default:
-                        ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
-                        if (sender != null && !Permissions.check(sender, "pingspam.bypass.ignore", 2)) {
-                            if (onlinePlayer != null && PingLogic.isPlayerIgnoredBy(sender.getUuid(), onlinePlayer)) {
-                                PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
-                                break;
-                            }
+                        PlayerList pingGroup = PlayerUtils.queryPingGroup((PlayerManager) (Object) this, username);
 
-                            UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
-                            if (offlinePlayer != null) {
-                                CompoundTag playerTag = OfflinePlayerCache.INSTANCE.get(offlinePlayer);
-                                if (OfflineUtils.isPlayerIgnoredBy(playerTag, sender.getUuid())) {
-                                    PingLogic.sendPingError(sender, OfflineUtils.getSavedUsername(playerTag) + " has ignored you, they won't receive your ping.");
-                                    break;
+                        if (!pingGroup.isEmpty()) {
+                            if (sender == null || Permissions.check(sender, "pingspam.ping.player", true)) {
+                                for (ServerPlayerEntity player : pingGroup.getOnlinePlayers()) {
+                                    if (unpingedPlayers.contains(player)) {
+                                        PingLogic.pingOnlinePlayer(
+                                            player,
+                                            access.pingspam$getMessage(),
+                                            access.pingspam$getLocation(),
+                                            access.pingspam$getSenderUuid());
+                                        unpingedPlayers.remove(player);
+                                    }
                                 }
-                            }
-                        }
-
-                        if (sender == null || Permissions.check(sender, "pingspam.ping.player", true)) {
-                            if (onlinePlayer != null) {
-                                if (unpingedPlayers.contains(onlinePlayer)) {
-                                    PingLogic.pingOnlinePlayer(
-                                        onlinePlayer,
-                                        access.pingspam$getMessage(),
-                                        access.pingspam$getLocation(),
-                                        access.pingspam$getSenderUuid());
-                                    pingSucceeded = true;
-                                    unpingedPlayers.remove(onlinePlayer);
-                                }
-                            } else {
-                                UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
-                                if (offlinePlayer != null) {
+                                for (UUID offlinePlayer : pingGroup.getOfflinePlayers()) {
                                     if (!pingedOfflinePlayers.contains(offlinePlayer)) {
                                         PingLogic.pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
-                                        pingSucceeded = true;
                                         pingedOfflinePlayers.add(offlinePlayer);
                                     }
-                                } else if (sender != null)
-                                    PingLogic.sendPingError(sender, "No such player: " + username + "!");
+                                }
+
+                                pingSucceeded = true;
+                            } else {
+                                PingLogic.sendPingError(sender, "You do not have enough permissions to ping group @" + username + "!");
+                                break;
+                            }
+                        } else {
+                            ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer((PlayerManager) (Object) this, username);
+                            if (sender != null && !Permissions.check(sender, "pingspam.bypass.ignore", 2)) {
+                                if (onlinePlayer != null && PingLogic.isPlayerIgnoredBy(sender.getUuid(), onlinePlayer)) {
+                                    PingLogic.sendPingError(sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
+                                    break;
+                                }
+
+                                UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
+                                if (offlinePlayer != null) {
+                                    CompoundTag playerTag = OfflinePlayerCache.INSTANCE.get(offlinePlayer);
+                                    if (OfflineUtils.isPlayerIgnoredBy(playerTag, sender.getUuid())) {
+                                        PingLogic.sendPingError(sender, OfflineUtils.getSavedUsername(playerTag) + " has ignored you, they won't receive your ping.");
+                                        break;
+                                    }
+                                }
                             }
 
-                        } else {
-                            PingLogic.sendPingError(sender, "You do not have enough permissions to ping @" + username + "!");
+                            if (sender == null || Permissions.check(sender, "pingspam.ping.player", true)) {
+                                if (onlinePlayer != null) {
+                                    if (unpingedPlayers.contains(onlinePlayer)) {
+                                        PingLogic.pingOnlinePlayer(
+                                            onlinePlayer,
+                                            access.pingspam$getMessage(),
+                                            access.pingspam$getLocation(),
+                                            access.pingspam$getSenderUuid());
+                                        pingSucceeded = true;
+                                        unpingedPlayers.remove(onlinePlayer);
+                                    }
+                                } else {
+                                    UUID offlinePlayer = PlayerUtils.findOfflinePlayer((PlayerManager) (Object) this, username);
+                                    if (offlinePlayer != null) {
+                                        if (!pingedOfflinePlayers.contains(offlinePlayer)) {
+                                            PingLogic.pingOfflinePlayer(offlinePlayer, access.pingspam$getMessage());
+                                            pingSucceeded = true;
+                                            pingedOfflinePlayers.add(offlinePlayer);
+                                        }
+                                    } else if (sender != null)
+                                        PingLogic.sendPingError(sender, "No such player: " + username + "!");
+                                }
+
+                            } else {
+                                PingLogic.sendPingError(sender, "You do not have enough permissions to ping @" + username + "!");
+                            }
                         }
                         break;
                 }

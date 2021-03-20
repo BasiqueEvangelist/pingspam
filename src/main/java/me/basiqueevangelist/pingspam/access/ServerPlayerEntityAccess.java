@@ -11,6 +11,8 @@ public interface ServerPlayerEntityAccess {
 
     List<String> pingspam$getAliases();
 
+    List<String> pingspam$getPingGroups();
+
     SoundEvent pingspam$getPingSound();
     void pingspam$setPingSound(SoundEvent sound);
 

@@ -9,6 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.system.CallbackI;
 
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,10 @@ public final class PlayerUtils {
 
             List<String> aliases = getAliasesOf(player);
             if (aliases.contains(name))
+                return player;
+
+            List<String> groups = getPingGroupsOf(player);
+            if (groups.contains(name))
                 return player;
         }
 
@@ -48,8 +53,41 @@ public final class PlayerUtils {
                         return offlineTag.getKey();
                 }
             }
+
+            if (offlineTag.getValue().contains("PingGroups")) {
+                ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                for (Tag pingGroupTag : pingGroupsTag) {
+                    if (pingGroupTag.asString().equals(name))
+                        return offlineTag.getKey();
+                }
+            }
         }
         return null;
+    }
+
+    public static PlayerList queryPingGroup(PlayerManager manager, String name) {
+        PlayerList list = new PlayerList();
+
+        for (ServerPlayerEntity player : manager.getPlayerList()) {
+            List<String> groups = getPingGroupsOf(player);
+            if (groups.contains(name))
+                list.getOnlinePlayers().add(player);
+        }
+
+        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+            if (manager.getPlayer(offlineTag.getKey()) != null)
+                continue;
+
+            if (offlineTag.getValue().contains("PingGroups")) {
+                ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                for (Tag pingGroupTag : pingGroupsTag) {
+                    if (pingGroupTag.asString().equals(name))
+                        list.getOfflinePlayers().add(offlineTag.getKey());
+                }
+            }
+        }
+
+        return list;
     }
 
     public static boolean anyPlayer(PlayerManager manager, String name) {
@@ -62,6 +100,10 @@ public final class PlayerUtils {
 
     public static List<String> getAliasesOf(ServerPlayerEntity player) {
         return ((ServerPlayerEntityAccess) player).pingspam$getAliases();
+    }
+
+    public static List<String> getPingGroupsOf(ServerPlayerEntity player) {
+        return ((ServerPlayerEntityAccess) player).pingspam$getPingGroups();
     }
 
     public static SoundEvent getPingSound(ServerPlayerEntity player) {

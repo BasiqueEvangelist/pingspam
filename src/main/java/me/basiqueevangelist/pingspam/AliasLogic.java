@@ -16,12 +16,18 @@ public final class AliasLogic {
 
     }
 
-    public static boolean checkForCollision(PlayerManager manager, String alias) {
+    public static boolean checkForCollision(PlayerManager manager, String name, boolean ignoreGroups) {
         for (ServerPlayerEntity onlinePlayer : manager.getPlayerList()) {
             for (String otherAlias : PlayerUtils.getAliasesOf(onlinePlayer)) {
-                if (otherAlias.equals(alias))
+                if (otherAlias.equals(name))
                     return true;
             }
+
+            if (!ignoreGroups)
+                for (String group : PlayerUtils.getPingGroupsOf(onlinePlayer)) {
+                    if (group.equals(name))
+                        return true;
+                }
         }
 
         for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
@@ -30,10 +36,19 @@ public final class AliasLogic {
             if (offlineTag.getValue().contains("Shortnames")) {
                 ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (Tag aliasTag : aliasesTag) {
-                    if (aliasTag.asString().equals(alias))
+                    if (aliasTag.asString().equals(name))
                         return true;
                 }
             }
+
+            if (!ignoreGroups)
+                if (offlineTag.getValue().contains("PingGroups")) {
+                    ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                    for (Tag pingGroup : pingGroupsTag) {
+                        if (pingGroup.asString().equals(name))
+                            return true;
+                    }
+                }
         }
 
         return false;
@@ -49,6 +64,11 @@ public final class AliasLogic {
             for (String alias : PlayerUtils.getAliasesOf(otherPlayer)) {
                 if (!possibleNames.contains(alias))
                     possibleNames.add(alias);
+            }
+
+            for (String group : PlayerUtils.getPingGroupsOf(otherPlayer)) {
+                if (!possibleNames.contains(group))
+                    possibleNames.add(group);
             }
         }
         for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
@@ -66,6 +86,14 @@ public final class AliasLogic {
                     String alias = aliasTag.asString();
                     if (!possibleNames.contains(alias))
                         possibleNames.add(alias);
+                }
+            }
+            if (offlinePlayerTag.getValue().contains("PingGroups")) {
+                ListTag pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
+                for (Tag pingGroupTag : pingGroupsTag) {
+                    String pingGroup = pingGroupTag.asString();
+                    if (!possibleNames.contains(pingGroup))
+                        possibleNames.add(pingGroup);
                 }
             }
         }

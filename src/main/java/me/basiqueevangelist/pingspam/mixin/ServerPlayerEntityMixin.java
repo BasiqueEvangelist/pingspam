@@ -43,6 +43,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Shadow public ServerPlayNetworkHandler networkHandler;
     @Unique private final List<Text> pings = new ArrayList<>();
     @Unique private final List<String> aliases = new ArrayList<>();
+    @Unique private final List<String> pingGroups = new ArrayList<>();
     @Unique private final List<UUID> ignoredPlayers = new ArrayList<>();
     @Unique private SoundEvent pingSound = SoundEvents.BLOCK_BELL_USE;
     @Unique private int actionbarTime = 0;
@@ -55,6 +56,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Override
     public List<String> pingspam$getAliases() {
         return aliases;
+    }
+
+    @Override
+    public List<String> pingspam$getPingGroups() {
+        return pingGroups;
     }
 
     @Override
@@ -106,6 +112,14 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
             }
         }
 
+        pingGroups.clear();
+        if (tag.contains("PingGroups")) {
+            ListTag pingGroupsTag = tag.getList("PingGroups", 8);
+            for (Tag pingGroupTag : pingGroupsTag) {
+                pingGroups.add(pingGroupTag.asString());
+            }
+        }
+
         ignoredPlayers.clear();
         if (tag.contains("IgnoredPlayers")) {
             ListTag ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
@@ -137,6 +151,12 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         }
         tag.put("Shortnames", aliasesTag);
 
+        ListTag pingGroupsTag = new ListTag();
+        for (String pingGroup : pingGroups) {
+            pingGroupsTag.add(StringTag.of(pingGroup));
+        }
+        tag.put("PingGroups", pingGroupsTag);
+
         ListTag ignoredPlayersListTag = new ListTag();
         for (UUID ignoredPlayer : ignoredPlayers) {
             ignoredPlayersListTag.add(NbtHelper.fromUuid(ignoredPlayer));
@@ -155,6 +175,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     private void copyDataFrom(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
         pings.addAll(PlayerUtils.getUnreadPingsFor(oldPlayer));
         aliases.addAll(PlayerUtils.getAliasesOf(oldPlayer));
+        pingGroups.addAll(PlayerUtils.getPingGroupsOf(oldPlayer));
         ignoredPlayers.addAll(PlayerUtils.getIgnoredPlayersOf(oldPlayer));
         pingSound = PlayerUtils.getPingSound(oldPlayer);
     }

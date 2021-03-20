@@ -112,7 +112,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS_OTHER.create(player);
-        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias))
+        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
@@ -177,7 +177,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS.create();
-        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias))
+        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
