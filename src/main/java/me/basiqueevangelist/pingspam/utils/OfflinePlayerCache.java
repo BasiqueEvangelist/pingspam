@@ -68,6 +68,10 @@ public enum OfflinePlayerCache {
         savedPlayers.put(forPlayer, tag);
     }
 
+    public MinecraftServer getServer() {
+        return currentServer;
+    }
+
     public Map<UUID, CompoundTag> getPlayers() {
         return savedPlayers;
     }

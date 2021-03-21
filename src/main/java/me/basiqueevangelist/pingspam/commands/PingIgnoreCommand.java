@@ -5,6 +5,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import me.basiqueevangelist.pingspam.utils.OfflinePlayerCache;
 import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -14,7 +15,6 @@ import net.minecraft.text.LiteralText;
 import java.util.List;
 import java.util.UUID;
 
-import static me.basiqueevangelist.pingspam.PingSpam.SERVER;
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -103,19 +103,19 @@ public class PingIgnoreCommand {
         GameProfile profile = GameProfileArgumentType.getProfileArgument(ctx, "player").iterator().next();
 
         if (!profile.isComplete()) {
-            return SERVER.getSessionService().fillProfileProperties(profile, false);
+            return OfflinePlayerCache.INSTANCE.getServer().getSessionService().fillProfileProperties(profile, false);
         }
 
         return profile;
     }
 
     private static String getNameFromUuid(UUID uuid) {
-        GameProfile userCacheProfile = SERVER.getUserCache().getByUuid(uuid);
+        GameProfile userCacheProfile = OfflinePlayerCache.INSTANCE.getServer().getUserCache().getByUuid(uuid);
 
         if (userCacheProfile != null && userCacheProfile.isComplete()) {
             return userCacheProfile.getName();
         } else {
-            return SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), false).getName();
+            return OfflinePlayerCache.INSTANCE.getServer().getSessionService().fillProfileProperties(new GameProfile(uuid, null), false).getName();
         }
     }
 }
