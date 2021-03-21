@@ -1,6 +1,6 @@
 package me.basiqueevangelist.pingspam.network;
 
-import me.basiqueevangelist.pingspam.utils.AliasLogic;
+import me.basiqueevangelist.pingspam.utils.NameLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -25,7 +25,7 @@ public final class ServerNetworkLogic {
         newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.offline", 2));
         newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.player", true));
 
-        List<String> possibleNames = AliasLogic.listValidNames(manager);
+        List<String> possibleNames = NameLogic.listValidNames(manager);
         newBuf.writeVarInt(possibleNames.size());
         for (String possibleName : possibleNames) {
             newBuf.writeString(possibleName);

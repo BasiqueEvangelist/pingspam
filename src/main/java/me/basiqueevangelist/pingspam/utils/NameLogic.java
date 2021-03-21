@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-public final class AliasLogic {
-    private AliasLogic() {
+public final class NameLogic {
+    private NameLogic() {
 
     }
 

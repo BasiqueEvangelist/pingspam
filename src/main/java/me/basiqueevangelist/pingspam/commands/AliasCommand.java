@@ -9,7 +9,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
-import me.basiqueevangelist.pingspam.utils.AliasLogic;
+import me.basiqueevangelist.pingspam.utils.NameLogic;
 import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -112,7 +112,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS_OTHER.create(player);
-        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
@@ -177,7 +177,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS.create();
-        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();

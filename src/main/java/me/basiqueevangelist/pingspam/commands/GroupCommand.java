@@ -10,7 +10,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
-import me.basiqueevangelist.pingspam.utils.AliasLogic;
+import me.basiqueevangelist.pingspam.utils.NameLogic;
 import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -118,7 +118,7 @@ public class GroupCommand {
             throw INVALID_GROUPNAME.create();
         if (groups.contains(newGroup))
             throw IN_GROUP_OTHER.create(player);
-        if (AliasLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newGroup, true))
+        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newGroup, true))
             throw NAME_COLLISION.create();
         groups.add(newGroup);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newGroup);
