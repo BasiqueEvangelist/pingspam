@@ -92,7 +92,7 @@ public class GroupCommand {
         if (!groups.contains(group))
             throw NOT_IN_GROUP_OTHER.create(player);
         groups.remove(group);
-        if (!PlayerUtils.anyPlayer(src.getMinecraftServer().getPlayerManager(), group))
+        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), group, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
         src.sendFeedback(
             new LiteralText("Removed player ")
@@ -118,7 +118,7 @@ public class GroupCommand {
             throw INVALID_GROUPNAME.create();
         if (groups.contains(newGroup))
             throw IN_GROUP_OTHER.create(player);
-        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newGroup, true))
+        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newGroup, true))
             throw NAME_COLLISION.create();
         groups.add(newGroup);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newGroup);

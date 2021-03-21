@@ -27,10 +27,6 @@ public final class PlayerUtils {
             List<String> aliases = getAliasesOf(player);
             if (aliases.contains(name))
                 return player;
-
-            List<String> groups = getPingGroupsOf(player);
-            if (groups.contains(name))
-                return player;
         }
 
         return null;
@@ -49,14 +45,6 @@ public final class PlayerUtils {
                 ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (Tag aliasTag : aliasesTag) {
                     if (aliasTag.asString().equals(name))
-                        return offlineTag.getKey();
-                }
-            }
-
-            if (offlineTag.getValue().contains("PingGroups")) {
-                ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
-                for (Tag pingGroupTag : pingGroupsTag) {
-                    if (pingGroupTag.asString().equals(name))
                         return offlineTag.getKey();
                 }
             }
@@ -87,10 +75,6 @@ public final class PlayerUtils {
         }
 
         return list;
-    }
-
-    public static boolean anyPlayer(PlayerManager manager, String name) {
-        return findOnlinePlayer(manager, name) != null || findOfflinePlayer(manager, name) != null;
     }
 
     public static List<Text> getUnreadPingsFor(ServerPlayerEntity player) {

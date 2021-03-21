@@ -16,8 +16,11 @@ public final class NameLogic {
 
     }
 
-    public static boolean checkForCollision(PlayerManager manager, String name, boolean ignoreGroups) {
+    public static boolean isValidName(PlayerManager manager, String name, boolean ignoreGroups) {
         for (ServerPlayerEntity onlinePlayer : manager.getPlayerList()) {
+            if (onlinePlayer.getGameProfile().getName().equals(name))
+                return true;
+
             for (String otherAlias : PlayerUtils.getAliasesOf(onlinePlayer)) {
                 if (otherAlias.equals(name))
                     return true;
@@ -33,6 +36,11 @@ public final class NameLogic {
         for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
+
+            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equals(name)) {
+                return true;
+            }
+
             if (offlineTag.getValue().contains("Shortnames")) {
                 ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (Tag aliasTag : aliasesTag) {

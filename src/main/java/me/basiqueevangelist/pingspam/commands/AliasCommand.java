@@ -94,7 +94,7 @@ public class AliasCommand {
         if (!aliases.contains(alias))
             throw NO_SUCH_ALIAS_OTHER.create(player);
         aliases.remove(alias);
-        if (!PlayerUtils.anyPlayer(src.getMinecraftServer().getPlayerManager(), alias))
+        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
         src.sendFeedback(
             new LiteralText("Removed alias \"" + alias + "\" from ")
@@ -112,7 +112,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS_OTHER.create(player);
-        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
@@ -162,7 +162,7 @@ public class AliasCommand {
         if (!aliases.contains(alias))
             throw NO_SUCH_ALIAS.create();
         aliases.remove(alias);
-        if (!PlayerUtils.anyPlayer(src.getMinecraftServer().getPlayerManager(), alias))
+        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
         src.sendFeedback(new LiteralText("Removed alias \"" + alias + "\"."), false);
         return 0;
@@ -177,7 +177,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.contains(newAlias))
             throw ALIAS_EXISTS.create();
-        if (NameLogic.checkForCollision(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
