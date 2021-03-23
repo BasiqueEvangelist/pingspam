@@ -16,6 +16,7 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -97,8 +98,13 @@ public class AliasCommand {
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
         src.sendFeedback(
-            new LiteralText("Removed alias \"" + alias + "\" from ")
-                .append(player.getDisplayName())
+            new LiteralText("Removed alias ")
+                .formatted(Formatting.RED)
+                .append(new LiteralText('"' + alias + '"')
+                    .formatted(Formatting.YELLOW))
+                .append(new LiteralText(" from "))
+                .append(new LiteralText(player.getEntityName())
+                    .formatted(Formatting.AQUA))
                 .append(new LiteralText(".")), true);
         return 0;
     }
@@ -119,9 +125,15 @@ public class AliasCommand {
         aliases.add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
         src.sendFeedback(
-            new LiteralText("Added alias \"" + newAlias + "\" to ")
-                .append(player.getDisplayName())
-                .append(new LiteralText(".")), true);
+            new LiteralText("Added alias ")
+                .formatted(Formatting.GREEN)
+                .append(new LiteralText('"' + newAlias + '"')
+                    .formatted(Formatting.YELLOW))
+                .append(new LiteralText(" to "))
+                .append(new LiteralText(player.getEntityName())
+                    .formatted(Formatting.AQUA))
+                .append(new LiteralText("."))
+                    .formatted(Formatting.GREEN), true);
         return 0;
     }
 
@@ -129,25 +141,35 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
         List<String> aliases = PlayerUtils.getAliasesOf(player);
-        StringBuilder sb = new StringBuilder();
-        sb.append(" has ");
-        sb.append(aliases.size());
-        sb.append(" alias");
+        StringBuilder headerBuilder = new StringBuilder();
+        StringBuilder contentBuilder = new StringBuilder();
+        headerBuilder.append(" has ");
+        headerBuilder.append(aliases.size());
+        headerBuilder.append(" alias");
         if (aliases.size() != 1)
-            sb.append("es");
+            headerBuilder.append("es");
         if (aliases.size() > 0) {
-            sb.append(": ");
+            headerBuilder.append(": ");
             boolean isFirst = true;
             for (String alias : aliases) {
                 if (!isFirst)
-                    sb.append(", ");
+                    contentBuilder.append(", ");
                 isFirst = false;
-                sb.append(alias);
+                contentBuilder.append(alias);
             }
         } else {
-            sb.append('.');
+            headerBuilder.append('.');
         }
-        src.sendFeedback(player.getDisplayName().shallowCopy().append(new LiteralText(sb.toString())), false);
+        src.sendFeedback(new LiteralText(player.getEntityName())
+            .formatted(Formatting.AQUA)
+            .append(
+                new LiteralText(headerBuilder.toString())
+                    .formatted(Formatting.GREEN)
+            )
+            .append(
+                new LiteralText(contentBuilder.toString())
+                    .formatted(Formatting.YELLOW)
+            ), false);
 
         return 0;
     }
@@ -191,25 +213,30 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
         List<String> aliases = PlayerUtils.getAliasesOf(player);
-        StringBuilder sb = new StringBuilder();
-        sb.append("You have ");
-        sb.append(aliases.size());
-        sb.append(" alias");
+        StringBuilder headerBuilder = new StringBuilder();
+        StringBuilder contentBuilder = new StringBuilder();
+        headerBuilder.append("You have ");
+        headerBuilder.append(aliases.size());
+        headerBuilder.append(" alias");
         if (aliases.size() != 1)
-            sb.append("es");
+            headerBuilder.append("es");
         if (aliases.size() > 0) {
-            sb.append(": ");
+            headerBuilder.append(": ");
             boolean isFirst = true;
             for (String alias : aliases) {
                 if (!isFirst)
-                    sb.append(", ");
+                    contentBuilder.append(", ");
                 isFirst = false;
-                sb.append(alias);
+                contentBuilder.append(alias);
             }
         } else {
-            sb.append('.');
+            headerBuilder.append('.');
         }
-        src.sendFeedback(new LiteralText(sb.toString()), false);
+        src.sendFeedback(
+            new LiteralText(headerBuilder.toString())
+                .formatted(Formatting.GREEN)
+                .append(new LiteralText(contentBuilder.toString())
+                    .formatted(Formatting.YELLOW)), false);
 
         return 0;
     }
