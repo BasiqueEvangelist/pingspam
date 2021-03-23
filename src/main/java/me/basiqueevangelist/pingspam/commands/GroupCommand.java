@@ -40,18 +40,19 @@ public class GroupCommand {
                 .then(literal("group")
                     .then(literal("list")
                         .executes(GroupCommand::listOwnGroups))
-                    .then(argument("player", EntityArgumentType.player())
-                        .then(literal("add")
-                            .requires(x -> Permissions.check(x, "pingspam.group.player.add", 2))
-                            .then(argument("groupname", StringArgumentType.string())
-                                .executes(GroupCommand::addPlayerGroup)))
-                        .then(literal("remove")
-                            .requires(x -> Permissions.check(x, "pingspam.group.player.remove", 2))
-                            .then(argument("groupname", StringArgumentType.string())
-                                .suggests(GroupCommand::suggestPlayerGroups)
-                                .executes(GroupCommand::removePlayerGroup)))
-                        .then(literal("list")
-                            .executes(GroupCommand::listPlayerGroups))))
+                    .then(literal("player")
+                        .then(argument("player", EntityArgumentType.player())
+                            .then(literal("add")
+                                .requires(x -> Permissions.check(x, "pingspam.group.player.add", 2))
+                                .then(argument("groupname", StringArgumentType.string())
+                                    .executes(GroupCommand::addPlayerGroup)))
+                            .then(literal("remove")
+                                .requires(x -> Permissions.check(x, "pingspam.group.player.remove", 2))
+                                .then(argument("groupname", StringArgumentType.string())
+                                    .suggests(GroupCommand::suggestPlayerGroups)
+                                    .executes(GroupCommand::removePlayerGroup)))
+                            .then(literal("list")
+                                .executes(GroupCommand::listPlayerGroups)))))
         );
     }
 
@@ -134,7 +135,7 @@ public class GroupCommand {
         ServerPlayerEntity player = src.getPlayer();
         List<String> pingGroups = PlayerUtils.getPingGroupsOf(player);
         StringBuilder sb = new StringBuilder();
-        sb.append("You are in");
+        sb.append("You are in ");
         sb.append(pingGroups.size());
         sb.append(" ping group");
         if (pingGroups.size() != 1)
