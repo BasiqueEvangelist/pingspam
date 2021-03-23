@@ -97,7 +97,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
     @Inject(method = "sendMessage(Lnet/minecraft/text/Text;Z)V", at = @At("HEAD"))
     private void onActionbarMessage(Text message, boolean actionBar, CallbackInfo ci) {
         if (actionBar)
-            actionbarTime = 60;
+            actionbarTime = 70;
     }
 
     @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
