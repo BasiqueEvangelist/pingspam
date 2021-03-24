@@ -17,6 +17,7 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -60,25 +61,31 @@ public class GroupCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
         List<String> groups = PlayerUtils.getPingGroupsOf(player);
-        StringBuilder sb = new StringBuilder();
-        sb.append(" is in ");
-        sb.append(groups.size());
-        sb.append(" ping group");
+        StringBuilder headerBuilder = new StringBuilder();
+        StringBuilder contentBuilder = new StringBuilder();
+        headerBuilder.append(" is in ");
+        headerBuilder.append(groups.size());
+        headerBuilder.append(" ping group");
         if (groups.size() != 1)
-            sb.append("s");
+            headerBuilder.append("s");
         if (groups.size() > 0) {
-            sb.append(": ");
+            headerBuilder.append(": ");
             boolean isFirst = true;
             for (String group : groups) {
                 if (!isFirst)
-                    sb.append(", ");
+                    contentBuilder.append(", ");
                 isFirst = false;
-                sb.append(group);
+                contentBuilder.append(group);
             }
         } else {
-            sb.append('.');
+            headerBuilder.append('.');
         }
-        src.sendFeedback(player.getDisplayName().shallowCopy().append(new LiteralText(sb.toString())), false);
+        src.sendFeedback(new LiteralText(player.getEntityName())
+            .formatted(Formatting.AQUA)
+            .append(new LiteralText(headerBuilder.toString())
+                .formatted(Formatting.GREEN))
+            .append(new LiteralText(contentBuilder.toString())
+                .formatted(Formatting.YELLOW)), false);
 
         return 0;
     }
@@ -97,8 +104,13 @@ public class GroupCommand {
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
         src.sendFeedback(
             new LiteralText("Removed player ")
-                .append(player.getDisplayName())
-                .append(" from group " + group + "."), true);
+                .formatted(Formatting.RED)
+                .append(new LiteralText(player.getEntityName())
+                    .formatted(Formatting.AQUA))
+                .append(" from group ")
+                .append(new LiteralText(group)
+                    .formatted(Formatting.YELLOW))
+                .append(new LiteralText(".")), true);
         return 0;
     }
 
@@ -125,8 +137,13 @@ public class GroupCommand {
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newGroup);
         src.sendFeedback(
             new LiteralText("Added player ")
-                .append(player.getDisplayName())
-                .append(" to group " + newGroup + "."), true);
+                .formatted(Formatting.GREEN)
+                .append(new LiteralText(player.getEntityName())
+                    .formatted(Formatting.AQUA))
+                .append(" to group ")
+                .append(new LiteralText(newGroup)
+                    .formatted(Formatting.YELLOW)
+                .append(".")), true);
         return 0;
     }
 
@@ -134,25 +151,29 @@ public class GroupCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
         List<String> pingGroups = PlayerUtils.getPingGroupsOf(player);
-        StringBuilder sb = new StringBuilder();
-        sb.append("You are in ");
-        sb.append(pingGroups.size());
-        sb.append(" ping group");
+        StringBuilder headerBuilder = new StringBuilder();
+        StringBuilder contentBuilder = new StringBuilder();
+        headerBuilder.append("You are in ");
+        headerBuilder.append(pingGroups.size());
+        headerBuilder.append(" ping group");
         if (pingGroups.size() != 1)
-            sb.append("s");
+            headerBuilder.append("s");
         if (pingGroups.size() > 0) {
-            sb.append(": ");
+            headerBuilder.append(": ");
             boolean isFirst = true;
             for (String pingGroup : pingGroups) {
                 if (!isFirst)
-                    sb.append(", ");
+                    contentBuilder.append(", ");
                 isFirst = false;
-                sb.append(pingGroup);
+                contentBuilder.append(pingGroup);
             }
         } else {
-            sb.append('.');
+            headerBuilder.append('.');
         }
-        src.sendFeedback(new LiteralText(sb.toString()), false);
+        src.sendFeedback(new LiteralText(headerBuilder.toString())
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText(contentBuilder.toString())
+                .formatted(Formatting.YELLOW)), false);
 
         return 0;
     }

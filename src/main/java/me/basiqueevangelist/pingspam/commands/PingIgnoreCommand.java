@@ -68,7 +68,7 @@ public class PingIgnoreCommand {
         }
 
         src.sendFeedback(new LiteralText("You are now ignoring ")
-            .formatted(Formatting.GREEN)
+            .formatted(Formatting.RED)
             .append(new LiteralText(playersBuilder.toString())
                 .formatted(Formatting.AQUA))
             .append(new LiteralText(".")), false);
@@ -99,7 +99,7 @@ public class PingIgnoreCommand {
         }
 
         src.sendFeedback(new LiteralText("You are no longer ignoring ")
-            .formatted(Formatting.RED)
+            .formatted(Formatting.GREEN)
             .append(new LiteralText(playersBuilder.toString())
                 .formatted(Formatting.AQUA))
             .append("."), false);
@@ -113,7 +113,8 @@ public class PingIgnoreCommand {
         List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
 
         if (ignoredPlayers.isEmpty()) {
-            src.sendFeedback(new LiteralText("You are not ignoring any players."), false);
+            src.sendFeedback(new LiteralText("You are not ignoring any players.")
+                .formatted(Formatting.GREEN), false);
             return 0;
         }
 
@@ -127,7 +128,7 @@ public class PingIgnoreCommand {
         src.sendFeedback(new LiteralText("You are ignoring " + count + " player(s):")
             .formatted(Formatting.GREEN)
             .append(new LiteralText(contentBuilder.toString())
-                .formatted(Formatting.YELLOW)), false);
+                .formatted(Formatting.AQUA)), false);
 
         return 0;
     }
