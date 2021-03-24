@@ -12,6 +12,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
@@ -41,7 +42,11 @@ public class PingSoundCommand {
         SoundEvent event = Registry.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
 
         PlayerUtils.setPingSound(player, event);
-        src.sendFeedback(new LiteralText("Set ping sound to " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
+        src.sendFeedback(new LiteralText("Set ping sound to ")
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText(((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId().toString())
+                .formatted(Formatting.YELLOW))
+            .append(new LiteralText(".")), false);
 
         return 0;
     }
@@ -51,7 +56,8 @@ public class PingSoundCommand {
         ServerPlayerEntity player = src.getPlayer();
 
         PlayerUtils.setPingSound(player, null);
-        src.sendFeedback(new LiteralText("Disabled ping sound."), false);
+        src.sendFeedback(new LiteralText("Disabled ping sound.")
+            .formatted(Formatting.GREEN), false);
 
         return 0;
     }
@@ -61,9 +67,14 @@ public class PingSoundCommand {
         ServerPlayerEntity player = src.getPlayer();
 
         if (PlayerUtils.getPingSound(player) != null) {
-            src.sendFeedback(new LiteralText("Your current ping sound is " + ((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId() + "."), false);
+            src.sendFeedback(new LiteralText("Your current ping sound is ")
+                .formatted(Formatting.GREEN)
+                .append(new LiteralText(((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId().toString())
+                    .formatted(Formatting.YELLOW))
+                .append(new LiteralText(".")), false);
         } else {
-            src.sendFeedback(new LiteralText("You have disabled ping sounds."), false);
+            src.sendFeedback(new LiteralText("You have disabled ping sounds.")
+                .formatted(Formatting.GREEN), false);
         }
 
         return 0;

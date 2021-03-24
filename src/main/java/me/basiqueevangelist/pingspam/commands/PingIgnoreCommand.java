@@ -11,6 +11,7 @@ import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.util.Formatting;
 
 import java.util.List;
 import java.util.UUID;
@@ -55,7 +56,11 @@ public class PingIgnoreCommand {
 
         ignoredPlayers.add(ignorePlayer.getId());
 
-        src.sendFeedback(new LiteralText("You are now ignoring " + ignorePlayer.getName() + "."), false);
+        src.sendFeedback(new LiteralText("You are now ignoring ")
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText(ignorePlayer.getName())
+                .formatted(Formatting.AQUA))
+            .append(new LiteralText(".")), false);
 
         return 0;
     }
@@ -72,7 +77,11 @@ public class PingIgnoreCommand {
 
         ignoredPlayers.remove(removePlayer.getId());
 
-        src.sendFeedback(new LiteralText("You are no longer ignoring " + removePlayer.getName() + "."), false);
+        src.sendFeedback(new LiteralText("You are no longer ignoring ")
+            .formatted(Formatting.RED)
+            .append(new LiteralText(removePlayer.getName())
+                .formatted(Formatting.AQUA))
+            .append("."), false);
 
         return 0;
     }
@@ -87,14 +96,17 @@ public class PingIgnoreCommand {
             return 0;
         }
 
-        StringBuilder ignoredPlayerMessage = new StringBuilder();
+        StringBuilder contentBuilder = new StringBuilder();
         int count = 0;
         for (UUID ignoredPlayerUuid : ignoredPlayers) {
-            ignoredPlayerMessage.append("\n - ").append(getNameFromUuid(ignoredPlayerUuid));
+            contentBuilder.append("\n - ").append(getNameFromUuid(ignoredPlayerUuid));
             count++;
         }
 
-        src.sendFeedback(new LiteralText("You are ignoring " + count + " player(s):" + ignoredPlayerMessage.toString()), false);
+        src.sendFeedback(new LiteralText("You are ignoring " + count + " player(s):")
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText(contentBuilder.toString())
+                .formatted(Formatting.YELLOW)), false);
 
         return 0;
     }
