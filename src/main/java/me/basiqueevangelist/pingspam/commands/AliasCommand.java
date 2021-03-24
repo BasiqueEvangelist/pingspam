@@ -132,8 +132,7 @@ public class AliasCommand {
                 .append(new LiteralText(" to "))
                 .append(new LiteralText(player.getEntityName())
                     .formatted(Formatting.AQUA))
-                .append(new LiteralText("."))
-                    .formatted(Formatting.GREEN), true);
+                .append(new LiteralText(".")), true);
         return 0;
     }
 
@@ -186,7 +185,11 @@ public class AliasCommand {
         aliases.remove(alias);
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
-        src.sendFeedback(new LiteralText("Removed alias \"" + alias + "\"."), false);
+        src.sendFeedback(new LiteralText("Removed alias ")
+            .formatted(Formatting.RED)
+            .append(new LiteralText('"' + alias + '"')
+                .formatted(Formatting.YELLOW))
+            .append(new LiteralText(".")), false);
         return 0;
     }
 
@@ -205,7 +208,11 @@ public class AliasCommand {
             throw TOO_MANY_ALIASES.create();
         aliases.add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
-        src.sendFeedback(new LiteralText("Added alias \"" + newAlias + "\"."), false);
+        src.sendFeedback(new LiteralText("Added alias ")
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText('"' + newAlias + '"')
+                .formatted(Formatting.YELLOW))
+            .append(new LiteralText(".")), false);
         return 0;
     }
 
