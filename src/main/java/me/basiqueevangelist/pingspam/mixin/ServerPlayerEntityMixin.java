@@ -169,7 +169,6 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         }
         tag.put("IgnoredPlayers", ignoredPlayersListTag);
 
-        tag.putString("SavedUsername", getGameProfile().getName());
         if (pingSound != null) {
             tag.putString("PingSound", ((SoundEventAccessor) pingSound).pingspam$getId().toString());
         } else {

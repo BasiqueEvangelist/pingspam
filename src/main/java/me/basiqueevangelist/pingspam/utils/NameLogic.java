@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.utils;
 
+import me.basiqueevangelist.nevseti.OfflineDataCache;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -33,7 +34,7 @@ public final class NameLogic {
                 }
         }
 
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -79,7 +80,7 @@ public final class NameLogic {
                     possibleNames.add(group);
             }
         }
-        for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlinePlayerTag.getKey()) != null)
                 continue;
 

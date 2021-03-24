@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.utils;
 
+import me.basiqueevangelist.nevseti.OfflineDataCache;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -33,7 +34,7 @@ public final class PlayerUtils {
     }
 
     public static @Nullable UUID findOfflinePlayer(PlayerManager manager, String name) {
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -61,7 +62,7 @@ public final class PlayerUtils {
                 list.getOnlinePlayers().add(player);
         }
 
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflinePlayerCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 

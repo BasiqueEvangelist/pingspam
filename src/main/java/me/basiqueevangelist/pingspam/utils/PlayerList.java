@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.utils;
 
+import me.basiqueevangelist.nevseti.OfflineDataCache;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -16,7 +17,7 @@ public class PlayerList {
     public static PlayerList fromAllPlayers(PlayerManager manager) {
         PlayerList list = new PlayerList();
         list.onlinePlayers.addAll(manager.getPlayerList());
-        for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+        for (UUID offlinePlayer : OfflineDataCache.INSTANCE.getPlayers().keySet()) {
             if (manager.getPlayer(offlinePlayer) != null)
                 continue;
 
@@ -34,7 +35,7 @@ public class PlayerList {
 
     public static PlayerList fromOffline(PlayerManager manager) {
         PlayerList list = new PlayerList();
-        for (UUID offlinePlayer : OfflinePlayerCache.INSTANCE.getPlayers().keySet()) {
+        for (UUID offlinePlayer : OfflineDataCache.INSTANCE.getPlayers().keySet()) {
             if (manager.getPlayer(offlinePlayer) != null)
                 continue;
 
