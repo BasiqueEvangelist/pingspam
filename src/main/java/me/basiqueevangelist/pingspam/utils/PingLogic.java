@@ -124,6 +124,9 @@ public final class PingLogic {
                 if (offlinePlayer == null && result.sender != null)
                     PingLogic.sendPingError(result.sender, "No such player: " + mention + "!");
 
+                if (offlinePlayer == null)
+                    return;
+
                 if (!result.pingedPlayers.getOfflinePlayers().contains(offlinePlayer)) {
                     PingLogic.pingOfflinePlayer(offlinePlayer, message);
                     result.pingedPlayers.add(offlinePlayer);
