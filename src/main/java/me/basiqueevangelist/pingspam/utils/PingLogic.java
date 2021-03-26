@@ -1,6 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
+import me.basiqueevangelist.nevseti.OfflineNameCache;
+import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.nbt.CompoundTag;
@@ -98,9 +100,9 @@ public final class PingLogic {
 
                     UUID offlinePlayer = PlayerUtils.findOfflinePlayer(manager, mention);
                     if (offlinePlayer != null) {
-                        CompoundTag playerTag = OfflineDataCache.INSTANCE.get(offlinePlayer);
+                        CompoundTagView playerTag = OfflineDataCache.INSTANCE.get(offlinePlayer);
                         if (OfflineUtils.isPlayerIgnoredBy(playerTag, result.sender.getUuid())) {
-                            PingLogic.sendPingError(result.sender, OfflineUtils.getSavedUsername(playerTag) + " has ignored you, they won't receive your ping.");
+                            PingLogic.sendPingError(result.sender, OfflineNameCache.INSTANCE.getNameFromUUID(offlinePlayer) + " has ignored you, they won't receive your ping.");
                             break;
                         }
                     }
@@ -151,7 +153,7 @@ public final class PingLogic {
     }
 
     public static void pingOfflinePlayer(UUID playerUuid, Text pingMsg) {
-        CompoundTag tag = OfflineDataCache.INSTANCE.reload(playerUuid);
+        CompoundTag tag = OfflineDataCache.INSTANCE.reload(playerUuid).copy();
         if (tag.contains("UnreadPings")) {
             ListTag pingsTag = tag.getList("UnreadPings", 8);
             while (pingsTag.size() >= 100)

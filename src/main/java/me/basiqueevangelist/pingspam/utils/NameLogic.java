@@ -1,9 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
+import me.basiqueevangelist.nevseti.nbt.ListTagView;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -34,7 +33,7 @@ public final class NameLogic {
                 }
         }
 
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -43,18 +42,18 @@ public final class NameLogic {
             }
 
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
-                for (Tag aliasTag : aliasesTag) {
-                    if (aliasTag.asString().equals(name))
+                ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                for (int i = 0; i < aliasesTag.size(); i++) {
+                    if (aliasesTag.getString(i).equals(name))
                         return true;
                 }
             }
 
             if (!ignoreGroups)
                 if (offlineTag.getValue().contains("PingGroups")) {
-                    ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
-                    for (Tag pingGroup : pingGroupsTag) {
-                        if (pingGroup.asString().equals(name))
+                    ListTagView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                    for (int i = 0; i < pingGroupsTag.size(); i++) {
+                        if (pingGroupsTag.getString(i).equals(name))
                             return true;
                     }
                 }
@@ -80,7 +79,7 @@ public final class NameLogic {
                     possibleNames.add(group);
             }
         }
-        for (Map.Entry<UUID, CompoundTag> offlinePlayerTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTagView> offlinePlayerTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlinePlayerTag.getKey()) != null)
                 continue;
 
@@ -90,17 +89,17 @@ public final class NameLogic {
                     possibleNames.add(offlineUsername);
             }
             if (offlinePlayerTag.getValue().contains("Shortnames")) {
-                ListTag aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
-                for (Tag aliasTag : aliasesTag) {
-                    String alias = aliasTag.asString();
+                ListTagView aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
+                for (int i = 0; i < aliasesTag.size(); i++) {
+                    String alias = aliasesTag.getString(i);
                     if (!possibleNames.contains(alias))
                         possibleNames.add(alias);
                 }
             }
             if (offlinePlayerTag.getValue().contains("PingGroups")) {
-                ListTag pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
-                for (Tag pingGroupTag : pingGroupsTag) {
-                    String pingGroup = pingGroupTag.asString();
+                ListTagView pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
+                for (int i = 0; i < pingGroupsTag.size(); i++) {
+                    String pingGroup = pingGroupsTag.getString(i);
                     if (!possibleNames.contains(pingGroup))
                         possibleNames.add(pingGroup);
                 }

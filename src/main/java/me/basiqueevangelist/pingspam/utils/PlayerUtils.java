@@ -1,10 +1,9 @@
 package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
+import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
+import me.basiqueevangelist.nevseti.nbt.ListTagView;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
@@ -34,7 +33,7 @@ public final class PlayerUtils {
     }
 
     public static @Nullable UUID findOfflinePlayer(PlayerManager manager, String name) {
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -43,9 +42,9 @@ public final class PlayerUtils {
             }
 
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTag aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
-                for (Tag aliasTag : aliasesTag) {
-                    if (aliasTag.asString().equals(name))
+                ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                for (int i = 0; i < aliasesTag.size(); i++) {
+                    if (aliasesTag.getString(i).equals(name))
                         return offlineTag.getKey();
                 }
             }
@@ -62,14 +61,14 @@ public final class PlayerUtils {
                 list.getOnlinePlayers().add(player);
         }
 
-        for (Map.Entry<UUID, CompoundTag> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
             if (offlineTag.getValue().contains("PingGroups")) {
-                ListTag pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
-                for (Tag pingGroupTag : pingGroupsTag) {
-                    if (pingGroupTag.asString().equals(name))
+                ListTagView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                for (int i = 0; i < pingGroupsTag.size(); i++) {
+                    if (pingGroupsTag.getString(i).equals(name))
                         list.getOfflinePlayers().add(offlineTag.getKey());
                 }
             }
