@@ -19,20 +19,12 @@ public final class PlayerUtils {
 
     }
 
-    public static @Nullable ServerPlayerEntity findOnlinePlayer(PlayerManager manager, String name) {
+    public static @Nullable UUID tryFindPlayer(PlayerManager manager, String name) {
         for (ServerPlayerEntity player : manager.getPlayerList()) {
             if (player.getGameProfile().getName().equals(name))
-                return player;
-
-            List<String> aliases = getAliasesOf(player);
-            if (aliases.contains(name))
-                return player;
+                return player.getUuid();
         }
 
-        return null;
-    }
-
-    public static @Nullable UUID findOfflinePlayer(PlayerManager manager, String name) {
         for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
@@ -40,6 +32,17 @@ public final class PlayerUtils {
             if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equals(name)) {
                 return offlineTag.getKey();
             }
+        }
+
+        for (ServerPlayerEntity player : manager.getPlayerList()) {
+            List<String> aliases = getAliasesOf(player);
+            if (aliases.contains(name))
+                return player.getUuid();
+        }
+
+        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+            if (manager.getPlayer(offlineTag.getKey()) != null)
+                continue;
 
             if (offlineTag.getValue().contains("Shortnames")) {
                 ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
@@ -49,6 +52,7 @@ public final class PlayerUtils {
                 }
             }
         }
+
         return null;
     }
 

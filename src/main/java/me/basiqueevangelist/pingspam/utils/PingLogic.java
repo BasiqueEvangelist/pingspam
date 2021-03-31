@@ -91,18 +91,23 @@ public final class PingLogic {
                     return;
                 }
 
-                ServerPlayerEntity onlinePlayer = PlayerUtils.findOnlinePlayer(manager, mention);
+                UUID foundPlayerUuid = PlayerUtils.tryFindPlayer(manager, mention);
+
+                if (foundPlayerUuid == null) {
+                    if (result.sender != null)
+                        PingLogic.sendPingError(result.sender, "No such player: " + mention + "!");
+                    return;
+                }
+
+                ServerPlayerEntity onlinePlayer = manager.getPlayer(foundPlayerUuid);
                 if (result.sender != null && !Permissions.check(result.sender, "pingspam.bypass.ignore", 2)) {
                     if (onlinePlayer != null && PingLogic.isPlayerIgnoredBy(result.sender.getUuid(), onlinePlayer)) {
                         PingLogic.sendPingError(result.sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                         break;
-                    }
-
-                    UUID offlinePlayer = PlayerUtils.findOfflinePlayer(manager, mention);
-                    if (offlinePlayer != null) {
-                        CompoundTagView playerTag = OfflineDataCache.INSTANCE.get(offlinePlayer);
+                    } else if (onlinePlayer == null) {
+                        CompoundTagView playerTag = OfflineDataCache.INSTANCE.get(foundPlayerUuid);
                         if (OfflineUtils.isPlayerIgnoredBy(playerTag, result.sender.getUuid())) {
-                            PingLogic.sendPingError(result.sender, OfflineNameCache.INSTANCE.getNameFromUUID(offlinePlayer) + " has ignored you, they won't receive your ping.");
+                            PingLogic.sendPingError(result.sender, OfflineNameCache.INSTANCE.getNameFromUUID(foundPlayerUuid) + " has ignored you, they won't receive your ping.");
                             break;
                         }
                     }
@@ -122,16 +127,9 @@ public final class PingLogic {
                     return;
                 }
 
-                UUID offlinePlayer = PlayerUtils.findOfflinePlayer(manager, mention);
-                if (offlinePlayer == null && result.sender != null)
-                    PingLogic.sendPingError(result.sender, "No such player: " + mention + "!");
-
-                if (offlinePlayer == null)
-                    return;
-
-                if (!result.pingedPlayers.getOfflinePlayers().contains(offlinePlayer)) {
-                    PingLogic.pingOfflinePlayer(offlinePlayer, message);
-                    result.pingedPlayers.add(offlinePlayer);
+                if (!result.pingedPlayers.getOfflinePlayers().contains(foundPlayerUuid)) {
+                    PingLogic.pingOfflinePlayer(foundPlayerUuid, message);
+                    result.pingedPlayers.add(foundPlayerUuid);
                     result.pingSucceeded = true;
                 }
         }
