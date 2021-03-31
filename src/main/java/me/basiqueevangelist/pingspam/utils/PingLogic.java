@@ -82,7 +82,7 @@ public final class PingLogic {
             default:
                 PlayerList pingGroup = PlayerUtils.queryPingGroup(manager, mention);
                 if (!pingGroup.isEmpty()) {
-                    if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.player", true)) {
+                    if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
                         pingAllIn(result, pingGroup, message, type, senderUuid);
                         result.pingSucceeded = true;
                     } else {
