@@ -39,6 +39,8 @@ It will be created on the first mod launch, and contains all options with commen
 
 **N.B.:** if you are using a chat bridge mod, e.g. *Tom's Server Utils* or *Fabric-Discord Link*, you may want to disable `processPingsFromUnknownPlayers`, otherwise discord users will be able to ping people bypassing permissions
 
+Operators can `/pingspam reload` the config.
+
 ## Permissions 
 Pingspam supports LuckPerms through the Fabric Permissions API.
 
@@ -63,4 +65,5 @@ pingspam.ping.online
 pingspam.ping.offline 
 pingspam.group.player.add 
 pingspam.group.player.remove 
+pingspam.reload
 ```
