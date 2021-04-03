@@ -11,7 +11,7 @@ Pingspam works with vanilla clients.
 You don't need to have Pingspam to ~~suffer from~~ enjoy advanced attention-grabbing techniques.
 However, installing it on the client adds chat autocompletion for @mentions.
 
-## Goups and aliases
+## Groups and aliases
 You can have a shorter or a more descriptive name for others to ping you by.
 `/pingspam alias [add|remove] <alias>` adds or removes aliases, and `/pingspam alias list` lists them.
 
