@@ -50,6 +50,7 @@ public class GroupCommand {
                             .then(literal("add")
                                 .requires(x -> Permissions.check(x, "pingspam.group.player.add", 2))
                                 .then(argument("groupname", StringArgumentType.string())
+                                    .suggests(GroupCommand::suggestGroups)
                                     .executes(GroupCommand::addPlayerGroup)))
                             .then(literal("remove")
                                 .requires(x -> Permissions.check(x, "pingspam.group.player.remove", 2))
@@ -115,6 +116,13 @@ public class GroupCommand {
                     .formatted(Formatting.YELLOW))
                 .append(new LiteralText(".")), true);
         return 0;
+    }
+
+    private static CompletableFuture<Suggestions> suggestGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        for (PlayerGroup group : PingspamGroupSource.INSTANCE.getAllGroups()) {
+            builder.suggest(SuggestionsUtils.wrapString(group.getName()));
+        }
+        return builder.buildFuture();
     }
 
     private static CompletableFuture<Suggestions> suggestPlayerGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
