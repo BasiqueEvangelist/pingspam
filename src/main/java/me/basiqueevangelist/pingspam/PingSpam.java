@@ -1,6 +1,7 @@
 package me.basiqueevangelist.pingspam;
 
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
+import me.basiqueevangelist.pingspam.integration.PingspamGroupSource;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -18,6 +19,7 @@ public class PingSpam implements ModInitializer {
     public void onInitialize() {
         LogManager.getLogger("PingSpam").info("Several people are typing...");
 
+        PingspamGroupSource.INSTANCE.register();
         PingSpamPackets.register();
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());
         CommandRegistrationCallback.EVENT.register(PingSpamCommands::register);
