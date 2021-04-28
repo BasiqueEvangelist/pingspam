@@ -9,9 +9,12 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import me.basiqueevangelist.pingspam.integration.PingspamGroup;
+import me.basiqueevangelist.pingspam.integration.PingspamGroupSource;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.NameLogic;
 import me.basiqueevangelist.pingspam.utils.PlayerUtils;
+import me.basiqueevangelist.regrouped.PlayerGroup;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -19,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
@@ -60,7 +64,7 @@ public class GroupCommand {
     private static int listPlayerGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> groups = PlayerUtils.getPingGroupsOf(player);
+        List<PlayerGroup> groups = PingspamGroupSource.INSTANCE.getGroupsOf(player.getUuid());
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
         headerBuilder.append(" is in ");
@@ -71,11 +75,11 @@ public class GroupCommand {
         if (groups.size() > 0) {
             headerBuilder.append(": ");
             boolean isFirst = true;
-            for (String group : groups) {
+            for (PlayerGroup group : groups) {
                 if (!isFirst)
                     contentBuilder.append(", ");
                 isFirst = false;
-                contentBuilder.append(group);
+                contentBuilder.append(group.getName());
             }
         } else {
             headerBuilder.append('.');
@@ -94,12 +98,11 @@ public class GroupCommand {
         ServerCommandSource src = ctx.getSource();
         String group = StringArgumentType.getString(ctx, "groupname");
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> groups = PlayerUtils.getPingGroupsOf(player);
         if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
-        if (!groups.contains(group))
+        PingspamGroup groupInstance = PingspamGroupSource.INSTANCE.findGroupByName(group);
+        if (groupInstance == null || !groupInstance.removeMember(player.getUuid()))
             throw NOT_IN_GROUP_OTHER.create(player);
-        groups.remove(group);
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), group, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
         src.sendFeedback(
@@ -116,8 +119,8 @@ public class GroupCommand {
 
     private static CompletableFuture<Suggestions> suggestPlayerGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        for (String group : PlayerUtils.getPingGroupsOf(player)) {
-            builder.suggest(SuggestionsUtils.wrapString(group));
+        for (PlayerGroup group : PingspamGroupSource.INSTANCE.getGroupsOf(player.getUuid())) {
+            builder.suggest(SuggestionsUtils.wrapString(group.getName()));
         }
         return builder.buildFuture();
     }
@@ -126,14 +129,13 @@ public class GroupCommand {
         ServerCommandSource src = ctx.getSource();
         String newGroup = StringArgumentType.getString(ctx, "groupname");
         ServerPlayerEntity player = EntityArgumentType.getPlayer(ctx, "player");
-        List<String> groups = PlayerUtils.getPingGroupsOf(player);
         if (!GROUPNAME_PATTERN.asPredicate().test(newGroup))
             throw INVALID_GROUPNAME.create();
-        if (groups.contains(newGroup))
-            throw IN_GROUP_OTHER.create(player);
         if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newGroup, true))
             throw NAME_COLLISION.create();
-        groups.add(newGroup);
+        PingspamGroup group = PingspamGroupSource.INSTANCE.getOrCreateGroup(newGroup);
+        if (!group.addMember(player.getUuid()))
+            throw IN_GROUP_OTHER.create(player);
         ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newGroup);
         src.sendFeedback(
             new LiteralText("Added player ")
@@ -150,7 +152,7 @@ public class GroupCommand {
     private static int listOwnGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        List<String> pingGroups = PlayerUtils.getPingGroupsOf(player);
+        List<PlayerGroup> pingGroups = PingspamGroupSource.INSTANCE.getGroupsOf(player.getUuid());
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
         headerBuilder.append("You are in ");
@@ -161,11 +163,11 @@ public class GroupCommand {
         if (pingGroups.size() > 0) {
             headerBuilder.append(": ");
             boolean isFirst = true;
-            for (String pingGroup : pingGroups) {
+            for (PlayerGroup pingGroup : pingGroups) {
                 if (!isFirst)
                     contentBuilder.append(", ");
                 isFirst = false;
-                contentBuilder.append(pingGroup);
+                contentBuilder.append(pingGroup.getName());
             }
         } else {
             headerBuilder.append('.');

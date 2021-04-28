@@ -20,19 +20,19 @@ import java.util.UUID;
 
 public class PingspamGroup implements PlayerGroup {
     private final String name;
+    private final List<UUID> members = new ArrayList<>();
 
     public PingspamGroup(String name) {
         this.name = name;
     }
 
+    List<UUID> getMembersInternal() {
+        return members;
+    }
+
     @Override
     public List<UUID> getMembers() {
-        PlayerList list = PlayerUtils.queryPingGroup(PingSpam.SERVER.getPlayerManager(), name);
-        List<UUID> uuids = new ArrayList<>(list.getOfflinePlayers());
-        for (ServerPlayerEntity player : list.getOnlinePlayers()) {
-            uuids.add(player.getUuid());
-        }
-        return Collections.unmodifiableList(uuids);
+        return Collections.unmodifiableList(members);
     }
 
     @Override
@@ -41,7 +41,12 @@ public class PingspamGroup implements PlayerGroup {
     }
 
     @Override
-    public void addMember(UUID uuid) {
+    public boolean addMember(UUID uuid) {
+        if (members.contains(uuid))
+            return false;
+
+        members.add(uuid);
+
         PlayerManager manager = PingSpam.SERVER.getPlayerManager();
         ServerPlayerEntity onlinePlayer = manager.getPlayer(uuid);
         if (onlinePlayer != null) {
@@ -55,15 +60,20 @@ public class PingspamGroup implements PlayerGroup {
             ListTag groupsTag = tag.getList("PingGroups", 8);
             for (Tag groupTag : groupsTag) {
                 if (groupTag.asString().equals(name))
-                    return;
+                    return false;
             }
             groupsTag.add(StringTag.of(name));
             OfflineDataCache.INSTANCE.save(uuid, tag);
         }
+
+        return true;
     }
 
     @Override
-    public void removeMember(UUID uuid) {
+    public boolean removeMember(UUID uuid) {
+        if (!members.remove(uuid))
+            return false;
+
         PlayerManager manager = PingSpam.SERVER.getPlayerManager();
         ServerPlayerEntity onlinePlayer = manager.getPlayer(uuid);
         if (onlinePlayer != null) {
@@ -77,6 +87,8 @@ public class PingspamGroup implements PlayerGroup {
             groupsTag.removeIf(groupTag -> groupTag.asString().equals(name));
             OfflineDataCache.INSTANCE.save(uuid, tag);
         }
+
+        return true;
     }
 
     @Override
