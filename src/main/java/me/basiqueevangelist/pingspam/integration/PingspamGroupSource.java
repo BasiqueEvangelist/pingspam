@@ -117,7 +117,7 @@ public class PingspamGroupSource implements GroupSource {
         ServerPlayerEntity onlinePlayer = manager.getPlayer(playerId);
         if (onlinePlayer != null) {
             List<String> groups = PlayerUtils.getPingGroupsOf(onlinePlayer);
-            groups.forEach(this::findGroupByName);
+            groups.forEach(name -> visitor.accept(findGroupByName(name)));
         }
         else {
             CompoundTagView tag = OfflineDataCache.INSTANCE.get(playerId);
