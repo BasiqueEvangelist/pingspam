@@ -51,7 +51,7 @@ dependencies {
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include('com.github.BasiqueEvangelist:ne-v-seti:ccb1216') {
+	modImplementation include('com.github.BasiqueEvangelist:ne-v-seti:0.1.5') {
 		transitive = false
 	}
 
