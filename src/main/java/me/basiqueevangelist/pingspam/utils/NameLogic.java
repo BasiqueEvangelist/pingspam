@@ -1,8 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
-import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
-import me.basiqueevangelist.nevseti.nbt.ListTagView;
+import me.basiqueevangelist.nevseti.nbt.NbtCompoundView;
+import me.basiqueevangelist.nevseti.nbt.NbtListView;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -33,7 +33,7 @@ public final class NameLogic {
                 }
         }
 
-        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -42,7 +42,7 @@ public final class NameLogic {
             }
 
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                NbtListView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
                     if (aliasesTag.getString(i).equals(name))
                         return true;
@@ -51,7 +51,7 @@ public final class NameLogic {
 
             if (!ignoreGroups)
                 if (offlineTag.getValue().contains("PingGroups")) {
-                    ListTagView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                    NbtListView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
                     for (int i = 0; i < pingGroupsTag.size(); i++) {
                         if (pingGroupsTag.getString(i).equals(name))
                             return true;
@@ -79,7 +79,7 @@ public final class NameLogic {
                     possibleNames.add(group);
             }
         }
-        for (Map.Entry<UUID, CompoundTagView> offlinePlayerTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, NbtCompoundView> offlinePlayerTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlinePlayerTag.getKey()) != null)
                 continue;
 
@@ -89,7 +89,7 @@ public final class NameLogic {
                     possibleNames.add(offlineUsername);
             }
             if (offlinePlayerTag.getValue().contains("Shortnames")) {
-                ListTagView aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
+                NbtListView aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
                     String alias = aliasesTag.getString(i);
                     if (!possibleNames.contains(alias))
@@ -97,7 +97,7 @@ public final class NameLogic {
                 }
             }
             if (offlinePlayerTag.getValue().contains("PingGroups")) {
-                ListTagView pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
+                NbtListView pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
                 for (int i = 0; i < pingGroupsTag.size(); i++) {
                     String pingGroup = pingGroupsTag.getString(i);
                     if (!possibleNames.contains(pingGroup))

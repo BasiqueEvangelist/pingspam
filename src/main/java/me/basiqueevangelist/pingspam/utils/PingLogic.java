@@ -2,12 +2,12 @@ package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
 import me.basiqueevangelist.nevseti.OfflineNameCache;
-import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
+import me.basiqueevangelist.nevseti.nbt.NbtCompoundView;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.network.MessageType;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.PlayerManager;
@@ -21,6 +21,7 @@ import net.minecraft.util.Util;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,7 @@ public final class PingLogic {
         public ServerPlayerEntity sender;
     }
 
-    public static ProcessedPing processPings(PlayerManager manager, Text message, MessageType type, UUID senderUuid) {
+    public static ProcessedPing processPings(PlayerManager manager, Text message, MessageType type, UUID senderUuid, Function<ServerPlayerEntity, Text> filter) {
         String contents = message.getString();
         ServerPlayerEntity sender = manager.getPlayer(senderUuid);
         Matcher matcher = PING_PATTERN.matcher(contents);
@@ -47,17 +48,17 @@ public final class PingLogic {
         if (PingSpam.CONFIG.getConfig().processPingsFromUnknownPlayers || sender != null) {
             while (matcher.find()) {
                 String username = matcher.group(1);
-                processMention(manager, result, username, message, type, senderUuid);
+                processMention(manager, result, username, message, type, senderUuid, filter);
             }
         }
         return result;
     }
 
-    private static void processMention(PlayerManager manager, ProcessedPing result, String mention, Text message, MessageType type, UUID senderUuid) {
+    private static void processMention(PlayerManager manager, ProcessedPing result, String mention, Text message, MessageType type, UUID senderUuid, Function<ServerPlayerEntity, Text> filter) {
         switch (mention) {
             case "everyone":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.everyone", 2)) {
-                    pingAllIn(result, PlayerList.fromAllPlayers(manager), message, type, senderUuid);
+                    pingAllIn(result, PlayerList.fromAllPlayers(manager), message, type, senderUuid, filter);
                     result.pingSucceeded = true;
                 } else {
                     PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping @everyone!");
@@ -65,7 +66,7 @@ public final class PingLogic {
                 break;
             case "online":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.online", 2)) {
-                    pingAllIn(result, PlayerList.fromOnline(manager), message, type, senderUuid);
+                    pingAllIn(result, PlayerList.fromOnline(manager), message, type, senderUuid, filter);
                     result.pingSucceeded = true;
                 } else {
                     PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping @online!");
@@ -73,7 +74,7 @@ public final class PingLogic {
                 break;
             case "offline":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.offline", 2)) {
-                    pingAllIn(result, PlayerList.fromOffline(manager), message, type, senderUuid);
+                    pingAllIn(result, PlayerList.fromOffline(manager), message, type, senderUuid, filter);
                     result.pingSucceeded = true;
                 } else {
                     PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping @offline!");
@@ -83,7 +84,7 @@ public final class PingLogic {
                 PlayerList pingGroup = PlayerUtils.queryPingGroup(manager, mention);
                 if (!pingGroup.isEmpty()) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
-                        pingAllIn(result, pingGroup, message, type, senderUuid);
+                        pingAllIn(result, pingGroup, message, type, senderUuid, filter);
                         result.pingSucceeded = true;
                     } else {
                         PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping group @" + mention + "!");
@@ -105,7 +106,7 @@ public final class PingLogic {
                         PingLogic.sendPingError(result.sender, onlinePlayer.getEntityName() + " has ignored you, they won't receive your ping.");
                         break;
                     } else if (onlinePlayer == null) {
-                        CompoundTagView playerTag = OfflineDataCache.INSTANCE.get(foundPlayerUuid);
+                        NbtCompoundView playerTag = OfflineDataCache.INSTANCE.get(foundPlayerUuid);
                         if (OfflineUtils.isPlayerIgnoredBy(playerTag, result.sender.getUuid())) {
                             PingLogic.sendPingError(result.sender, OfflineNameCache.INSTANCE.getNameFromUUID(foundPlayerUuid) + " has ignored you, they won't receive your ping.");
                             break;
@@ -120,7 +121,7 @@ public final class PingLogic {
 
                 if (onlinePlayer != null) {
                     if (!result.pingedPlayers.getOnlinePlayers().contains(onlinePlayer)) {
-                        PingLogic.pingOnlinePlayer(onlinePlayer, message, type, senderUuid);
+                        PingLogic.pingOnlinePlayer(onlinePlayer, filter, type, senderUuid);
                         result.pingSucceeded = true;
                         result.pingedPlayers.add(onlinePlayer);
                     }
@@ -135,10 +136,10 @@ public final class PingLogic {
         }
     }
 
-    private static void pingAllIn(ProcessedPing result, PlayerList list, Text message, MessageType type, UUID senderUuid) {
+    private static void pingAllIn(ProcessedPing result, PlayerList list, Text message, MessageType type, UUID senderUuid, Function<ServerPlayerEntity, Text> filter) {
         for (ServerPlayerEntity player : list.getOnlinePlayers()) {
             if (!result.pingedPlayers.getOnlinePlayers().contains(player)) {
-                PingLogic.pingOnlinePlayer(player, message, type, senderUuid);
+                PingLogic.pingOnlinePlayer(player, filter, type, senderUuid);
                 result.pingedPlayers.add(player);
             }
         }
@@ -151,17 +152,17 @@ public final class PingLogic {
     }
 
     public static void pingOfflinePlayer(UUID playerUuid, Text pingMsg) {
-        CompoundTag tag = OfflineDataCache.INSTANCE.reload(playerUuid).copy();
+        NbtCompound tag = OfflineDataCache.INSTANCE.reload(playerUuid).copy();
         if (tag.contains("UnreadPings")) {
-            ListTag pingsTag = tag.getList("UnreadPings", 8);
+            NbtList pingsTag = tag.getList("UnreadPings", 8);
             while (pingsTag.size() >= 100)
                 pingsTag.remove(0);
-            pingsTag.add(StringTag.of(Text.Serializer.toJson(pingMsg)));
+            pingsTag.add(NbtString.of(Text.Serializer.toJson(pingMsg)));
         }
         OfflineDataCache.INSTANCE.save(playerUuid, tag);
     }
 
-    public static void pingOnlinePlayer(ServerPlayerEntity player, Text message, MessageType type, UUID senderUUID) {
+    public static void pingOnlinePlayer(ServerPlayerEntity player, Function<ServerPlayerEntity, Text> factory, MessageType type, UUID senderUUID) {
         SoundEvent pingSound = PlayerUtils.getPingSound(player);
 
         if (pingSound != null) {
@@ -172,9 +173,9 @@ public final class PingLogic {
         while (unreadPings.size() >= 100) {
             unreadPings.remove(0);
         }
-        unreadPings.add(message);
+        unreadPings.add(factory.apply(player));
 
-        Text pingMessage = message.shallowCopy().formatted(Formatting.AQUA);
+        Text pingMessage = factory.apply(player).shallowCopy().formatted(Formatting.AQUA);
         player.networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, type, senderUUID));
     }
 

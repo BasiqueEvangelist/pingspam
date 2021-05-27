@@ -7,6 +7,8 @@ import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.*;
+import net.minecraft.network.MessageType;
+import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.network.packet.s2c.play.TitleS2CPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,6 +18,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
@@ -84,9 +87,10 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
             actionbarTime--;
             if (actionbarTime <= 0) {
                 actionbarTime = ACTIONBAR_TIME;
-                networkHandler.sendPacket(new TitleS2CPacket(
-                    TitleS2CPacket.Action.ACTIONBAR,
-                    new LiteralText("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + ".")
+                networkHandler.sendPacket(new GameMessageS2CPacket(
+                    new LiteralText("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + "."),
+                    MessageType.GAME_INFO,
+                    Util.NIL_UUID
                 ));
             }
         } else {
@@ -100,36 +104,36 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
             actionbarTime = 70;
     }
 
-    @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
-    private void readDataFromTag(CompoundTag tag, CallbackInfo cb) {
+    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    private void readDataFromNbt(NbtCompound tag, CallbackInfo cb) {
         pings.clear();
         if (tag.contains("UnreadPings")) {
-            ListTag pingsTag = tag.getList("UnreadPings", 8);
-            for (Tag pingTag : pingsTag) {
+            NbtList pingsTag = tag.getList("UnreadPings", 8);
+            for (NbtElement pingTag : pingsTag) {
                 pings.add(Text.Serializer.fromJson(pingTag.asString()));
             }
         }
 
         aliases.clear();
         if (tag.contains("Shortnames")) {
-            ListTag aliasesTag = tag.getList("Shortnames", 8);
-            for (Tag aliasTag : aliasesTag) {
+            NbtList aliasesTag = tag.getList("Shortnames", 8);
+            for (NbtElement aliasTag : aliasesTag) {
                 aliases.add(aliasTag.asString());
             }
         }
 
         pingGroups.clear();
         if (tag.contains("PingGroups")) {
-            ListTag pingGroupsTag = tag.getList("PingGroups", 8);
-            for (Tag pingGroupTag : pingGroupsTag) {
+            NbtList pingGroupsTag = tag.getList("PingGroups", 8);
+            for (NbtElement pingGroupTag : pingGroupsTag) {
                 pingGroups.add(pingGroupTag.asString());
             }
         }
 
         ignoredPlayers.clear();
         if (tag.contains("IgnoredPlayers")) {
-            ListTag ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
-            for (Tag ignoredPlayerTag : ignoredPlayerListTag) {
+            NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
+            for (NbtElement ignoredPlayerTag : ignoredPlayerListTag) {
                 ignoredPlayers.add(NbtHelper.toUuid(ignoredPlayerTag));
             }
         }
@@ -143,27 +147,27 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity implements Se
         }
     }
 
-    @Inject(method = "writeCustomDataToTag", at = @At("TAIL"))
-    private void writeDataToTag(CompoundTag tag, CallbackInfo cb) {
-        ListTag pingsTag = new ListTag();
+    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    private void writeDataToNbt(NbtCompound tag, CallbackInfo cb) {
+        NbtList pingsTag = new NbtList();
         for (Text ping : pings) {
-            pingsTag.add(StringTag.of(Text.Serializer.toJson(ping)));
+            pingsTag.add(NbtString.of(Text.Serializer.toJson(ping)));
         }
         tag.put("UnreadPings", pingsTag);
 
-        ListTag aliasesTag = new ListTag();
+        NbtList aliasesTag = new NbtList();
         for (String alias : aliases) {
-            aliasesTag.add(StringTag.of(alias));
+            aliasesTag.add(NbtString.of(alias));
         }
         tag.put("Shortnames", aliasesTag);
 
-        ListTag pingGroupsTag = new ListTag();
+        NbtList pingGroupsTag = new NbtList();
         for (String pingGroup : pingGroups) {
-            pingGroupsTag.add(StringTag.of(pingGroup));
+            pingGroupsTag.add(NbtString.of(pingGroup));
         }
         tag.put("PingGroups", pingGroupsTag);
 
-        ListTag ignoredPlayersListTag = new ListTag();
+        NbtList ignoredPlayersListTag = new NbtList();
         for (UUID ignoredPlayer : ignoredPlayers) {
             ignoredPlayersListTag.add(NbtHelper.fromUuid(ignoredPlayer));
         }

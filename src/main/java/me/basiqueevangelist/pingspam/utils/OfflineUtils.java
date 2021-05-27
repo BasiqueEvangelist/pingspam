@@ -1,7 +1,7 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
-import me.basiqueevangelist.nevseti.nbt.ListTagView;
+import me.basiqueevangelist.nevseti.nbt.NbtCompoundView;
+import me.basiqueevangelist.nevseti.nbt.NbtListView;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.util.dynamic.DynamicSerializableUuid;
 
@@ -12,9 +12,9 @@ public final class OfflineUtils {
 
     }
 
-    public static boolean isPlayerIgnoredBy(CompoundTagView pingedTag, UUID sender) {
+    public static boolean isPlayerIgnoredBy(NbtCompoundView pingedTag, UUID sender) {
         if (pingedTag.contains("IgnoredPlayers")) {
-            ListTagView ignoredPlayerListTag = pingedTag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
+            NbtListView ignoredPlayerListTag = pingedTag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
             for (int i = 0; i < ignoredPlayerListTag.size(); i++) {
                 if (DynamicSerializableUuid.toUuid (ignoredPlayerListTag.getIntArray(i)).equals(sender))
                     return true;

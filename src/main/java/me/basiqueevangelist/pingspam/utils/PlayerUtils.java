@@ -1,8 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.nevseti.OfflineDataCache;
-import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
-import me.basiqueevangelist.nevseti.nbt.ListTagView;
+import me.basiqueevangelist.nevseti.nbt.NbtCompoundView;
+import me.basiqueevangelist.nevseti.nbt.NbtListView;
 import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -25,7 +25,7 @@ public final class PlayerUtils {
                 return player.getUuid();
         }
 
-        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
@@ -40,12 +40,12 @@ public final class PlayerUtils {
                 return player.getUuid();
         }
 
-        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
             if (offlineTag.getValue().contains("Shortnames")) {
-                ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
+                NbtListView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
                     if (aliasesTag.getString(i).equals(name))
                         return offlineTag.getKey();
@@ -65,12 +65,12 @@ public final class PlayerUtils {
                 list.getOnlinePlayers().add(player);
         }
 
-        for (Map.Entry<UUID, CompoundTagView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
+        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
             if (offlineTag.getValue().contains("PingGroups")) {
-                ListTagView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
+                NbtListView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
                 for (int i = 0; i < pingGroupsTag.size(); i++) {
                     if (pingGroupsTag.getString(i).equals(name))
                         list.getOfflinePlayers().add(offlineTag.getKey());

@@ -13,8 +13,8 @@ public interface GameMessageS2CPacketAccessor {
     @Accessor("message")
     Text pingspam$getMessage();
 
-    @Accessor("senderUuid")
-    UUID pingspam$getSenderUuid();
+    @Accessor("sender")
+    UUID pingspam$getSender();
 
     @Accessor("location")
     MessageType pingspam$getLocation();
