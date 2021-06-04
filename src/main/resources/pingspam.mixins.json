@@ -10,7 +10,6 @@
     "SoundEventAccessor"
   ],
   "client": [
-    "client.ClientPlayNetworkHandlerMixin",
     "client.CommandSuggestorMixin",
     "client.InGameHudMixin"
   ],

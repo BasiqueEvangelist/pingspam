@@ -2,7 +2,7 @@ package me.basiqueevangelist.pingspam.mixin.client;
 
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.access.ClientPlayNetworkHandlerAccess;
+import me.basiqueevangelist.pingspam.client.network.PingSpamClientNetworking;
 import me.basiqueevangelist.pingspam.client.network.ServerData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -31,12 +31,10 @@ public abstract class CommandSuggestorMixin {
         return 0;
     }
 
-    @Shadow @Final private MinecraftClient client;
-
     @Redirect(method = "refresh", at = @At(value = "INVOKE", target = "Lnet/minecraft/command/CommandSource;suggestMatching(Ljava/lang/Iterable;Lcom/mojang/brigadier/suggestion/SuggestionsBuilder;)Ljava/util/concurrent/CompletableFuture;"))
     private CompletableFuture<Suggestions> suggestWithoutCommand(Iterable<String> suggestions, SuggestionsBuilder builder) {
-        ((ClientPlayNetworkHandlerAccess) client.getNetworkHandler()).pingspam$requestServerData();
-        ServerData data = ((ClientPlayNetworkHandlerAccess) client.getNetworkHandler()).pingspam$getServerData();
+        PingSpamClientNetworking.requestServerData();
+        ServerData data = PingSpamClientNetworking.getServerData();
 
         String afterString = textField.getText().substring(0, textField.getCursor());
         int lastStart = getLastPlayerNameStart(afterString);
