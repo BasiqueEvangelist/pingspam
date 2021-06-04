@@ -4,8 +4,6 @@ import me.basiqueevangelist.nevseti.OfflineDataCache;
 import me.basiqueevangelist.nevseti.OfflineNameCache;
 import me.basiqueevangelist.nevseti.nbt.CompoundTagView;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.regrouped.PlayerGroup;
-import me.basiqueevangelist.regrouped.Regrouped;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -82,10 +80,10 @@ public final class PingLogic {
                 }
                 break;
             default:
-                PlayerGroup group = Regrouped.findGroupsByName(mention);
-                if (group != null) {
+                PlayerList pingGroup = PlayerUtils.queryPingGroup(manager, mention);
+                if (!pingGroup.isEmpty()) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
-                        pingAllIn(result, PlayerList.fromUuidList(manager, group.getMembers()), message, type, senderUuid);
+                        pingAllIn(result, pingGroup, message, type, senderUuid);
                         result.pingSucceeded = true;
                     } else {
                         PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping group @" + mention + "!");

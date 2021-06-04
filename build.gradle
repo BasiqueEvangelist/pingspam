@@ -54,8 +54,6 @@ dependencies {
 	modImplementation include('com.github.BasiqueEvangelist:ne-v-seti:0.1.5') {
 		transitive = false
 	}
-
-	modImplementation include('com.github.BasiqueEvangelist:regrouped:29111e4')
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
