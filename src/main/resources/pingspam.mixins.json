@@ -11,7 +11,8 @@
   ],
   "client": [
     "client.ClientPlayNetworkHandlerMixin",
-    "client.CommandSuggestorMixin"
+    "client.CommandSuggestorMixin",
+    "client.InGameHudMixin"
   ],
   "injectors": {
     "defaultRequire": 1
