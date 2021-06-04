@@ -13,9 +13,12 @@ import net.minecraft.util.Formatting;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
 public final class ClientPingLogic {
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\w0-9_]{2,16})(\\s|$)", Pattern.UNICODE_CHARACTER_CLASS);
+
     private ClientPingLogic() {
 
     }
@@ -23,7 +26,7 @@ public final class ClientPingLogic {
     public static void processMessage(MessageType type, Text message, UUID senderUuid) {
         String messageText = message.getString();
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        Matcher matcher = PingLogic.PING_PATTERN.matcher(messageText);
+        Matcher matcher = getPattern().matcher(messageText);
         while (matcher.find()) {
             String username = matcher.group(1);
 
@@ -33,6 +36,10 @@ public final class ClientPingLogic {
                 player.playSound(SoundEvents.BLOCK_BELL_USE, 1.0F, 1.0F);
             }
         }
+    }
 
+    private static Pattern getPattern() {
+        // TODO: Make this use config
+        return GENERIC_PATTERN;
     }
 }
