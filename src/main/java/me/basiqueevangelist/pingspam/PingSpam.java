@@ -10,7 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
 
 public class PingSpam implements ModInitializer {
-    public static final ConfigManager CONFIG = new ConfigManager();
+    public static final ConfigManager<PingSpamConfig> CONFIG = new ConfigManager<>(PingSpamConfig.class, new PingSpamConfig(), "pingspam.json5");
     @ApiStatus.Internal
     public static MinecraftServer SERVER;
 

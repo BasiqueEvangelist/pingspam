@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.client.network;
 
+import me.basiqueevangelist.pingspam.client.PingSpamClient;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -16,6 +17,8 @@ public class PingSpamClientNetworking {
 
     public static void register() {
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.ANNOUNCE, (client, handler, buf, responseSender) -> {
+            if (!PingSpamClient.CONFIG.getConfig().serverIntegration) return;
+
             ServerData data = new ServerData();
             data.canPingEveryone = buf.readBoolean();
             data.canPingOnline = buf.readBoolean();
@@ -34,6 +37,8 @@ public class PingSpamClientNetworking {
         });
 
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.PULL_PERMISSIONS, (client, handler, buf, responseSender) -> {
+            if (!PingSpamClient.CONFIG.getConfig().serverIntegration) return;
+
             currentServerData.canPingEveryone = buf.readBoolean();
             currentServerData.canPingOnline = buf.readBoolean();
             currentServerData.canPingOffline = buf.readBoolean();
@@ -41,6 +46,8 @@ public class PingSpamClientNetworking {
         });
 
         ClientPlayNetworking.registerGlobalReceiver(PingSpamPackets.POSSIBLE_NAMES_DIFF, (client, handler, buf, responseSender) -> {
+            if (!PingSpamClient.CONFIG.getConfig().serverIntegration) return;
+
             if (currentServerData != null) {
                 int addedNamesCount = buf.readVarInt();
                 for (int i = 0; i < addedNamesCount; i++) {
@@ -71,5 +78,10 @@ public class PingSpamClientNetworking {
 
     public static @Nullable ServerData getServerData() {
         return currentServerData;
+    }
+
+    public static void disable() {
+        currentServerData = null;
+        lastPermissionsRequest = 0;
     }
 }

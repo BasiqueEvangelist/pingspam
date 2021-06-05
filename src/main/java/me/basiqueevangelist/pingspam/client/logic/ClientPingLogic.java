@@ -1,6 +1,7 @@
 package me.basiqueevangelist.pingspam.client.logic;
 
-import me.basiqueevangelist.pingspam.utils.PingLogic;
+import me.basiqueevangelist.pingspam.client.PingSpamClient;
+import me.basiqueevangelist.pingspam.client.network.PingSpamClientNetworking;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -24,6 +25,11 @@ public final class ClientPingLogic {
     }
 
     public static void processMessage(MessageType type, Text message, UUID senderUuid) {
+        if (type != MessageType.CHAT) return;
+
+        if (!PingSpamClient.CONFIG.getConfig().localMentionScanning) return;
+        if (PingSpamClientNetworking.getServerData() != null && !PingSpamClient.CONFIG.getConfig().alwaysScanMentions) return;
+
         String messageText = message.getString();
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         Matcher matcher = getPattern().matcher(messageText);

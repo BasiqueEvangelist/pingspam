@@ -11,25 +11,30 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class ConfigManager {
+public class ConfigManager<C> {
     private static final Jankson JANKSON = Jankson.builder().build();
     private static final Logger LOGGER = LogManager.getLogger("Pingspam/ConfigManager");
 
-    private PingSpamConfig config = new PingSpamConfig();
+    private final Class<C> klass;
+    private C config;
+    private final String filename;
 
-    public ConfigManager() {
+    public ConfigManager(Class<C> klass, C defaultInstance, String filename) {
+        this.klass = klass;
+        this.filename = filename;
+        config = defaultInstance;
         load();
     }
 
-    public PingSpamConfig getConfig() {
+    public C getConfig() {
         return config;
     }
 
     public void load() {
-        Path confPath = FabricLoader.getInstance().getConfigDir().resolve("pingspam.json5");
+        Path confPath = FabricLoader.getInstance().getConfigDir().resolve(filename);
         if (Files.exists(confPath)) {
             try {
-                config = JANKSON.fromJson(JANKSON.load(confPath.toFile()), PingSpamConfig.class);
+                config = JANKSON.fromJson(JANKSON.load(confPath.toFile()), klass);
             } catch (IOException | SyntaxError e) {
                 LOGGER.error("Could not load config file!", e);
             }
@@ -39,7 +44,7 @@ public class ConfigManager {
     }
 
     public void save() {
-        Path confPath = FabricLoader.getInstance().getConfigDir().resolve("pingspam.json5");
+        Path confPath = FabricLoader.getInstance().getConfigDir().resolve(filename);
         try {
             try (BufferedWriter bw = Files.newBufferedWriter(confPath)) {
                 bw.write(JANKSON.toJson(config).toJson(true, true));

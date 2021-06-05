@@ -35,6 +35,7 @@ repositories {
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	mavenCentral()
 	maven { url 'https://jitpack.io' }
+	maven { url "https://maven.shedaniel.me/" }
 }
 
 dependencies {
@@ -54,6 +55,8 @@ dependencies {
 	modImplementation include('com.github.BasiqueEvangelist:ne-v-seti:0.1.5') {
 		transitive = false
 	}
+
+	modApi include("me.shedaniel.cloth:cloth-config-lite-fabric:1.0.+")
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
