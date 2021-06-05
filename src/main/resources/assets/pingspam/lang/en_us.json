@@ -1,0 +1,6 @@
+{
+  "pingspam.config.client.title": "Pingspam Client Configuration",
+  "pingspam.config.client.serverIntegration": "Server integration",
+  "pingspam.config.client.localMentionScanning": "Local mention scanning",
+  "pingspam.config.client.alwaysScanMentions": "Always scan for mentions"
+}
