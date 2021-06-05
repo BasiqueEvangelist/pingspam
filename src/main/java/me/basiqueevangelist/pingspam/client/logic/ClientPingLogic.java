@@ -32,7 +32,7 @@ public final class ClientPingLogic {
 
         String messageText = message.getString();
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        Matcher matcher = getPattern().matcher(messageText);
+        Matcher matcher = GENERIC_PATTERN.matcher(messageText);
         while (matcher.find()) {
             String username = matcher.group(1);
 
@@ -42,10 +42,5 @@ public final class ClientPingLogic {
                 player.playSound(SoundEvents.BLOCK_BELL_USE, 1.0F, 1.0F);
             }
         }
-    }
-
-    private static Pattern getPattern() {
-        // TODO: Make this use config
-        return GENERIC_PATTERN;
     }
 }
