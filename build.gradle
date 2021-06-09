@@ -9,7 +9,7 @@ sourceCompatibility = "16"
 targetCompatibility = "16"
 
 archivesBaseName = project.archives_base_name
-version = project.mod_version + "-" + project.short_mc_version
+version = project.mod_version + "-" + project.minecraft_version
 group = project.maven_group
 
 configurations {
