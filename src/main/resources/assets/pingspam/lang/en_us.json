@@ -1,6 +1,9 @@
 {
-  "pingspam.config.client.title": "Pingspam Client Configuration",
-  "pingspam.config.client.serverIntegration": "Server integration",
-  "pingspam.config.client.localMentionScanning": "Local mention scanning",
-  "pingspam.config.client.alwaysScanMentions": "Always scan for mentions"
+  "pingspam:pingspam_client": "Pingspam Client Configuration",
+  "pingspam:pingspam_client/server_integration": "Server integration",
+  "pingspam:pingspam_client/server_integration.comment": "Enable/disable integration with the Pingspam server mod.",
+  "pingspam:pingspam_client/local_mention_scanning": "Local mention scanning",
+  "pingspam:pingspam_client/local_mention_scanning.comment": "Scan messages for mentions on the client",
+  "pingspam:pingspam_client/always_scan_mentions": "Always scan for mentions",
+  "pingspam:pingspam_client/always_scan_mentions.comment": "Scan messages for mentions even if the server has Pingspam installed"
 }

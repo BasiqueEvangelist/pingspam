@@ -9,8 +9,6 @@ import net.fabricmc.api.Environment;
 
 @Environment(EnvType.CLIENT)
 public class PingSpamClient implements ClientModInitializer {
-    public static final ConfigManager<PingSpamClientConfig> CONFIG = new ConfigManager<>(PingSpamClientConfig.class, new PingSpamClientConfig(), "pingspam-client.json5");
-
     @Override
     public void onInitializeClient() {
         PingSpamClientNetworking.register();

@@ -31,6 +31,9 @@
     ],
     "modmenu": [
       "me.basiqueevangelist.pingspam.client.config.ModMenuInitializer"
+    ],
+    "config": [
+      "me.basiqueevangelist.pingspam.client.config.PingSpamClientConfig"
     ]
   },
   "mixins": [
