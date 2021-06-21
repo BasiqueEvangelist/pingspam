@@ -18,7 +18,7 @@ import java.util.regex.Pattern;
 
 @Environment(EnvType.CLIENT)
 public final class ClientPingLogic {
-    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\w0-9_]{2,16})(\\s|$)", Pattern.UNICODE_CHARACTER_CLASS);
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("([\\w0-9_]+)", Pattern.UNICODE_CHARACTER_CLASS);
 
     private ClientPingLogic() {
 
@@ -29,8 +29,11 @@ public final class ClientPingLogic {
         if (!PingSpamClientConfig.LOCAL_MENTION_SCANNING.getValue()) return;
         if (PingSpamClientNetworking.getServerData() != null && !PingSpamClientConfig.ALWAYS_SCAN_MENTIONS.getValue()) return;
 
-        String messageText = message.getString();
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (senderUuid.equals(player.getUuid())) return;
+
+        String messageText = message.getString();
+
         Matcher matcher = GENERIC_PATTERN.matcher(messageText);
         while (matcher.find()) {
             String username = matcher.group(1);
@@ -39,6 +42,8 @@ public final class ClientPingLogic {
                 MutableText mutableMessage = (MutableText) message;
                 mutableMessage.formatted(Formatting.AQUA);
                 player.playSound(SoundEvents.BLOCK_BELL_USE, 1.0F, 1.0F);
+
+                return;
             }
         }
     }
