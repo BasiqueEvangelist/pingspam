@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 
 public final class PingLogic {
-    public static final Pattern PING_PATTERN = Pattern.compile("@([\\w0-9_]+)", Pattern.UNICODE_CHARACTER_CLASS);
+    public static final Pattern PING_PATTERN = Pattern.compile("@([\\w0-9_]{2,})", Pattern.UNICODE_CHARACTER_CLASS);
 
     private PingLogic() {
 
