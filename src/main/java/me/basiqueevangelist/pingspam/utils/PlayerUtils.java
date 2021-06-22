@@ -21,7 +21,7 @@ public final class PlayerUtils {
 
     public static @Nullable UUID tryFindPlayer(PlayerManager manager, String name) {
         for (ServerPlayerEntity player : manager.getPlayerList()) {
-            if (player.getGameProfile().getName().equals(name))
+            if (player.getGameProfile().getName().equalsIgnoreCase(name))
                 return player.getUuid();
         }
 
@@ -29,14 +29,14 @@ public final class PlayerUtils {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
-            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equals(name)) {
+            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equalsIgnoreCase(name)) {
                 return offlineTag.getKey();
             }
         }
 
         for (ServerPlayerEntity player : manager.getPlayerList()) {
             List<String> aliases = getAliasesOf(player);
-            if (aliases.contains(name))
+            if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(name)))
                 return player.getUuid();
         }
 
@@ -47,7 +47,7 @@ public final class PlayerUtils {
             if (offlineTag.getValue().contains("Shortnames")) {
                 ListTagView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
-                    if (aliasesTag.getString(i).equals(name))
+                    if (aliasesTag.getString(i).equalsIgnoreCase(name))
                         return offlineTag.getKey();
                 }
             }
@@ -61,7 +61,7 @@ public final class PlayerUtils {
 
         for (ServerPlayerEntity player : manager.getPlayerList()) {
             List<String> groups = getPingGroupsOf(player);
-            if (groups.contains(name))
+            if (groups.stream().anyMatch(x -> x.equalsIgnoreCase(name)))
                 list.getOnlinePlayers().add(player);
         }
 
@@ -72,7 +72,7 @@ public final class PlayerUtils {
             if (offlineTag.getValue().contains("PingGroups")) {
                 ListTagView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
                 for (int i = 0; i < pingGroupsTag.size(); i++) {
-                    if (pingGroupsTag.getString(i).equals(name))
+                    if (pingGroupsTag.getString(i).equalsIgnoreCase(name))
                         list.getOfflinePlayers().add(offlineTag.getKey());
                 }
             }

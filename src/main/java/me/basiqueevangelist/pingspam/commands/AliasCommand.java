@@ -92,7 +92,7 @@ public class AliasCommand {
         List<String> aliases = PlayerUtils.getAliasesOf(player);
         if (!ALIAS_PATTERN.asPredicate().test(alias))
             throw INVALID_ALIAS.create();
-        if (!aliases.contains(alias))
+        if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS_OTHER.create(player);
         aliases.remove(alias);
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
@@ -116,7 +116,7 @@ public class AliasCommand {
         List<String> aliases = PlayerUtils.getAliasesOf(player);
         if (!ALIAS_PATTERN.asPredicate().test(newAlias))
             throw INVALID_ALIAS.create();
-        if (aliases.contains(newAlias))
+        if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(newAlias)))
             throw ALIAS_EXISTS_OTHER.create(player);
         if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
@@ -180,7 +180,7 @@ public class AliasCommand {
         List<String> aliases = PlayerUtils.getAliasesOf(player);
         if (!ALIAS_PATTERN.asPredicate().test(alias))
             throw INVALID_ALIAS.create();
-        if (!aliases.contains(alias))
+        if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS.create();
         aliases.remove(alias);
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
@@ -200,7 +200,7 @@ public class AliasCommand {
         List<String> aliases = PlayerUtils.getAliasesOf(player);
         if (!ALIAS_PATTERN.asPredicate().test(newAlias))
             throw INVALID_ALIAS.create();
-        if (aliases.contains(newAlias))
+        if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(newAlias)))
             throw ALIAS_EXISTS.create();
         if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
