@@ -11,6 +11,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.registry.Registry;
 
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -41,7 +42,7 @@ public final class ClientPingLogic {
             if (username.equals(player.getEntityName())) {
                 MutableText mutableMessage = (MutableText) message;
                 mutableMessage.formatted(Formatting.AQUA);
-                player.playSound(SoundEvents.BLOCK_BELL_USE, 1.0F, 1.0F);
+                player.playSound(Registry.SOUND_EVENT.get(PingSpamClientConfig.LOCAL_PING_SOUND.getValue()), 1.0F, 1.0F);
 
                 return;
             }

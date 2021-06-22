@@ -7,6 +7,7 @@ import dev.inkwell.conrad.api.value.util.Array;
 import dev.inkwell.conrad.api.value.util.Table;
 import dev.inkwell.conrad.api.value.util.Version;
 import net.fabricmc.loader.api.VersionParsingException;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 
 public class JanksonSerializer extends AbstractTreeSerializer<JsonElement, JsonObject> {
@@ -29,6 +31,9 @@ public class JanksonSerializer extends AbstractTreeSerializer<JsonElement, JsonO
 
         this.addSerializer(Array.class, t -> new ArraySerializer<>(t));
         this.addSerializer(Table.class, t -> new TableSerializer<>(t));
+
+
+        this.addSerializer(Identifier.class, IdentifierSerializer.INSTANCE);
     }
 
     @Override
@@ -102,6 +107,8 @@ public class JanksonSerializer extends AbstractTreeSerializer<JsonElement, JsonO
             try {
                 JsonObject obj = new JsonObject();
                 for (Field objField : clazz.getDeclaredFields()) {
+                    if (Modifier.isStatic(objField.getModifiers())) continue;
+
                     objField.setAccessible(true);
                     ValueSerializer<JsonElement, ?, ?> serializer = JanksonSerializer.this.getSerializer((Class<Object>) objField.getType(), objField.get(value));
                     obj.put(objField.getName(), serializer.serializeValue(objField.get(value)));
@@ -119,6 +126,8 @@ public class JanksonSerializer extends AbstractTreeSerializer<JsonElement, JsonO
                 JsonObject obj = (JsonObject) representation;
                 V inst = clazz.newInstance();
                 for (Field objField : clazz.getDeclaredFields()) {
+                    if (Modifier.isStatic(objField.getModifiers())) continue;
+
                     objField.setAccessible(true);
                     ValueSerializer<JsonElement, ?, ?> serializer = JanksonSerializer.this.getSerializer((Class<Object>) objField.getType(), objField.get(inst));
                     objField.set(inst, serializer.deserialize(obj.get(objField.getName())));
@@ -236,6 +245,21 @@ public class JanksonSerializer extends AbstractTreeSerializer<JsonElement, JsonO
         public Double deserialize(JsonElement representation) {
             JsonPrimitive primitive = (JsonPrimitive) representation;
             return primitive.asDouble(0);
+        }
+    }
+
+    private enum IdentifierSerializer implements ValueSerializer<JsonElement, JsonPrimitive, Identifier> {
+        INSTANCE;
+
+        @Override
+        public JsonPrimitive serialize(Identifier value) {
+            return new JsonPrimitive(value.toString());
+        }
+
+        @Override
+        public Identifier deserialize(JsonElement representation) {
+            JsonPrimitive primitive = (JsonPrimitive) representation;
+            return new Identifier(primitive.asString());
         }
     }
 
