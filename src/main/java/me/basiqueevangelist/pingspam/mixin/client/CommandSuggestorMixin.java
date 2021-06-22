@@ -6,7 +6,6 @@ import me.basiqueevangelist.pingspam.client.network.PingSpamClientNetworking;
 import me.basiqueevangelist.pingspam.client.network.ServerData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CommandSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.command.CommandSource;

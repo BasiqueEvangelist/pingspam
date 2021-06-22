@@ -1,6 +1,5 @@
 package me.basiqueevangelist.pingspam.client.network;
 
-import me.basiqueevangelist.pingspam.client.PingSpamClient;
 import me.basiqueevangelist.pingspam.client.config.PingSpamClientConfig;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import net.fabricmc.api.EnvType;

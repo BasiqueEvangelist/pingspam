@@ -4,7 +4,9 @@ import me.basiqueevangelist.nevseti.OfflineDataCache;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class PlayerList {
     private final List<ServerPlayerEntity> onlinePlayers = new ArrayList<>();
