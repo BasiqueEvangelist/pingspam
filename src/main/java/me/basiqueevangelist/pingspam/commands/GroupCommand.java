@@ -99,7 +99,7 @@ public class GroupCommand {
             throw INVALID_GROUPNAME.create();
         if (groups.stream().noneMatch(x -> x.equalsIgnoreCase(group)))
             throw NOT_IN_GROUP_OTHER.create(player);
-        groups.remove(group);
+        groups.removeIf(x -> x.equalsIgnoreCase(group));
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), group, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
         src.sendFeedback(

@@ -94,7 +94,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS_OTHER.create(player);
-        aliases.remove(alias);
+        aliases.removeIf(x -> x.equalsIgnoreCase(alias));
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
         src.sendFeedback(
@@ -182,7 +182,7 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS.create();
-        aliases.remove(alias);
+        aliases.removeIf(x -> x.equalsIgnoreCase(alias));
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
         src.sendFeedback(new LiteralText("Removed alias ")
