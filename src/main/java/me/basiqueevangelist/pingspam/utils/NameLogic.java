@@ -18,17 +18,17 @@ public final class NameLogic {
 
     public static boolean isValidName(PlayerManager manager, String name, boolean ignoreGroups) {
         for (ServerPlayerEntity onlinePlayer : manager.getPlayerList()) {
-            if (onlinePlayer.getGameProfile().getName().equals(name))
+            if (onlinePlayer.getGameProfile().getName().equalsIgnoreCase(name))
                 return true;
 
             for (String otherAlias : PlayerUtils.getAliasesOf(onlinePlayer)) {
-                if (otherAlias.equals(name))
+                if (otherAlias.equalsIgnoreCase(name))
                     return true;
             }
 
             if (!ignoreGroups)
                 for (String group : PlayerUtils.getPingGroupsOf(onlinePlayer)) {
-                    if (group.equals(name))
+                    if (group.equalsIgnoreCase(name))
                         return true;
                 }
         }
@@ -37,14 +37,14 @@ public final class NameLogic {
             if (manager.getPlayer(offlineTag.getKey()) != null)
                 continue;
 
-            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equals(name)) {
+            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equalsIgnoreCase(name)) {
                 return true;
             }
 
             if (offlineTag.getValue().contains("Shortnames")) {
                 NbtListView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
-                    if (aliasesTag.getString(i).equals(name))
+                    if (aliasesTag.getString(i).equalsIgnoreCase(name))
                         return true;
                 }
             }
@@ -53,7 +53,7 @@ public final class NameLogic {
                 if (offlineTag.getValue().contains("PingGroups")) {
                     NbtListView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
                     for (int i = 0; i < pingGroupsTag.size(); i++) {
-                        if (pingGroupsTag.getString(i).equals(name))
+                        if (pingGroupsTag.getString(i).equalsIgnoreCase(name))
                             return true;
                     }
                 }
@@ -66,16 +66,16 @@ public final class NameLogic {
         List<String> possibleNames = new ArrayList<>();
         for (ServerPlayerEntity otherPlayer : manager.getPlayerList()) {
             String playerName = otherPlayer.getGameProfile().getName();
-            if (!possibleNames.contains(playerName))
+            if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(playerName)))
                 possibleNames.add(playerName);
 
             for (String alias : PlayerUtils.getAliasesOf(otherPlayer)) {
-                if (!possibleNames.contains(alias))
+                if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
                     possibleNames.add(alias);
             }
 
             for (String group : PlayerUtils.getPingGroupsOf(otherPlayer)) {
-                if (!possibleNames.contains(group))
+                if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(group)))
                     possibleNames.add(group);
             }
         }
@@ -85,14 +85,14 @@ public final class NameLogic {
 
             if (offlinePlayerTag.getValue().contains("SavedUsername")) {
                 String offlineUsername = offlinePlayerTag.getValue().getString("SavedUsername");
-                if (!possibleNames.contains(offlineUsername))
+                if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(offlineUsername)))
                     possibleNames.add(offlineUsername);
             }
             if (offlinePlayerTag.getValue().contains("Shortnames")) {
                 NbtListView aliasesTag = offlinePlayerTag.getValue().getList("Shortnames", 8);
                 for (int i = 0; i < aliasesTag.size(); i++) {
                     String alias = aliasesTag.getString(i);
-                    if (!possibleNames.contains(alias))
+                    if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
                         possibleNames.add(alias);
                 }
             }
@@ -100,7 +100,7 @@ public final class NameLogic {
                 NbtListView pingGroupsTag = offlinePlayerTag.getValue().getList("PingGroups", 8);
                 for (int i = 0; i < pingGroupsTag.size(); i++) {
                     String pingGroup = pingGroupsTag.getString(i);
-                    if (!possibleNames.contains(pingGroup))
+                    if (possibleNames.stream().noneMatch(x -> x.equalsIgnoreCase(pingGroup)))
                         possibleNames.add(pingGroup);
                 }
             }

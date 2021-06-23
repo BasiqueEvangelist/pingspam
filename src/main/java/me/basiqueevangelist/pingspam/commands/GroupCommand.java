@@ -97,9 +97,9 @@ public class GroupCommand {
         List<String> groups = PlayerUtils.getPingGroupsOf(player);
         if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
-        if (!groups.contains(group))
+        if (groups.stream().noneMatch(x -> x.equalsIgnoreCase(group)))
             throw NOT_IN_GROUP_OTHER.create(player);
-        groups.remove(group);
+        groups.removeIf(x -> x.equalsIgnoreCase(group));
         if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), group, false))
             ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
         src.sendFeedback(
@@ -129,7 +129,7 @@ public class GroupCommand {
         List<String> groups = PlayerUtils.getPingGroupsOf(player);
         if (!GROUPNAME_PATTERN.asPredicate().test(newGroup))
             throw INVALID_GROUPNAME.create();
-        if (groups.contains(newGroup))
+        if (groups.stream().anyMatch(x -> x.equalsIgnoreCase(newGroup)))
             throw IN_GROUP_OTHER.create(player);
         if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newGroup, true))
             throw NAME_COLLISION.create();
