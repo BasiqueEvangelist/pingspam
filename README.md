@@ -1,6 +1,6 @@
 # Pingspam
 [![Modrinth Badge](https://waffle.coffee/modrinth/pingspam/downloads)](https://modrinth.com/mod/pingspam)
-[![CurseForge Badge](https://cf.way2muchnoise.eu/pingspam.svg)](https://www.curseforge.com/minecraft/mc-mods/pingspam)
+[![CurseForge Badge](http://cf.way2muchnoise.eu/pingspam.svg)](https://www.curseforge.com/minecraft/mc-mods/pingspam)
 
 *Reach those pesky AFKers, alt-tabbers, chat-ignorers and offline people with one simple trick!*  
 Pingspam allows you to mention players in chat. You can mention by name (i.e "@GreatGrayOwl") or group.
