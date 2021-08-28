@@ -100,8 +100,8 @@ public class GroupCommand {
         if (groups.stream().noneMatch(x -> x.equalsIgnoreCase(group)))
             throw NOT_IN_GROUP_OTHER.create(player);
         groups.removeIf(x -> x.equalsIgnoreCase(group));
-        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), group, false))
-            ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), group);
+        if (!NameLogic.isValidName(src.getServer().getPlayerManager(), group, false))
+            ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), group);
         src.sendFeedback(
             new LiteralText("Removed player ")
                 .formatted(Formatting.RED)
@@ -131,10 +131,10 @@ public class GroupCommand {
             throw INVALID_GROUPNAME.create();
         if (groups.stream().anyMatch(x -> x.equalsIgnoreCase(newGroup)))
             throw IN_GROUP_OTHER.create(player);
-        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newGroup, true))
+        if (NameLogic.isValidName(src.getServer().getPlayerManager(), newGroup, true))
             throw NAME_COLLISION.create();
         groups.add(newGroup);
-        ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newGroup);
+        ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newGroup);
         src.sendFeedback(
             new LiteralText("Added player ")
                 .formatted(Formatting.GREEN)

@@ -95,8 +95,8 @@ public class AliasCommand {
         if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS_OTHER.create(player);
         aliases.removeIf(x -> x.equalsIgnoreCase(alias));
-        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
-            ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
+        if (!NameLogic.isValidName(src.getServer().getPlayerManager(), alias, false))
+            ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
         src.sendFeedback(
             new LiteralText("Removed alias ")
                 .formatted(Formatting.RED)
@@ -118,12 +118,12 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(newAlias)))
             throw ALIAS_EXISTS_OTHER.create(player);
-        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.isValidName(src.getServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
         aliases.add(newAlias);
-        ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
+        ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
         src.sendFeedback(
             new LiteralText("Added alias ")
                 .formatted(Formatting.GREEN)
@@ -183,8 +183,8 @@ public class AliasCommand {
         if (aliases.stream().noneMatch(x -> x.equalsIgnoreCase(alias)))
             throw NO_SUCH_ALIAS.create();
         aliases.removeIf(x -> x.equalsIgnoreCase(alias));
-        if (!NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), alias, false))
-            ServerNetworkLogic.removePossibleName(src.getMinecraftServer().getPlayerManager(), alias);
+        if (!NameLogic.isValidName(src.getServer().getPlayerManager(), alias, false))
+            ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
         src.sendFeedback(new LiteralText("Removed alias ")
             .formatted(Formatting.RED)
             .append(new LiteralText('"' + alias + '"')
@@ -202,12 +202,12 @@ public class AliasCommand {
             throw INVALID_ALIAS.create();
         if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(newAlias)))
             throw ALIAS_EXISTS.create();
-        if (NameLogic.isValidName(src.getMinecraftServer().getPlayerManager(), newAlias, false))
+        if (NameLogic.isValidName(src.getServer().getPlayerManager(), newAlias, false))
             throw ALIAS_COLLISION.create();
         if (aliases.size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
             throw TOO_MANY_ALIASES.create();
         aliases.add(newAlias);
-        ServerNetworkLogic.addPossibleName(src.getMinecraftServer().getPlayerManager(), newAlias);
+        ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
         src.sendFeedback(new LiteralText("Added alias ")
             .formatted(Formatting.GREEN)
             .append(new LiteralText('"' + newAlias + '"')
