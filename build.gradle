@@ -54,7 +54,7 @@ dependencies {
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include('me.basiqueevangelist:ne-v-seti:0.1.6-1.17') {
+	modImplementation include('me.basiqueevangelist:ne-v-seti:0.2.0+1.17.1') {
 		transitive = false
 	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
