@@ -5,17 +5,20 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import me.basiqueevangelist.nevseti.OfflineNameCache;
-import me.basiqueevangelist.pingspam.utils.PlayerUtils;
+import com.mojang.brigadier.suggestion.Suggestions;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.pingspam.utils.CommandUtil;
+import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -33,43 +36,39 @@ public class PingIgnoreCommand {
                             .executes(PingIgnoreCommand::addIgnoredPlayer)))
                     .then(literal("remove")
                         .then(argument("player", GameProfileArgumentType.gameProfile())
-                            .suggests((ctx, builder) -> {
-                                for (UUID ignoredUuid : PlayerUtils.getIgnoredPlayersOf(ctx.getSource().getPlayer())) {
-                                    builder.suggest(OfflineNameCache.INSTANCE.getNameFromUUID(ignoredUuid));
-                                }
-                                return builder.buildFuture();
-                            })
+                            .suggests(PingIgnoreCommand::suggestIgnoredPlayers)
                             .executes(PingIgnoreCommand::removeIgnoredPlayer)))
                     .then(literal("list")
                         .executes(PingIgnoreCommand::listIgnoredPlayers)))
         );
     }
 
-    private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource src = ctx.getSource();
-        Collection<GameProfile> playersToIgnore = GameProfileArgumentType.getProfileArgument(ctx, "player");
-        ServerPlayerEntity player = src.getPlayer();
-        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
-        StringBuilder playersBuilder = new StringBuilder();
+    private static CompletableFuture<Suggestions> suggestIgnoredPlayers(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
 
-        boolean isFirst = true;
-        for (GameProfile playerToIgnore : playersToIgnore) {
-            if (!isFirst)
-                playersBuilder.append(", ");
-            isFirst = false;
-
-            playersBuilder.append(playerToIgnore.getName());
-
-            if (ignoredPlayers.contains(playerToIgnore.getId())) {
-                throw PLAYER_ALREADY_IGNORED.create();
-            }
-
-            ignoredPlayers.add(playerToIgnore.getId());
+        for (UUID ignoredId : data.ignoredPlayers()) {
+            builder.suggest(SuggestionsUtils.wrapString(NameUtil.getNameFromUUID(ignoredId)));
         }
 
+        return builder.buildFuture();
+    }
+
+    private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
+        GameProfile offender = CommandUtil.getOnePlayer(ctx, "player");
+        ServerPlayerEntity player = src.getPlayer();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+
+        if (data.ignoredPlayers().contains(offender.getId())) {
+            throw PLAYER_ALREADY_IGNORED.create();
+        }
+
+        data.ignoredPlayers().add(offender.getId());
+
         src.sendFeedback(new LiteralText("You are now ignoring ")
-            .formatted(Formatting.RED)
-            .append(new LiteralText(playersBuilder.toString())
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText(NameUtil.getNameFromUUID(offender.getId()))
                 .formatted(Formatting.AQUA))
             .append(new LiteralText(".")), false);
 
@@ -78,29 +77,18 @@ public class PingIgnoreCommand {
 
     private static int removeIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        Collection<GameProfile> removedPlayers = GameProfileArgumentType.getProfileArgument(ctx, "player");
+        GameProfile pardonee = CommandUtil.getOnePlayer(ctx, "player");
         ServerPlayerEntity player = src.getPlayer();
-        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
-        StringBuilder playersBuilder = new StringBuilder();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
 
-        boolean isFirst = true;
-        for (GameProfile removedPlayer : removedPlayers) {
-            if (!isFirst)
-                playersBuilder.append(", ");
-            isFirst = false;
+        if (!data.ignoredPlayers().contains(pardonee.getId()))
+            throw PLAYER_NOT_IGNORED.create();
 
-            playersBuilder.append(removedPlayer.getName());
-
-            if (!ignoredPlayers.contains(removedPlayer.getId())) {
-                throw PLAYER_NOT_IGNORED.create();
-            }
-
-            ignoredPlayers.remove(removedPlayer.getId());
-        }
+        data.ignoredPlayers().remove(pardonee.getId());
 
         src.sendFeedback(new LiteralText("You are no longer ignoring ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(playersBuilder.toString())
+            .append(new LiteralText(NameUtil.getNameFromUUID(pardonee.getId()))
                 .formatted(Formatting.AQUA))
             .append("."), false);
 
@@ -110,22 +98,20 @@ public class PingIgnoreCommand {
     private static int listIgnoredPlayers(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        List<UUID> ignoredPlayers = PlayerUtils.getIgnoredPlayersOf(player);
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
 
-        if (ignoredPlayers.isEmpty()) {
+        if (data.ignoredPlayers().isEmpty()) {
             src.sendFeedback(new LiteralText("You are not ignoring any players.")
                 .formatted(Formatting.GREEN), false);
             return 0;
         }
 
         StringBuilder contentBuilder = new StringBuilder();
-        int count = 0;
-        for (UUID ignoredPlayerUuid : ignoredPlayers) {
-            contentBuilder.append("\n - ").append(OfflineNameCache.INSTANCE.getNameFromUUID(ignoredPlayerUuid));
-            count++;
+        for (UUID ignoredPlayerUuid : data.ignoredPlayers()) {
+            contentBuilder.append("\n - ").append(NameUtil.getNameFromUUID(ignoredPlayerUuid));
         }
 
-        src.sendFeedback(new LiteralText("You are ignoring " + count + " player(s):")
+        src.sendFeedback(new LiteralText("You are ignoring " + data.ignoredPlayers().size() + " player(s):")
             .formatted(Formatting.GREEN)
             .append(new LiteralText(contentBuilder.toString())
                 .formatted(Formatting.AQUA)), false);

@@ -11,7 +11,7 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-import java.util.List;
+import java.util.Set;
 
 public final class ServerNetworkLogic {
     private ServerNetworkLogic() {
@@ -21,7 +21,6 @@ public final class ServerNetworkLogic {
     public static void sendServerAnnouncement(ServerPlayerEntity player, ClientConnection conn) {
         if (!ServerPlayNetworking.canSend(player, PingSpamPackets.ANNOUNCE)) return;
 
-        PlayerManager manager = player.server.getPlayerManager();
         PacketByteBuf newBuf = PacketByteBufs.create();
 
         newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.everyone", 2));
@@ -29,11 +28,8 @@ public final class ServerNetworkLogic {
         newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.offline", 2));
         newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.player", true));
 
-        List<String> possibleNames = NameLogic.listValidNames(manager);
-        newBuf.writeVarInt(possibleNames.size());
-        for (String possibleName : possibleNames) {
-            newBuf.writeString(possibleName);
-        }
+        Set<String> possibleNames = NameLogic.listValidNames(player.server);
+        newBuf.writeCollection(possibleNames, PacketByteBuf::writeString);
 
         conn.send(ServerPlayNetworking.createS2CPacket(PingSpamPackets.ANNOUNCE, newBuf));
     }

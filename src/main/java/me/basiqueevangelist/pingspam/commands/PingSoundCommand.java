@@ -4,8 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import me.basiqueevangelist.pingspam.mixin.SoundEventAccessor;
-import me.basiqueevangelist.pingspam.utils.PlayerUtils;
+import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.ServerCommandSource;
@@ -38,13 +38,15 @@ public class PingSoundCommand {
     private static int setPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
         Identifier soundId = IdentifierArgumentType.getIdentifier(ctx, "sound");
         SoundEvent event = Registry.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
 
-        PlayerUtils.setPingSound(player, event);
+        data.setPingSound(event);
+
         src.sendFeedback(new LiteralText("Set ping sound to ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId().toString())
+            .append(new LiteralText(soundId.toString())
                 .formatted(Formatting.YELLOW))
             .append(new LiteralText(".")), false);
 
@@ -54,8 +56,10 @@ public class PingSoundCommand {
     private static int removePingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
 
-        PlayerUtils.setPingSound(player, null);
+        data.setPingSound(null);
+
         src.sendFeedback(new LiteralText("Disabled ping sound.")
             .formatted(Formatting.GREEN), false);
 
@@ -65,11 +69,12 @@ public class PingSoundCommand {
     private static int getPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
+        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
 
-        if (PlayerUtils.getPingSound(player) != null) {
+        if (data.pingSound() != null) {
             src.sendFeedback(new LiteralText("Your current ping sound is ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(((SoundEventAccessor) PlayerUtils.getPingSound(player)).pingspam$getId().toString())
+                .append(new LiteralText(data.pingSound().getId().toString())
                     .formatted(Formatting.YELLOW))
                 .append(new LiteralText(".")), false);
         } else {

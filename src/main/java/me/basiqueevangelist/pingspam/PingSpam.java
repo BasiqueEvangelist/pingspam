@@ -1,10 +1,12 @@
 package me.basiqueevangelist.pingspam;
 
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
+import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
@@ -24,5 +26,8 @@ public class PingSpam implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> SERVER = null);
+
+        ServerPlayConnectionEvents.JOIN.register(
+            (handler, sender, server) -> PingspamPersistentState.getFrom(server).getFor(handler.getPlayer().getUuid()));
     }
 }

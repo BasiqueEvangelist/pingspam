@@ -1,17 +1,14 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import me.basiqueevangelist.nevseti.OfflineDataCache;
-import me.basiqueevangelist.nevseti.nbt.NbtCompoundView;
-import me.basiqueevangelist.nevseti.nbt.NbtListView;
-import me.basiqueevangelist.pingspam.access.ServerPlayerEntityAccess;
-import net.minecraft.server.PlayerManager;
+import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public final class PlayerUtils {
@@ -19,89 +16,34 @@ public final class PlayerUtils {
 
     }
 
-    public static @Nullable UUID tryFindPlayer(PlayerManager manager, String name) {
-        for (ServerPlayerEntity player : manager.getPlayerList()) {
+    public static @Nullable UUID tryFindPlayer(MinecraftServer server, String name) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             if (player.getGameProfile().getName().equalsIgnoreCase(name))
                 return player.getUuid();
         }
 
-        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
-            if (manager.getPlayer(offlineTag.getKey()) != null)
-                continue;
+        for (Map.Entry<UUID, PingspamPlayerData> entry : PingspamPersistentState.getFrom(server).getPlayerMap().entrySet()) {
+            if (NameUtil.getNameFromUUID(entry.getKey()).equalsIgnoreCase(name))
+                return entry.getKey();
 
-            if (offlineTag.getValue().contains("SavedUsername") && offlineTag.getValue().getString("SavedUsername").equalsIgnoreCase(name)) {
-                return offlineTag.getKey();
-            }
-        }
-
-        for (ServerPlayerEntity player : manager.getPlayerList()) {
-            List<String> aliases = getAliasesOf(player);
-            if (aliases.stream().anyMatch(x -> x.equalsIgnoreCase(name)))
-                return player.getUuid();
-        }
-
-        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
-            if (manager.getPlayer(offlineTag.getKey()) != null)
-                continue;
-
-            if (offlineTag.getValue().contains("Shortnames")) {
-                NbtListView aliasesTag = offlineTag.getValue().getList("Shortnames", 8);
-                for (int i = 0; i < aliasesTag.size(); i++) {
-                    if (aliasesTag.getString(i).equalsIgnoreCase(name))
-                        return offlineTag.getKey();
-                }
+            for (String alias : entry.getValue().aliases()) {
+                if (alias.equalsIgnoreCase(name))
+                    return entry.getKey();
             }
         }
 
         return null;
     }
 
-    public static PlayerList queryPingGroup(PlayerManager manager, String name) {
-        PlayerList list = new PlayerList();
+    public static Set<UUID> getAllPlayers(MinecraftServer server) {
+        Set<UUID> players = new HashSet<>();
 
-        for (ServerPlayerEntity player : manager.getPlayerList()) {
-            List<String> groups = getPingGroupsOf(player);
-            if (groups.stream().anyMatch(x -> x.equalsIgnoreCase(name)))
-                list.getOnlinePlayers().add(player);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            players.add(player.getUuid());
         }
 
-        for (Map.Entry<UUID, NbtCompoundView> offlineTag : OfflineDataCache.INSTANCE.getPlayers().entrySet()) {
-            if (manager.getPlayer(offlineTag.getKey()) != null)
-                continue;
+        players.addAll(PingspamPersistentState.getFrom(server).getPlayerMap().keySet());
 
-            if (offlineTag.getValue().contains("PingGroups")) {
-                NbtListView pingGroupsTag = offlineTag.getValue().getList("PingGroups", 8);
-                for (int i = 0; i < pingGroupsTag.size(); i++) {
-                    if (pingGroupsTag.getString(i).equalsIgnoreCase(name))
-                        list.getOfflinePlayers().add(offlineTag.getKey());
-                }
-            }
-        }
-
-        return list;
-    }
-
-    public static List<Text> getUnreadPingsFor(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getPings();
-    }
-
-    public static List<String> getAliasesOf(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getAliases();
-    }
-
-    public static List<String> getPingGroupsOf(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getPingGroups();
-    }
-
-    public static SoundEvent getPingSound(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getPingSound();
-    }
-
-    public static void setPingSound(ServerPlayerEntity player, SoundEvent sound) {
-        ((ServerPlayerEntityAccess) player).pingspam$setPingSound(sound);
-    }
-
-    public static List<UUID> getIgnoredPlayersOf(ServerPlayerEntity player) {
-        return ((ServerPlayerEntityAccess) player).pingspam$getIgnoredPlayers();
+        return players;
     }
 }

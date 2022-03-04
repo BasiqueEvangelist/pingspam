@@ -1,12 +1,13 @@
 plugins {
-	id 'com.github.johnrengelman.shadow' version '6.1.0'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
 	id 'java'
-	id 'fabric-loom' version '0.8-SNAPSHOT'
+	id 'fabric-loom' version '0.11-SNAPSHOT'
+	id 'io.github.juuxel.loom-quiltflower' version '1.6.0'
 	id 'maven-publish'
 }
 
-sourceCompatibility = "16"
-targetCompatibility = "16"
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version + "+" + project.minecraft_version
@@ -16,10 +17,8 @@ configurations {
 	shade
 }
 
-shadowJar {
-	configurations = [project.configurations.shadow]
-
-	relocate "blue.endless.jankson", "me.basiqueevangelist.pingspam.shadowed.blue.endless.jankson"
+loom {
+	accessWidenerPath = file("src/main/resources/pingspam.accesswidener")
 }
 
 repositories {
@@ -49,14 +48,10 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-//	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
+	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
-
-	modImplementation include('me.basiqueevangelist:ne-v-seti:0.2.0+1.17.1') {
-		transitive = false
-	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
@@ -64,7 +59,17 @@ dependencies {
 remapJar {
 	dependsOn "shadowJar"
 
-	input.set shadowJar.archiveFile.get()
+	inputFile.set shadowJar.archiveFile.get()
+}
+
+prepareRemapJar {
+	dependsOn "shadowJar"
+}
+
+shadowJar {
+	configurations = [project.configurations.shadow]
+
+	relocate "blue.endless.jankson", "me.basiqueevangelist.pingspam.shadowed.blue.endless.jankson"
 }
 
 processResources {
@@ -82,7 +87,7 @@ tasks.withType(JavaCompile).configureEach {
 	// If Javadoc is generated, this must be specified in that task too.
 	it.options.encoding = "UTF-8"
 
-	 it.options.release = 16
+	it.options.release = 17
 }
 
 java {
@@ -102,13 +107,7 @@ jar {
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
-			// add all the jars that should be included when publishing to maven
-			artifact(remapJar) {
-				builtBy remapJar
-			}
-			artifact(sourcesJar) {
-				builtBy remapSourcesJar
-			}
+			from components.java
 		}
 	}
     

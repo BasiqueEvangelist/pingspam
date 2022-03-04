@@ -1,19 +1,16 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "me.basiqueevangelist.pingspam.mixin",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "GameMessageS2CPacketAccessor",
-    "PlayerManagerMixin",
-    "ServerPlayerEntityMixin",
-    "SoundEventAccessor"
-  ],
-  "client": [
-    "client.ClientPlayNetworkHandlerMixin",
-    "client.CommandSuggestorMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
+    "required": true,
+    "minVersion": "0.8",
+    "package": "me.basiqueevangelist.pingspam.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "PlayerManagerMixin",
+        "ServerPlayerEntityMixin"
+    ],
+    "client": [
+        "client.CommandSuggestorMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
   }
 }
