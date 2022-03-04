@@ -15,7 +15,6 @@ import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameLogic;
-import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,9 +30,9 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class GroupCommand {
     private static final DynamicCommandExceptionType IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(NameUtil.getNameFromUUID(((GameProfile) x).getId())).append(new LiteralText(" is already in that group!")));
+        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" is already in that group!")));
     private static final DynamicCommandExceptionType NOT_IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(NameUtil.getNameFromUUID(((GameProfile) x).getId())).append(new LiteralText(" isn't in that group!")));
+        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" isn't in that group!")));
     private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("Group name collides with other player's alias!"));
     private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(new LiteralText("Invalid group name!"));
     private static final Pattern GROUPNAME_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
@@ -87,7 +86,7 @@ public class GroupCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+        src.sendFeedback(new LiteralText(player.getName())
             .formatted(Formatting.AQUA)
             .append(new LiteralText(headerBuilder.toString())
                 .formatted(Formatting.GREEN))
@@ -118,7 +117,7 @@ public class GroupCommand {
         src.sendFeedback(
             new LiteralText("Removed player ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+                .append(new LiteralText(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(" from group ")
                 .append(new LiteralText(group)
@@ -161,7 +160,7 @@ public class GroupCommand {
         src.sendFeedback(
             new LiteralText("Added player ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+                .append(new LiteralText(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(" to group ")
                 .append(new LiteralText(newGroup)

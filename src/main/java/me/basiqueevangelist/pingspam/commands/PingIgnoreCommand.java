@@ -68,7 +68,7 @@ public class PingIgnoreCommand {
 
         src.sendFeedback(new LiteralText("You are now ignoring ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(NameUtil.getNameFromUUID(offender.getId()))
+            .append(new LiteralText(offender.getName())
                 .formatted(Formatting.AQUA))
             .append(new LiteralText(".")), false);
 
@@ -88,7 +88,7 @@ public class PingIgnoreCommand {
 
         src.sendFeedback(new LiteralText("You are no longer ignoring ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(NameUtil.getNameFromUUID(pardonee.getId()))
+            .append(new LiteralText(pardonee.getName())
                 .formatted(Formatting.AQUA))
             .append("."), false);
 

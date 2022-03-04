@@ -14,7 +14,6 @@ import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameLogic;
-import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -31,10 +30,10 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class AliasCommand {
     private static final SimpleCommandExceptionType ALIAS_EXISTS = new SimpleCommandExceptionType(new LiteralText("You already have that alias!"));
     private static final DynamicCommandExceptionType ALIAS_EXISTS_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(NameUtil.getNameFromUUID(((GameProfile) x).getId())).append(new LiteralText(" already has that alias!")));
+        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" already has that alias!")));
     private static final SimpleCommandExceptionType NO_SUCH_ALIAS = new SimpleCommandExceptionType(new LiteralText("You don't have that alias!"));
     private static final DynamicCommandExceptionType NO_SUCH_ALIAS_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(NameUtil.getNameFromUUID(((GameProfile) x).getId())).append(" doesn't have that alias!"));
+        new LiteralText(((GameProfile) x).getName()).append(" doesn't have that alias!"));
     private static final SimpleCommandExceptionType ALIAS_COLLISION = new SimpleCommandExceptionType(new LiteralText("That is already a valid name!"));
     private static final SimpleCommandExceptionType INVALID_ALIAS = new SimpleCommandExceptionType(new LiteralText("Invalid alias!"));
     private static final SimpleCommandExceptionType TOO_MANY_ALIASES = new SimpleCommandExceptionType(new LiteralText("Too many aliases! (maximum is 10)"));
@@ -118,7 +117,7 @@ public class AliasCommand {
                 .append(new LiteralText('"' + alias + '"')
                     .formatted(Formatting.YELLOW))
                 .append(new LiteralText(" from "))
-                .append(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+                .append(new LiteralText(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(new LiteralText(".")), true);
 
@@ -152,7 +151,7 @@ public class AliasCommand {
                 .append(new LiteralText('"' + newAlias + '"')
                     .formatted(Formatting.YELLOW))
                 .append(new LiteralText(" to "))
-                .append(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+                .append(new LiteralText(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(new LiteralText(".")), true);
 
@@ -186,7 +185,7 @@ public class AliasCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(new LiteralText(NameUtil.getNameFromUUID(player.getId()))
+        src.sendFeedback(new LiteralText(player.getName())
             .formatted(Formatting.AQUA)
             .append(
                 new LiteralText(headerBuilder.toString())
