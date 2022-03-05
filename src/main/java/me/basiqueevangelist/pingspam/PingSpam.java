@@ -8,8 +8,8 @@ import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
-import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.ApiStatus;
+import org.slf4j.LoggerFactory;
 
 public class PingSpam implements ModInitializer {
     public static final ConfigManager CONFIG = new ConfigManager();
@@ -18,7 +18,7 @@ public class PingSpam implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LogManager.getLogger("PingSpam").info("Several people are typing...");
+        LoggerFactory.getLogger("PingSpam").info("Several people are typing...");
 
         PingSpamPackets.register();
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> CONFIG.load());

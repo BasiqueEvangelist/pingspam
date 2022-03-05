@@ -3,8 +3,8 @@ package me.basiqueevangelist.pingspam;
 import blue.endless.jankson.Jankson;
 import blue.endless.jankson.api.SyntaxError;
 import net.fabricmc.loader.api.FabricLoader;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import java.nio.file.Path;
 
 public class ConfigManager {
     private static final Jankson JANKSON = Jankson.builder().build();
-    private static final Logger LOGGER = LogManager.getLogger("Pingspam/ConfigManager");
+    private static final Logger LOGGER = LoggerFactory.getLogger("Pingspam/ConfigManager");
 
     private PingSpamConfig config = new PingSpamConfig();
 
