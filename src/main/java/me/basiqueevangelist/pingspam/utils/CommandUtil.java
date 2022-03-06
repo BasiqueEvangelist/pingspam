@@ -6,7 +6,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -34,11 +35,11 @@ public final class CommandUtil {
     }
 
     public static CompletableFuture<Suggestions> suggestPlayersExceptSelf(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
         var playerNames = new HashSet<>(List.of(ctx.getSource().getServer().getPlayerNames()));
-        var pingspamData = PingspamPersistentState.getFrom(ctx.getSource().getServer());
 
-        for (var id : pingspamData.getPlayerMap().keySet()) {
-            playerNames.add(NameUtil.getNameFromUUID(id));
+        for (PlayerDataEntry entry : DataStore.getFor(src.getServer()).players()) {
+            playerNames.add(NameUtil.getNameFromUUID(entry.playerId()));
         }
 
         playerNames.remove(ctx.getSource().getPlayer().getEntityName());

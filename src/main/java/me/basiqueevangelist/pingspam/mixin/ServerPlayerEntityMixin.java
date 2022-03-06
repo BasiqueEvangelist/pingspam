@@ -1,8 +1,8 @@
 package me.basiqueevangelist.pingspam.mixin;
 
 import com.mojang.authlib.GameProfile;
+import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.MessageType;
@@ -41,11 +41,15 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void loadPingspamData(MinecraftServer server, ServerWorld world, GameProfile profile, CallbackInfo ci) {
-         pingspamData = PingspamPersistentState.getFrom(server).getFor(uuid);
+        if (isImpostor()) return;
+
+        pingspamData = DataStore.getFor(server).getPlayer(uuid, PingSpam.PLAYER_DATA);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
+        if (isImpostor()) return;
+
         var pings = pingspamData.unreadPings();
 
         if (pings.size() > 0 && PingSpam.CONFIG.getConfig().showUnreadMessagesInActionbar) {
@@ -68,5 +72,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     private void onActionbarMessage(Text message, boolean actionBar, CallbackInfo ci) {
         if (actionBar)
             actionbarTime = 70;
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    @Unique
+    private boolean isImpostor() {
+        return (Class<?>) getClass() != ServerPlayerEntity.class;
     }
 }

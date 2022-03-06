@@ -10,7 +10,8 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
@@ -62,7 +63,7 @@ public class GroupCommand {
     private static int listPlayerGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
@@ -98,10 +99,10 @@ public class GroupCommand {
 
     private static int removePlayerGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
+        DataStore store = DataStore.getFor(src.getServer());
         String group = StringArgumentType.getString(ctx, "groupname");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPersistentState state = PingspamPersistentState.getFrom(ctx.getSource().getServer());
-        PingspamPlayerData data = state.getFor(player.getId());
+        PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
@@ -109,7 +110,7 @@ public class GroupCommand {
         if (!data.groups().contains(group))
             throw NOT_IN_GROUP_OTHER.create(player);
 
-        state.removePlayerFromGroup(group, player.getId());
+        store.get(PingSpam.GLOBAL_DATA).removePlayerFromGroup(group, player.getId());
 
         if (!NameLogic.isValidName(src.getServer(), group, false))
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), group);
@@ -128,8 +129,9 @@ public class GroupCommand {
     }
 
     private static CompletableFuture<Suggestions> suggestPlayerGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        var src = ctx.getSource();
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         for (String group : data.groups()) {
             builder.suggest(SuggestionsUtils.wrapString(group));
@@ -139,11 +141,11 @@ public class GroupCommand {
     }
 
     private static int addPlayerGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource src = ctx.getSource();
+        var src = ctx.getSource();
+        DataStore store = DataStore.getFor(src.getServer());
         String newGroup = StringArgumentType.getString(ctx, "groupname");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPersistentState state = PingspamPersistentState.getFrom(ctx.getSource().getServer());
-        PingspamPlayerData data = state.getFor(player.getId());
+        PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         if (!GROUPNAME_PATTERN.asPredicate().test(newGroup))
             throw INVALID_GROUPNAME.create();
@@ -154,7 +156,7 @@ public class GroupCommand {
         if (NameLogic.isValidName(src.getServer(), newGroup, true))
             throw NAME_COLLISION.create();
 
-        state.addPlayerToGroup(newGroup, player.getId());
+        store.get(PingSpam.GLOBAL_DATA).addPlayerToGroup(newGroup, player.getId());
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newGroup);
 
         src.sendFeedback(
@@ -173,7 +175,7 @@ public class GroupCommand {
     private static int listOwnGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();

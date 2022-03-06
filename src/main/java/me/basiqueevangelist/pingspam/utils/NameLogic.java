@@ -1,7 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
-import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
+import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -23,22 +24,19 @@ public final class NameLogic {
                 return true;
         }
 
-        PingspamPersistentState state = PingspamPersistentState.getFrom(server);
-
-        for (Map.Entry<UUID, PingspamPlayerData> entry : state.getPlayerMap().entrySet()) {
-            if (NameUtil.getNameFromUUID(entry.getKey()).equalsIgnoreCase(name))
+        for (PlayerDataEntry entry : DataStore.getFor(server).players()) {
+            if (NameUtil.getNameFromUUID(entry.playerId()).equalsIgnoreCase(name))
                 return true;
 
-            for (var alias : entry.getValue().aliases())
-                if (alias.equalsIgnoreCase(name))
-                        return true;
+            if (entry.get(PingSpam.PLAYER_DATA).aliases().contains(name))
+                return true;
         }
 
-        if (!ignoreGroups)
-            for (String groupName : state.getGroups().keySet()) {
-                if (groupName.equalsIgnoreCase(name))
-                    return true;
+        if (!ignoreGroups) {
+            if (DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().containsKey(name)) {
+                return true;
             }
+        }
 
         return false;
     }
@@ -51,16 +49,16 @@ public final class NameLogic {
             possibleNames.add(playerName);
         }
 
-        for (Map.Entry<UUID, PingspamPlayerData> entry : PingspamPersistentState.getFrom(server).getPlayerMap().entrySet()) {
-            String name = NameUtil.getNameFromUUIDOrNull(entry.getKey());
+        for (PlayerDataEntry entry : DataStore.getFor(server).players()) {
+            String name = NameUtil.getNameFromUUIDOrNull(entry.playerId());
 
             if (name != null)
                 possibleNames.add(name);
 
-            possibleNames.addAll(entry.getValue().aliases());
+            possibleNames.addAll(entry.get(PingSpam.PLAYER_DATA).aliases());
         }
 
-        possibleNames.addAll(PingspamPersistentState.getFrom(server).getGroups().keySet());
+        possibleNames.addAll(DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().keySet());
 
         return possibleNames;
     }

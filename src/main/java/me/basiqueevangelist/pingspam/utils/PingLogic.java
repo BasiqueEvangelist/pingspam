@@ -1,7 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.network.MessageType;
@@ -76,10 +77,10 @@ public final class PingLogic {
                 break;
             case "offline":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.offline", 2)) {
-                    for (UUID playerId : PingspamPersistentState.getFrom(result.server).getPlayerMap().keySet()) {
-                        if (result.server.getPlayerManager().getPlayer(playerId) != null) continue;
+                    for (PlayerDataEntry entry : DataStore.getFor(result.server).players()) {
+                        if (result.server.getPlayerManager().getPlayer(entry.playerId()) != null) continue;
 
-                        pingPlayer(result, playerId, message, type, senderUuid);
+                        pingPlayer(result, entry.playerId(), message, type, senderUuid);
                     }
                     result.pingSucceeded = true;
                 } else {
@@ -87,7 +88,7 @@ public final class PingLogic {
                 }
                 break;
             default:
-                List<UUID> pingGroup = PingspamPersistentState.getFrom(result.server).getGroups().get(mention);
+                List<UUID> pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
                 if (pingGroup != null) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
                         for (UUID playerId : pingGroup) {
@@ -109,7 +110,7 @@ public final class PingLogic {
                     return;
                 }
 
-                PingspamPlayerData foundData = PingspamPersistentState.getFrom(result.server).getFor(foundPlayerId);
+                PingspamPlayerData foundData = DataStore.getFor(result.server).getPlayer(foundPlayerId, PingSpam.PLAYER_DATA);
 
                 if (result.sender != null && !Permissions.check(result.sender, "pingspam.bypass.ignore", 2)) {
                     if (foundData.ignoredPlayers().contains(result.sender.getUuid())) {
@@ -131,7 +132,7 @@ public final class PingLogic {
     public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg, MessageType type, UUID senderUUID) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
 
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ping.server).getFor(playerUuid);
+        PingspamPlayerData data = DataStore.getFor(ping.server).getPlayer(playerUuid, PingSpam.PLAYER_DATA);
 
         data.addPing(pingMsg);
         ping.pingedPlayers.add(playerUuid);

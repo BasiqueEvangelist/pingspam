@@ -4,7 +4,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.suggestion.SuggestionProviders;
@@ -38,7 +39,7 @@ public class PingSoundCommand {
     private static int setPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
         Identifier soundId = IdentifierArgumentType.getIdentifier(ctx, "sound");
         SoundEvent event = Registry.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
 
@@ -56,7 +57,7 @@ public class PingSoundCommand {
     private static int removePingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         data.setPingSound(null);
 
@@ -69,7 +70,7 @@ public class PingSoundCommand {
     private static int getPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.pingSound() != null) {
             src.sendFeedback(new LiteralText("Your current ping sound is ")

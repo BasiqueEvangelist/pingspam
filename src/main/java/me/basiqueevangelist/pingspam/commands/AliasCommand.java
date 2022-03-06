@@ -9,7 +9,8 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
@@ -73,8 +74,9 @@ public class AliasCommand {
     }
 
     private static CompletableFuture<Suggestions> suggestPlayerAliases(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         for (String alias : data.aliases()) {
             builder.suggest(SuggestionsUtils.wrapString(alias));
@@ -84,8 +86,9 @@ public class AliasCommand {
     }
 
     private static CompletableFuture<Suggestions> suggestOwnAliases(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = ctx.getSource().getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         for (String alias : data.aliases()) {
             builder.suggest(SuggestionsUtils.wrapString(alias));
@@ -98,7 +101,7 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         String alias = StringArgumentType.getString(ctx, "alias");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(alias))
             throw INVALID_ALIAS.create();
@@ -128,7 +131,7 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         String newAlias = StringArgumentType.getString(ctx, "alias");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(newAlias))
             throw INVALID_ALIAS.create();
@@ -161,7 +164,7 @@ public class AliasCommand {
     private static int listPlayerAliases(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getId());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
@@ -203,7 +206,7 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         String alias = StringArgumentType.getString(ctx, "alias");
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(alias))
             throw INVALID_ALIAS.create();
@@ -229,7 +232,7 @@ public class AliasCommand {
         ServerCommandSource src = ctx.getSource();
         String newAlias = StringArgumentType.getString(ctx, "alias");
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(newAlias))
             throw INVALID_ALIAS.create();
@@ -258,7 +261,7 @@ public class AliasCommand {
     private static int listAliases(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();

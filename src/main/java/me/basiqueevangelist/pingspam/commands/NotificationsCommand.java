@@ -3,7 +3,8 @@ package me.basiqueevangelist.pingspam.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.LiteralText;
@@ -23,7 +24,7 @@ public class NotificationsCommand {
 
     public static int showNotifications(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(src.getPlayer().getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(src.getPlayer().getUuid(), PingSpam.PLAYER_DATA);
 
         if (!data.unreadPings().isEmpty()) {
             MutableText response = new LiteralText("You have " + data.unreadPings().size() + " unread message" + (data.unreadPings().size() != 1 ? "s" : "") + ":")

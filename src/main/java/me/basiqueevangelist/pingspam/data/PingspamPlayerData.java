@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.data;
 
+import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
 import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.*;
@@ -15,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public final class PingspamPlayerData {
+public final class PingspamPlayerData implements ComponentInstance {
     private final List<Text> unreadPings;
     private final Set<String> aliases;
     private final List<UUID> ignoredPlayers;
@@ -40,8 +41,8 @@ public final class PingspamPlayerData {
         this(new ArrayList<>(), CaseInsensitiveUtil.setIgnoringCase(), new ArrayList<>(), SoundEvents.BLOCK_BELL_USE, CaseInsensitiveUtil.setIgnoringCase());
     }
 
-    public static PingspamPlayerData fromTag(NbtCompound tag) {
-        List<Text> unreadPings = new ArrayList<>();
+    @Override
+    public void fromTag(NbtCompound tag) {
         if (tag.contains("UnreadPings")) {
             NbtList pingsTag = tag.getList("UnreadPings", NbtElement.STRING_TYPE);
             for (NbtElement pingTag : pingsTag) {
@@ -49,7 +50,6 @@ public final class PingspamPlayerData {
             }
         }
 
-        Set<String> aliases = CaseInsensitiveUtil.setIgnoringCase();
         if (tag.contains("Aliases")) {
             NbtList aliasesTag = tag.getList("Aliases", NbtElement.STRING_TYPE);
             for (NbtElement aliasTag : aliasesTag) {
@@ -57,7 +57,6 @@ public final class PingspamPlayerData {
             }
         }
 
-        List<UUID> ignoredPlayers = new ArrayList<>();
         if (tag.contains("IgnoredPlayers")) {
             NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
             for (NbtElement ignoredPlayerTag : ignoredPlayerListTag) {
@@ -65,7 +64,6 @@ public final class PingspamPlayerData {
             }
         }
 
-        SoundEvent pingSound = SoundEvents.BLOCK_BELL_USE;
         if (tag.contains("PingSound", NbtType.STRING)) {
             var soundText = tag.getString("PingSound");
             if (soundText.equals("null")) {
@@ -74,10 +72,9 @@ public final class PingspamPlayerData {
                 pingSound = Registry.SOUND_EVENT.getOrEmpty(new Identifier(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
             }
         }
-
-        return new PingspamPlayerData(unreadPings, aliases, ignoredPlayers, pingSound, CaseInsensitiveUtil.setIgnoringCase());
     }
 
+    @Override
     public NbtCompound toTag(NbtCompound tag) {
         if (!unreadPings.isEmpty()) {
             var unreadPingsTag = new NbtList();

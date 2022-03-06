@@ -7,7 +7,8 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
@@ -44,8 +45,9 @@ public class PingIgnoreCommand {
     }
 
     private static CompletableFuture<Suggestions> suggestIgnoredPlayers(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = ctx.getSource().getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(ctx.getSource().getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         for (UUID ignoredId : data.ignoredPlayers()) {
             builder.suggest(SuggestionsUtils.wrapString(NameUtil.getNameFromUUID(ignoredId)));
@@ -58,7 +60,7 @@ public class PingIgnoreCommand {
         ServerCommandSource src = ctx.getSource();
         GameProfile offender = CommandUtil.getOnePlayer(ctx, "player");
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.ignoredPlayers().contains(offender.getId())) {
             throw PLAYER_ALREADY_IGNORED.create();
@@ -79,7 +81,7 @@ public class PingIgnoreCommand {
         ServerCommandSource src = ctx.getSource();
         GameProfile pardonee = CommandUtil.getOnePlayer(ctx, "player");
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!data.ignoredPlayers().contains(pardonee.getId()))
             throw PLAYER_NOT_IGNORED.create();
@@ -98,7 +100,7 @@ public class PingIgnoreCommand {
     private static int listIgnoredPlayers(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = PingspamPersistentState.getFrom(src.getServer()).getFor(player.getUuid());
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.ignoredPlayers().isEmpty()) {
             src.sendFeedback(new LiteralText("You are not ignoring any players.")

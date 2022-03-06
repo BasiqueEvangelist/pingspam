@@ -1,13 +1,13 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import me.basiqueevangelist.pingspam.data.PingspamPersistentState;
-import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.onedatastore.api.DataStore;
+import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
+import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -22,13 +22,13 @@ public final class PlayerUtils {
                 return player.getUuid();
         }
 
-        for (Map.Entry<UUID, PingspamPlayerData> entry : PingspamPersistentState.getFrom(server).getPlayerMap().entrySet()) {
-            if (NameUtil.getNameFromUUID(entry.getKey()).equalsIgnoreCase(name))
-                return entry.getKey();
+        for (PlayerDataEntry entry : DataStore.getFor(server).players()) {
+            if (NameUtil.getNameFromUUID(entry.playerId()).equalsIgnoreCase(name))
+                return entry.playerId();
 
-            for (String alias : entry.getValue().aliases()) {
+            for (String alias : entry.get(PingSpam.PLAYER_DATA).aliases()) {
                 if (alias.equalsIgnoreCase(name))
-                    return entry.getKey();
+                    return entry.playerId();
             }
         }
 
@@ -42,7 +42,9 @@ public final class PlayerUtils {
             players.add(player.getUuid());
         }
 
-        players.addAll(PingspamPersistentState.getFrom(server).getPlayerMap().keySet());
+        for (PlayerDataEntry entry : DataStore.getFor(server).players()) {
+            players.add(entry.playerId());
+        }
 
         return players;
     }
