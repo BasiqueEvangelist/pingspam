@@ -34,6 +34,7 @@ public class PingIgnoreCommand {
                 .then(literal("ignore")
                     .then(literal("add")
                         .then(argument("player", GameProfileArgumentType.gameProfile())
+                            .suggests(CommandUtil::suggestPlayersExceptSelf)
                             .executes(PingIgnoreCommand::addIgnoredPlayer)))
                     .then(literal("remove")
                         .then(argument("player", GameProfileArgumentType.gameProfile())

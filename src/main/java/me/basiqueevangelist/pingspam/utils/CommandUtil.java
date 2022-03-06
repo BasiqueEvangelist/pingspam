@@ -39,10 +39,29 @@ public final class CommandUtil {
         var playerNames = new HashSet<>(List.of(ctx.getSource().getServer().getPlayerNames()));
 
         for (PlayerDataEntry entry : DataStore.getFor(src.getServer()).players()) {
-            playerNames.add(NameUtil.getNameFromUUID(entry.playerId()));
+            String name = NameUtil.getNameFromUUIDOrNull(entry.playerId());
+
+            if (name == null) continue;
+
+            playerNames.add(name);
         }
 
         playerNames.remove(ctx.getSource().getPlayer().getEntityName());
+
+        return CommandSource.suggestMatching(playerNames, builder);
+    }
+
+    public static CompletableFuture<Suggestions> suggestPlayers(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
+        ServerCommandSource src = ctx.getSource();
+        var playerNames = new HashSet<>(List.of(ctx.getSource().getServer().getPlayerNames()));
+
+        for (PlayerDataEntry entry : DataStore.getFor(src.getServer()).players()) {
+            String name = NameUtil.getNameFromUUIDOrNull(entry.playerId());
+
+            if (name == null) continue;
+
+            playerNames.add(name);
+        }
 
         return CommandSource.suggestMatching(playerNames, builder);
     }

@@ -16,13 +16,15 @@ import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameLogic;
+import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Formatting;
 
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
@@ -31,76 +33,90 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class GroupCommand {
     private static final DynamicCommandExceptionType IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" is already in that group!")));
+        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" is already in that group")));
     private static final DynamicCommandExceptionType NOT_IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" isn't in that group!")));
-    private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("Group name collides with other player's alias!"));
-    private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(new LiteralText("Invalid group name!"));
+        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" isn't in that group")));
+    private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("That name is already taken"));
+    private static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(new LiteralText("No such group"));
+    private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(new LiteralText("Invalid group name"));
     private static final Pattern GROUPNAME_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
             literal("pingspam")
                 .then(literal("group")
-                    .then(literal("list")
-                        .executes(GroupCommand::listOwnGroups))
-                    .then(literal("player")
-                        .then(argument("player", GameProfileArgumentType.gameProfile())
-                            .then(literal("add")
-                                .requires(x -> Permissions.check(x, "pingspam.group.player.add", 2))
-                                .then(argument("groupname", StringArgumentType.string())
-                                    .executes(GroupCommand::addPlayerGroup)))
-                            .then(literal("remove")
-                                .requires(x -> Permissions.check(x, "pingspam.group.player.remove", 2))
-                                .then(argument("groupname", StringArgumentType.string())
-                                    .suggests(GroupCommand::suggestPlayerGroups)
-                                    .executes(GroupCommand::removePlayerGroup)))
-                            .then(literal("list")
-                                .executes(GroupCommand::listPlayerGroups)))))
+                    .then(argument("group", StringArgumentType.string())
+                        .suggests(GroupCommand::suggestGroups)
+                        .then(literal("list")
+                            .executes(GroupCommand::listPlayersInGroup))
+                        .then(literal("add")
+                            .requires(Permissions.require("pingspam.group.player.add", 2))
+                            .then(argument("player", GameProfileArgumentType.gameProfile())
+                                .suggests(CommandUtil::suggestPlayers)
+                                .executes(GroupCommand::addPlayerToGroup)))
+                        .then(literal("remove")
+                            .requires(Permissions.require("pingspam.group.player.add", 2))
+                            .then(argument("player", GameProfileArgumentType.gameProfile())
+                                .suggests(CommandUtil::suggestPlayers)
+                                .executes(GroupCommand::removePlayerFromGroup)))))
         );
     }
 
-    private static int listPlayerGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static CompletableFuture<Suggestions> suggestGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
         ServerCommandSource src = ctx.getSource();
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
+
+        for (String groupName : DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().keySet()) {
+            builder.suggest(SuggestionsUtils.wrapString(groupName));
+        }
+
+        return builder.buildFuture();
+    }
+
+    private static int listPlayersInGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
+        String groupName = StringArgumentType.getString(ctx, "group");
+        List<UUID> players = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
+
+        if (players == null)
+            throw NO_SUCH_GROUP.create();
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
-        headerBuilder.append(" is in ");
-        headerBuilder.append(data.groups().size());
-        headerBuilder.append(" ping group");
+        headerBuilder.append(" has ");
+        headerBuilder.append(players.size());
+        headerBuilder.append(" player");
 
-        if (data.groups().size() != 1)
+        if (players.size() != 1)
             headerBuilder.append("s");
 
-        if (data.groups().size() > 0) {
+        if (players.size() > 0) {
             headerBuilder.append(": ");
             boolean isFirst = true;
-            for (String group : data.groups()) {
+            for (UUID playerId : players) {
                 if (!isFirst)
                     contentBuilder.append(", ");
                 isFirst = false;
-                contentBuilder.append(group);
+                contentBuilder.append(NameUtil.getNameFromUUID(playerId));
             }
         } else {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(new LiteralText(player.getName())
-            .formatted(Formatting.AQUA)
-            .append(new LiteralText(headerBuilder.toString())
-                .formatted(Formatting.GREEN))
+        src.sendFeedback(new LiteralText("Group ")
+            .formatted(Formatting.GREEN)
+            .append(new LiteralText("@" + groupName)
+                .formatted(Formatting.YELLOW))
+            .append(headerBuilder.toString())
             .append(new LiteralText(contentBuilder.toString())
-                .formatted(Formatting.YELLOW)), false);
+                .formatted(Formatting.AQUA)), false);
 
         return 0;
     }
 
-    private static int removePlayerGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static int removePlayerFromGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         DataStore store = DataStore.getFor(src.getServer());
-        String group = StringArgumentType.getString(ctx, "groupname");
+        String group = StringArgumentType.getString(ctx, "group");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
         PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
@@ -128,36 +144,24 @@ public class GroupCommand {
         return 0;
     }
 
-    private static CompletableFuture<Suggestions> suggestPlayerGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
-        var src = ctx.getSource();
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PLAYER_DATA);
-
-        for (String group : data.groups()) {
-            builder.suggest(SuggestionsUtils.wrapString(group));
-        }
-
-        return builder.buildFuture();
-    }
-
-    private static int addPlayerGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static int addPlayerToGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         var src = ctx.getSource();
         DataStore store = DataStore.getFor(src.getServer());
-        String newGroup = StringArgumentType.getString(ctx, "groupname");
+        String group = StringArgumentType.getString(ctx, "group");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
         PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
 
-        if (!GROUPNAME_PATTERN.asPredicate().test(newGroup))
+        if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
 
-        if (data.groups().contains(newGroup))
+        if (data.groups().contains(group))
             throw IN_GROUP_OTHER.create(player);
 
-        if (NameLogic.isValidName(src.getServer(), newGroup, true))
+        if (NameLogic.isValidName(src.getServer(), group, true))
             throw NAME_COLLISION.create();
 
-        store.get(PingSpam.GLOBAL_DATA).addPlayerToGroup(newGroup, player.getId());
-        ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newGroup);
+        store.get(PingSpam.GLOBAL_DATA).addPlayerToGroup(group, player.getId());
+        ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
             new LiteralText("Added player ")
@@ -165,44 +169,9 @@ public class GroupCommand {
                 .append(new LiteralText(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(" to group ")
-                .append(new LiteralText(newGroup)
+                .append(new LiteralText("@" + group)
                     .formatted(Formatting.YELLOW)
                 .append(".")), true);
-
-        return 0;
-    }
-
-    private static int listOwnGroups(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
-        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
-
-        StringBuilder headerBuilder = new StringBuilder();
-        StringBuilder contentBuilder = new StringBuilder();
-        headerBuilder.append("You are in ");
-        headerBuilder.append(data.groups().size());
-        headerBuilder.append(" ping group");
-
-        if (data.groups().size() != 1)
-            headerBuilder.append("s");
-
-        if (data.groups().size() > 0) {
-            headerBuilder.append(": ");
-            boolean isFirst = true;
-            for (String pingGroup : data.groups()) {
-                if (!isFirst)
-                    contentBuilder.append(", ");
-                isFirst = false;
-                contentBuilder.append(pingGroup);
-            }
-        } else {
-            headerBuilder.append('.');
-        }
-
-        src.sendFeedback(new LiteralText(headerBuilder.toString())
-            .formatted(Formatting.GREEN)
-            .append(new LiteralText(contentBuilder.toString())
-                .formatted(Formatting.YELLOW)), false);
 
         return 0;
     }
