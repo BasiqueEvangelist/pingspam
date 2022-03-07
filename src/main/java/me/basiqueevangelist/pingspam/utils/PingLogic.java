@@ -132,21 +132,28 @@ public final class PingLogic {
     public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg, MessageType type, UUID senderUUID) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
 
-        PingspamPlayerData data = DataStore.getFor(ping.server).getPlayer(playerUuid, PingSpam.PLAYER_DATA);
-
-        data.addPing(pingMsg);
         ping.pingedPlayers.add(playerUuid);
+        sendNotification(ping.server, playerUuid, pingMsg);
 
         ServerPlayerEntity onlinePlayer = ping.server.getPlayerManager().getPlayer(playerUuid);
+        if (onlinePlayer != null) {
+            Text pingMessage = pingMsg.shallowCopy().formatted(Formatting.AQUA);
+            onlinePlayer.networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, type, senderUUID));
+        }
+    }
+
+    public static void sendNotification(MinecraftServer server, UUID playerId, Text pingMsg) {
+        PingspamPlayerData data = DataStore.getFor(server).getPlayer(playerId, PingSpam.PLAYER_DATA);
+
+        data.addPing(pingMsg);
+
+        ServerPlayerEntity onlinePlayer = server.getPlayerManager().getPlayer(playerId);
         if (onlinePlayer != null) {
             SoundEvent pingSound = data.pingSound();
 
             if (pingSound != null) {
                 onlinePlayer.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
             }
-
-            Text pingMessage = pingMsg.shallowCopy().formatted(Formatting.AQUA);
-            onlinePlayer.networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, type, senderUUID));
         }
     }
 
