@@ -20,6 +20,11 @@ public class NotificationsCommand {
             literal("notifications")
                 .executes(NotificationsCommand::showNotifications)
         );
+
+        dispatcher.register(
+            literal("pingspam")
+                .executes(NotificationsCommand::showNotifications)
+        );
     }
 
     public static int showNotifications(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
