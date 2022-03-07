@@ -1,5 +1,5 @@
 # Pingspam
-[![Modrinth Badge](https://waffle.coffee/modrinth/pingspam/downloads)](https://modrinth.com/mod/pingspam)
+[![Modrinth Badge](https://shields.io/modrinth/dt/pingspam)](https://modrinth.com/mod/pingspam)
 
 *Reach those pesky AFKers, alt-tabbers, chat-ignorers and offline people with one simple trick!*  
 Pingspam allows you to mention players in chat. You can mention by name (i.e "@GreatGrayOwl") or group.
