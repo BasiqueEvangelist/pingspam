@@ -19,8 +19,6 @@ You can have up to 10 ping aliases in addition to your own player name. Aliases 
 
 Operators can also assign players to groups, so that you can ping all the @redstoners at once.
 
-`/pingspam group list` lists all groups you are a member of.
-
 ## Ignore
 You can ignore direct pings from particularly annoying players using `/pingspam ignore add <offender>`
 You can use `/pingspam ignore list` to review your ignore list and `/pingspam ignore remove <offender>` to stop ignoring them.

@@ -8,9 +8,9 @@ Pingspam supports permissions. For brevity, in the rest of the document "operato
 While players can ping groups, management is restricted to operators.
 
 Operators can add or remove players to/from groups using  
-`/pingspam group player <player> <add/remove> <group>`  
-or list a player's groups using  
-`/pingspam group player <player> list`
+`/pingspam group <group> <add/remove> <player>`  
+or list the players in a group using  
+`/pingspam group <group> list`
 
 There are also special groups that only operators can ping:
 
