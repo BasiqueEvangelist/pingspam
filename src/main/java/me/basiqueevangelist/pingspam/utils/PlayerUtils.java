@@ -26,10 +26,8 @@ public final class PlayerUtils {
             if (NameUtil.getNameFromUUID(entry.playerId()).equalsIgnoreCase(name))
                 return entry.playerId();
 
-            for (String alias : entry.get(PingSpam.PLAYER_DATA).aliases()) {
-                if (alias.equalsIgnoreCase(name))
-                    return entry.playerId();
-            }
+            if (entry.get(PingSpam.PLAYER_DATA).aliases().contains(name))
+                return entry.playerId();
         }
 
         return null;

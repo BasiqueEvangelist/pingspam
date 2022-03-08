@@ -4,6 +4,8 @@ import com.mojang.authlib.GameProfile;
 import me.basiqueevangelist.pingspam.PingSpam;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 public final class NameUtil {
@@ -11,7 +13,11 @@ public final class NameUtil {
 
     }
 
+    private static final Set<UUID> BAD_UUIDS = new HashSet<>();
+
     public static @Nullable String getNameFromUUIDOrNull(UUID uuid) {
+        if (BAD_UUIDS.contains(uuid)) return null;
+
         var optProfile = PingSpam.SERVER.getUserCache().getByUuid(uuid);
 
         if (optProfile.isPresent()) return optProfile.get().getName();
@@ -19,7 +25,13 @@ public final class NameUtil {
         GameProfile profile = new GameProfile(uuid, null);
         PingSpam.SERVER.getSessionService().fillProfileProperties(profile, true);
 
-        if (profile.getName() != null) return profile.getName();
+
+        if (profile.getName() != null) {
+            PingSpam.SERVER.getUserCache().add(profile);
+            return profile.getName();
+        }
+
+        BAD_UUIDS.add(uuid);
 
         return null;
     }
