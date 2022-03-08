@@ -53,7 +53,9 @@ dependencies {
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include('me.basiqueevangelist:onedatastore:0.1.1')
+	modImplementation include('me.basiqueevangelist:onedatastore:0.1.2') {
+		transitive = false
+	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }

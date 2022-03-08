@@ -23,7 +23,7 @@ public abstract class CommandSuggestorMixin {
     @Shadow @Final TextFieldWidget textField;
 
     @Shadow
-    private static int getStartOfCurrentWord(String input) {
+    private static int getLastPlayerNameStart(String input) {
         return 0;
     }
 
@@ -36,7 +36,7 @@ public abstract class CommandSuggestorMixin {
 
         data.refreshPermissionsIfNeeded();
         String afterString = textField.getText().substring(0, textField.getCursor());
-        int lastStart = getStartOfCurrentWord(afterString);
+        int lastStart = getLastPlayerNameStart(afterString);
         if (lastStart >= afterString.length() || afterString.charAt(lastStart) != '@' || !data.canPingPlayers())
             return CommandSource.suggestMatching(suggestions, builder);
 
