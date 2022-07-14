@@ -4,8 +4,10 @@
     "package": "me.basiqueevangelist.pingspam.mixin",
     "compatibilityLevel": "JAVA_8",
     "mixins": [
+        "MinecraftServerMixin",
         "PlayerManagerMixin",
-        "ServerPlayerEntityMixin"
+        "ServerPlayerEntityMixin",
+        "SimpleRegistryMixin"
     ],
     "client": [
         "client.CommandSuggestorMixin"

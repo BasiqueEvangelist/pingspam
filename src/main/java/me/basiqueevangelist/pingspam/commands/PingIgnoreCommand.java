@@ -15,7 +15,7 @@ import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.UUID;
@@ -25,8 +25,8 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class PingIgnoreCommand {
-    private static final SimpleCommandExceptionType PLAYER_NOT_IGNORED = new SimpleCommandExceptionType(new LiteralText("You are not ignoring this player!"));
-    private static final SimpleCommandExceptionType PLAYER_ALREADY_IGNORED = new SimpleCommandExceptionType(new LiteralText("You have already ignored this player!"));
+    private static final SimpleCommandExceptionType PLAYER_NOT_IGNORED = new SimpleCommandExceptionType(Text.literal("You are not ignoring this player!"));
+    private static final SimpleCommandExceptionType PLAYER_ALREADY_IGNORED = new SimpleCommandExceptionType(Text.literal("You have already ignored this player!"));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -47,7 +47,7 @@ public class PingIgnoreCommand {
 
     private static CompletableFuture<Suggestions> suggestIgnoredPlayers(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         for (UUID ignoredId : data.ignoredPlayers()) {
@@ -60,7 +60,7 @@ public class PingIgnoreCommand {
     private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile offender = CommandUtil.getOnePlayer(ctx, "player");
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.ignoredPlayers().contains(offender.getId())) {
@@ -69,11 +69,11 @@ public class PingIgnoreCommand {
 
         data.ignoredPlayers().add(offender.getId());
 
-        src.sendFeedback(new LiteralText("You are now ignoring ")
+        src.sendFeedback(Text.literal("You are now ignoring ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(offender.getName())
+            .append(Text.literal(offender.getName())
                 .formatted(Formatting.AQUA))
-            .append(new LiteralText(".")), false);
+            .append(Text.literal(".")), false);
 
         return 0;
     }
@@ -81,7 +81,7 @@ public class PingIgnoreCommand {
     private static int removeIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile pardonee = CommandUtil.getOnePlayer(ctx, "player");
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!data.ignoredPlayers().contains(pardonee.getId()))
@@ -89,9 +89,9 @@ public class PingIgnoreCommand {
 
         data.ignoredPlayers().remove(pardonee.getId());
 
-        src.sendFeedback(new LiteralText("You are no longer ignoring ")
+        src.sendFeedback(Text.literal("You are no longer ignoring ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(pardonee.getName())
+            .append(Text.literal(pardonee.getName())
                 .formatted(Formatting.AQUA))
             .append("."), false);
 
@@ -100,11 +100,11 @@ public class PingIgnoreCommand {
 
     private static int listIgnoredPlayers(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.ignoredPlayers().isEmpty()) {
-            src.sendFeedback(new LiteralText("You are not ignoring any players.")
+            src.sendFeedback(Text.literal("You are not ignoring any players.")
                 .formatted(Formatting.GREEN), false);
             return 0;
         }
@@ -114,9 +114,9 @@ public class PingIgnoreCommand {
             contentBuilder.append("\n - ").append(NameUtil.getNameFromUUID(ignoredPlayerUuid));
         }
 
-        src.sendFeedback(new LiteralText("You are ignoring " + data.ignoredPlayers().size() + " player(s):")
+        src.sendFeedback(Text.literal("You are ignoring " + data.ignoredPlayers().size() + " player(s):")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(contentBuilder.toString())
+            .append(Text.literal(contentBuilder.toString())
                 .formatted(Formatting.AQUA)), false);
 
         return 0;

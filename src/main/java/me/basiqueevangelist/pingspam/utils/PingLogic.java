@@ -5,16 +5,14 @@ import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.network.MessageType;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
+import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Util;
+import net.minecraft.util.registry.RegistryKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +35,8 @@ public final class PingLogic {
         public ServerPlayerEntity sender;
     }
 
-    public static ProcessedPing processPings(MinecraftServer server, Text message, MessageType type, UUID senderUuid) {
-        String contents = message.getString();
+    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, RegistryKey<MessageType> type, UUID senderUuid) {
+        String contents = messageContent.getString();
         ServerPlayerEntity sender = server.getPlayerManager().getPlayer(senderUuid);
         Matcher matcher = PING_PATTERN.matcher(contents);
         ProcessedPing result = new ProcessedPing();
@@ -53,7 +51,7 @@ public final class PingLogic {
         return result;
     }
 
-    private static void processMention(ProcessedPing result, String mention, Text message, MessageType type, UUID senderUuid) {
+    private static void processMention(ProcessedPing result, String mention, Text message, RegistryKey<MessageType> type, UUID senderUuid) {
         switch (mention) {
             case "everyone":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.everyone", 2)) {
@@ -129,17 +127,11 @@ public final class PingLogic {
         }
     }
 
-    public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg, MessageType type, UUID senderUUID) {
+    public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg, RegistryKey<MessageType> type, UUID senderUUID) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
 
         ping.pingedPlayers.add(playerUuid);
         sendNotification(ping.server, playerUuid, pingMsg);
-
-        ServerPlayerEntity onlinePlayer = ping.server.getPlayerManager().getPlayer(playerUuid);
-        if (onlinePlayer != null) {
-            Text pingMessage = pingMsg.shallowCopy().formatted(Formatting.AQUA);
-            onlinePlayer.networkHandler.sendPacket(new GameMessageS2CPacket(pingMessage, type, senderUUID));
-        }
     }
 
     public static void sendNotification(MinecraftServer server, UUID playerId, Text pingMsg) {
@@ -159,6 +151,6 @@ public final class PingLogic {
 
     public static void sendPingError(ServerPlayerEntity sender, String text) {
         if (PingSpam.CONFIG.getConfig().sendPingErrors)
-            sender.sendSystemMessage(new LiteralText(text).formatted(Formatting.RED), Util.NIL_UUID);
+            sender.sendMessage(Text.literal(text).formatted(Formatting.RED), MessageType.SYSTEM);
     }
 }

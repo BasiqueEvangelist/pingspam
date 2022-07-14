@@ -1,8 +1,8 @@
 plugins {
 	id 'com.github.johnrengelman.shadow' version '7.1.2'
 	id 'java'
-	id 'fabric-loom' version '0.11-SNAPSHOT'
-	id 'io.github.juuxel.loom-quiltflower' version '1.6.0'
+	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
 	id 'maven-publish'
 }
 
@@ -35,7 +35,7 @@ repositories {
 	mavenCentral()
 	maven {
 		name = "Basique's Maven"
-		url = 'https://porez.ml/maven'
+		url = 'https://basique.top/maven'
 	}
 }
 
@@ -53,7 +53,7 @@ dependencies {
 	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include('me.basiqueevangelist:onedatastore:0.1.2') {
+	modImplementation include('me.basiqueevangelist:onedatastore:0.1.2+1.19') {
 		transitive = false
 	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.

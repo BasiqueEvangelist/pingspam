@@ -12,7 +12,7 @@ import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -21,7 +21,7 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class PingSoundCommand {
-    private static final SimpleCommandExceptionType INVALID_SOUND = new SimpleCommandExceptionType(new LiteralText("Invalid sound type!"));
+    private static final SimpleCommandExceptionType INVALID_SOUND = new SimpleCommandExceptionType(Text.literal("Invalid sound type!"));
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
@@ -38,30 +38,30 @@ public class PingSoundCommand {
 
     private static int setPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
         Identifier soundId = IdentifierArgumentType.getIdentifier(ctx, "sound");
         SoundEvent event = Registry.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
 
         data.setPingSound(event);
 
-        src.sendFeedback(new LiteralText("Set ping sound to ")
+        src.sendFeedback(Text.literal("Set ping sound to ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText(soundId.toString())
+            .append(Text.literal(soundId.toString())
                 .formatted(Formatting.YELLOW))
-            .append(new LiteralText(".")), false);
+            .append(Text.literal(".")), false);
 
         return 0;
     }
 
     private static int removePingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         data.setPingSound(null);
 
-        src.sendFeedback(new LiteralText("Disabled ping sound.")
+        src.sendFeedback(Text.literal("Disabled ping sound.")
             .formatted(Formatting.GREEN), false);
 
         return 0;
@@ -69,17 +69,17 @@ public class PingSoundCommand {
 
     private static int getPingSound(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.pingSound() != null) {
-            src.sendFeedback(new LiteralText("Your current ping sound is ")
+            src.sendFeedback(Text.literal("Your current ping sound is ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(data.pingSound().getId().toString())
+                .append(Text.literal(data.pingSound().getId().toString())
                     .formatted(Formatting.YELLOW))
-                .append(new LiteralText(".")), false);
+                .append(Text.literal(".")), false);
         } else {
-            src.sendFeedback(new LiteralText("You have disabled ping sounds.")
+            src.sendFeedback(Text.literal("You have disabled ping sounds.")
                 .formatted(Formatting.GREEN), false);
         }
 

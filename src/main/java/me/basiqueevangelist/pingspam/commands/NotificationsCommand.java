@@ -7,7 +7,6 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -29,14 +28,14 @@ public class NotificationsCommand {
 
     public static int showNotifications(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(src.getPlayer().getUuid(), PingSpam.PLAYER_DATA);
+        PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(src.getPlayerOrThrow().getUuid(), PingSpam.PLAYER_DATA);
 
         if (!data.unreadPings().isEmpty()) {
-            MutableText response = new LiteralText("You have " + data.unreadPings().size() + " unread message" + (data.unreadPings().size() != 1 ? "s" : "") + ":")
+            MutableText response = Text.literal("You have " + data.unreadPings().size() + " unread message" + (data.unreadPings().size() != 1 ? "s" : "") + ":")
                 .formatted(Formatting.GREEN);
 
             for (Text notif : data.unreadPings()) {
-                response.append(new LiteralText("\n- ")
+                response.append(Text.literal("\n- ")
                     .formatted(Formatting.WHITE)
                     .append(notif));
             }
@@ -46,7 +45,7 @@ public class NotificationsCommand {
 
             return 1;
         } else {
-            src.sendFeedback(new LiteralText("You have no unread messages.")
+            src.sendFeedback(Text.literal("You have no unread messages.")
                 .formatted(Formatting.GREEN), false);
 
             return 0;

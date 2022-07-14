@@ -20,7 +20,7 @@ import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
@@ -33,12 +33,12 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class GroupCommand {
     private static final DynamicCommandExceptionType IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" is already in that group")));
+        Text.literal(((GameProfile) x).getName()).append(Text.literal(" is already in that group")));
     private static final DynamicCommandExceptionType NOT_IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" isn't in that group")));
-    private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(new LiteralText("That name is already taken"));
-    private static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(new LiteralText("No such group"));
-    private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(new LiteralText("Invalid group name"));
+        Text.literal(((GameProfile) x).getName()).append(Text.literal(" isn't in that group")));
+    private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(Text.literal("That name is already taken"));
+    private static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(Text.literal("No such group"));
+    private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(Text.literal("Invalid group name"));
     private static final Pattern GROUPNAME_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
 
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
@@ -102,12 +102,12 @@ public class GroupCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(new LiteralText("Group ")
+        src.sendFeedback(Text.literal("Group ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText("@" + groupName)
+            .append(Text.literal("@" + groupName)
                 .formatted(Formatting.YELLOW))
             .append(headerBuilder.toString())
-            .append(new LiteralText(contentBuilder.toString())
+            .append(Text.literal(contentBuilder.toString())
                 .formatted(Formatting.AQUA)), false);
 
         return 0;
@@ -132,14 +132,14 @@ public class GroupCommand {
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
-            new LiteralText("Removed player ")
+            Text.literal("Removed player ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(player.getName())
+                .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(" from group ")
-                .append(new LiteralText(group)
+                .append(Text.literal(group)
                     .formatted(Formatting.YELLOW))
-                .append(new LiteralText(".")), true);
+                .append(Text.literal(".")), true);
 
         return 0;
     }
@@ -164,12 +164,12 @@ public class GroupCommand {
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
-            new LiteralText("Added player ")
+            Text.literal("Added player ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(player.getName())
+                .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))
                 .append(" to group ")
-                .append(new LiteralText("@" + group)
+                .append(Text.literal("@" + group)
                     .formatted(Formatting.YELLOW)
                 .append(".")), true);
 

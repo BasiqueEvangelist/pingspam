@@ -11,7 +11,7 @@ import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public final class CommandUtil {
-    private static final SimpleCommandExceptionType TOO_MANY_PLAYERS = new SimpleCommandExceptionType(new LiteralText("Can't mention many players at once!"));
+    private static final SimpleCommandExceptionType TOO_MANY_PLAYERS = new SimpleCommandExceptionType(Text.literal("Can't mention many players at once!"));
 
     private CommandUtil() {
 
@@ -46,7 +46,7 @@ public final class CommandUtil {
             playerNames.add(name);
         }
 
-        playerNames.remove(ctx.getSource().getPlayer().getEntityName());
+        playerNames.remove(ctx.getSource().getPlayerOrThrow().getEntityName());
 
         return CommandSource.suggestMatching(playerNames, builder);
     }

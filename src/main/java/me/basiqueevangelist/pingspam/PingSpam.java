@@ -8,7 +8,7 @@ import me.basiqueevangelist.pingspam.data.PingspamGlobalData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;

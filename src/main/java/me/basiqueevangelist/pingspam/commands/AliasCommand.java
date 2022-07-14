@@ -19,7 +19,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.LiteralText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import java.util.concurrent.CompletableFuture;
@@ -29,15 +29,15 @@ import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 public class AliasCommand {
-    private static final SimpleCommandExceptionType ALIAS_EXISTS = new SimpleCommandExceptionType(new LiteralText("You already have that alias!"));
+    private static final SimpleCommandExceptionType ALIAS_EXISTS = new SimpleCommandExceptionType(Text.literal("You already have that alias!"));
     private static final DynamicCommandExceptionType ALIAS_EXISTS_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(new LiteralText(" already has that alias!")));
-    private static final SimpleCommandExceptionType NO_SUCH_ALIAS = new SimpleCommandExceptionType(new LiteralText("You don't have that alias!"));
+        Text.literal(((GameProfile) x).getName()).append(Text.literal(" already has that alias!")));
+    private static final SimpleCommandExceptionType NO_SUCH_ALIAS = new SimpleCommandExceptionType(Text.literal("You don't have that alias!"));
     private static final DynamicCommandExceptionType NO_SUCH_ALIAS_OTHER = new DynamicCommandExceptionType(x ->
-        new LiteralText(((GameProfile) x).getName()).append(" doesn't have that alias!"));
-    private static final SimpleCommandExceptionType ALIAS_COLLISION = new SimpleCommandExceptionType(new LiteralText("That is already a valid name!"));
-    private static final SimpleCommandExceptionType INVALID_ALIAS = new SimpleCommandExceptionType(new LiteralText("Invalid alias!"));
-    private static final SimpleCommandExceptionType TOO_MANY_ALIASES = new SimpleCommandExceptionType(new LiteralText("Too many aliases! (maximum is 10)"));
+        Text.literal(((GameProfile) x).getName()).append(" doesn't have that alias!"));
+    private static final SimpleCommandExceptionType ALIAS_COLLISION = new SimpleCommandExceptionType(Text.literal("That is already a valid name!"));
+    private static final SimpleCommandExceptionType INVALID_ALIAS = new SimpleCommandExceptionType(Text.literal("Invalid alias!"));
+    private static final SimpleCommandExceptionType TOO_MANY_ALIASES = new SimpleCommandExceptionType(Text.literal("Too many aliases! (maximum is 10)"));
     public static final int ALIAS_LIMIT = 10;
     private static final Pattern ALIAS_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
 
@@ -87,7 +87,7 @@ public class AliasCommand {
 
     private static CompletableFuture<Suggestions> suggestOwnAliases(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = ctx.getSource().getPlayer();
+        ServerPlayerEntity player = ctx.getSource().getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         for (String alias : data.aliases()) {
@@ -115,14 +115,14 @@ public class AliasCommand {
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
 
         src.sendFeedback(
-            new LiteralText("Removed alias ")
+            Text.literal("Removed alias ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText('"' + alias + '"')
+                .append(Text.literal('"' + alias + '"')
                     .formatted(Formatting.YELLOW))
-                .append(new LiteralText(" from "))
-                .append(new LiteralText(player.getName())
+                .append(Text.literal(" from "))
+                .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))
-                .append(new LiteralText(".")), true);
+                .append(Text.literal(".")), true);
 
         return 0;
     }
@@ -149,14 +149,14 @@ public class AliasCommand {
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
 
         src.sendFeedback(
-            new LiteralText("Added alias ")
+            Text.literal("Added alias ")
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText('"' + newAlias + '"')
+                .append(Text.literal('"' + newAlias + '"')
                     .formatted(Formatting.YELLOW))
-                .append(new LiteralText(" to "))
-                .append(new LiteralText(player.getName())
+                .append(Text.literal(" to "))
+                .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))
-                .append(new LiteralText(".")), true);
+                .append(Text.literal(".")), true);
 
         return 0;
     }
@@ -188,14 +188,14 @@ public class AliasCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(new LiteralText(player.getName())
+        src.sendFeedback(Text.literal(player.getName())
             .formatted(Formatting.AQUA)
             .append(
-                new LiteralText(headerBuilder.toString())
+                Text.literal(headerBuilder.toString())
                     .formatted(Formatting.GREEN)
             )
             .append(
-                new LiteralText(contentBuilder.toString())
+                Text.literal(contentBuilder.toString())
                     .formatted(Formatting.YELLOW)
             ), false);
 
@@ -205,7 +205,7 @@ public class AliasCommand {
     private static int removeAlias(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         String alias = StringArgumentType.getString(ctx, "alias");
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(alias))
@@ -219,11 +219,11 @@ public class AliasCommand {
         if (!NameLogic.isValidName(src.getServer(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
 
-        src.sendFeedback(new LiteralText("Removed alias ")
+        src.sendFeedback(Text.literal("Removed alias ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText('"' + alias + '"')
+            .append(Text.literal('"' + alias + '"')
                 .formatted(Formatting.YELLOW))
-            .append(new LiteralText(".")), false);
+            .append(Text.literal(".")), false);
 
         return 0;
     }
@@ -231,7 +231,7 @@ public class AliasCommand {
     private static int addAliases(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         String newAlias = StringArgumentType.getString(ctx, "alias");
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (!ALIAS_PATTERN.asPredicate().test(newAlias))
@@ -249,18 +249,18 @@ public class AliasCommand {
         data.aliases().add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
 
-        src.sendFeedback(new LiteralText("Added alias ")
+        src.sendFeedback(Text.literal("Added alias ")
             .formatted(Formatting.GREEN)
-            .append(new LiteralText('"' + newAlias + '"')
+            .append(Text.literal('"' + newAlias + '"')
                 .formatted(Formatting.YELLOW))
-            .append(new LiteralText(".")), false);
+            .append(Text.literal(".")), false);
 
         return 0;
     }
 
     private static int listAliases(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity player = src.getPlayer();
+        ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         StringBuilder headerBuilder = new StringBuilder();
@@ -287,9 +287,9 @@ public class AliasCommand {
         }
 
         src.sendFeedback(
-            new LiteralText(headerBuilder.toString())
+            Text.literal(headerBuilder.toString())
                 .formatted(Formatting.GREEN)
-                .append(new LiteralText(contentBuilder.toString())
+                .append(Text.literal(contentBuilder.toString())
                     .formatted(Formatting.YELLOW)), false);
 
         return 0;

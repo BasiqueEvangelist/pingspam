@@ -1,5 +1,1 @@
 accessWidener v2 named
-
-accessible field net/minecraft/network/packet/s2c/play/GameMessageS2CPacket message Lnet/minecraft/text/Text;
-accessible field net/minecraft/network/packet/s2c/play/GameMessageS2CPacket type Lnet/minecraft/network/MessageType;
-accessible field net/minecraft/network/packet/s2c/play/GameMessageS2CPacket sender Ljava/util/UUID;
