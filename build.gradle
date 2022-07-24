@@ -35,7 +35,7 @@ repositories {
 	mavenCentral()
 	maven {
 		name = "Basique's Maven"
-		url = 'https://porez.ml/maven'
+		url = 'https://basique.top/maven'
 	}
 }
 
