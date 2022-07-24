@@ -22,9 +22,7 @@ public final class NameUtil {
 
         if (optProfile.isPresent()) return optProfile.get().getName();
 
-        GameProfile profile = new GameProfile(uuid, null);
-        PingSpam.SERVER.getSessionService().fillProfileProperties(profile, true);
-
+        GameProfile profile = PingSpam.SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), true);
 
         if (profile.getName() != null) {
             PingSpam.SERVER.getUserCache().add(profile);
