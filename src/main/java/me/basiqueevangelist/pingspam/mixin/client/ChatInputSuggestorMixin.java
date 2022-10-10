@@ -6,7 +6,7 @@ import me.basiqueevangelist.pingspam.client.PingSpamClient;
 import me.basiqueevangelist.pingspam.client.network.ServerData;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.screen.CommandSuggestor;
+import net.minecraft.client.gui.screen.ChatInputSuggestor;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.command.CommandSource;
 import org.spongepowered.asm.mixin.Final;
@@ -18,8 +18,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import java.util.concurrent.CompletableFuture;
 
 @Environment(EnvType.CLIENT)
-@Mixin(CommandSuggestor.class)
-public abstract class CommandSuggestorMixin {
+@Mixin(ChatInputSuggestor.class)
+public abstract class ChatInputSuggestorMixin {
     @Shadow @Final TextFieldWidget textField;
 
     @Shadow

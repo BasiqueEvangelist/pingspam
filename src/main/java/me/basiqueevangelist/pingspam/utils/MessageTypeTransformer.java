@@ -11,7 +11,6 @@ import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 
 public class MessageTypeTransformer {
@@ -31,17 +30,13 @@ public class MessageTypeTransformer {
             if (!reg.containsId(pingedId)) {
                 MessageType newType = tryTransformChat(entry.value(), s -> s.withColor(Formatting.AQUA));
 
-                if (newType != null) {
-                    addedTypes.put(pingedId, newType);
-                }
+                addedTypes.put(pingedId, newType);
             }
 
             if (!reg.containsId(pingSuccessfulId)) {
                 MessageType newType = tryTransformChat(entry.value(), s -> s.withColor(Formatting.GOLD));
 
-                if (newType != null) {
-                    addedTypes.put(pingSuccessfulId, newType);
-                }
+                addedTypes.put(pingSuccessfulId, newType);
             }
         });
 
@@ -55,18 +50,11 @@ public class MessageTypeTransformer {
     }
 
     private static MessageType tryTransformChat(MessageType type, Function<Style, Style> styleTransformer) {
-        MessageType.DisplayRule chatRule = type.chat().orElse(null);
+        Decoration decoration = type.chat();
 
-        if (chatRule == null) return null;
+        Decoration newDecoration = new Decoration(decoration.translationKey(), decoration.parameters(), styleTransformer.apply(decoration.style()));
 
-        Decoration chatDecoration = chatRule.decoration().orElse(null);
-
-        if (chatDecoration == null) return null;
-
-        Decoration newDecoration = new Decoration(chatDecoration.translationKey(), chatDecoration.parameters(), styleTransformer.apply(chatDecoration.style()));
-        MessageType.DisplayRule newRule = new MessageType.DisplayRule(Optional.of(newDecoration));
-
-        return new MessageType(Optional.of(newRule), type.overlay(), type.narration());
+        return new MessageType(newDecoration, type.narration());
     }
 
     public static Identifier wrapPinged(Identifier id) {

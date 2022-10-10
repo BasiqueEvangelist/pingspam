@@ -5,14 +5,12 @@ import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.registry.RegistryKey;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +33,7 @@ public final class PingLogic {
         public ServerPlayerEntity sender;
     }
 
-    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, RegistryKey<MessageType> type, UUID senderUuid) {
+    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, UUID senderUuid) {
         String contents = messageContent.getString();
         ServerPlayerEntity sender = server.getPlayerManager().getPlayer(senderUuid);
         Matcher matcher = PING_PATTERN.matcher(contents);
@@ -45,18 +43,18 @@ public final class PingLogic {
         if (PingSpam.CONFIG.getConfig().processPingsFromUnknownPlayers || sender != null) {
             while (matcher.find()) {
                 String username = matcher.group(1);
-                processMention(result, username, message, type, senderUuid);
+                processMention(result, username, message);
             }
         }
         return result;
     }
 
-    private static void processMention(ProcessedPing result, String mention, Text message, RegistryKey<MessageType> type, UUID senderUuid) {
+    private static void processMention(ProcessedPing result, String mention, Text message) {
         switch (mention) {
             case "everyone":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.everyone", 2)) {
                     for (UUID playerId : PlayerUtils.getAllPlayers(result.server)) {
-                        pingPlayer(result, playerId, message, type, senderUuid);
+                        pingPlayer(result, playerId, message);
                     }
                     result.pingSucceeded = true;
                 } else {
@@ -66,7 +64,7 @@ public final class PingLogic {
             case "online":
                 if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.online", 2)) {
                     for (ServerPlayerEntity player : result.server.getPlayerManager().getPlayerList()) {
-                        pingPlayer(result, player.getUuid(), message, type, senderUuid);
+                        pingPlayer(result, player.getUuid(), message);
                     }
                     result.pingSucceeded = true;
                 } else {
@@ -78,7 +76,7 @@ public final class PingLogic {
                     for (PlayerDataEntry entry : DataStore.getFor(result.server).players()) {
                         if (result.server.getPlayerManager().getPlayer(entry.playerId()) != null) continue;
 
-                        pingPlayer(result, entry.playerId(), message, type, senderUuid);
+                        pingPlayer(result, entry.playerId(), message);
                     }
                     result.pingSucceeded = true;
                 } else {
@@ -90,7 +88,7 @@ public final class PingLogic {
                 if (pingGroup != null) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
                         for (UUID playerId : pingGroup) {
-                            pingPlayer(result, playerId, message, type, senderUuid);
+                            pingPlayer(result, playerId, message);
                         }
 
                         result.pingSucceeded = true;
@@ -122,12 +120,12 @@ public final class PingLogic {
                     return;
                 }
 
-                PingLogic.pingPlayer(result, foundPlayerId, message, type, senderUuid);
+                PingLogic.pingPlayer(result, foundPlayerId, message);
                 result.pingSucceeded = true;
         }
     }
 
-    public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg, RegistryKey<MessageType> type, UUID senderUUID) {
+    public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
 
         ping.pingedPlayers.add(playerUuid);
@@ -151,6 +149,6 @@ public final class PingLogic {
 
     public static void sendPingError(ServerPlayerEntity sender, String text) {
         if (PingSpam.CONFIG.getConfig().sendPingErrors)
-            sender.sendMessage(Text.literal(text).formatted(Formatting.RED), MessageType.SYSTEM);
+            sender.sendMessage(Text.literal(text).formatted(Formatting.RED), false);
     }
 }

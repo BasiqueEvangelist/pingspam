@@ -6,16 +6,13 @@ import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.encryption.PlayerPublicKey;
-import net.minecraft.network.message.MessageType;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,11 +32,8 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Shadow public abstract void playSound(SoundEvent event, SoundCategory category, float volume, float pitch);
 
-    @Shadow public ServerPlayNetworkHandler networkHandler;
 
     @Shadow public abstract void sendMessage(Text message, boolean actionBar);
-
-    @Shadow public abstract void sendMessage(Text message, RegistryKey<MessageType> typeKey);
 
     @Unique private PingspamPlayerData pingspamData;
     @Unique private int actionbarTime = 0;
@@ -64,7 +58,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
                 actionbarTime = ACTIONBAR_TIME;
                 sendMessage(
                     Text.literal("You have " + pings.size() + " unread message" + (pings.size() != 1 ? "s" : "") + "."),
-                    MessageType.GAME_INFO
+                    true
                 );
             }
         } else {
@@ -75,7 +69,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Inject(method = "sendMessage(Lnet/minecraft/text/Text;Z)V", at = @At("HEAD"))
     private void onActionbarMessage(Text message, boolean actionBar, CallbackInfo ci) {
         if (actionBar)
-            actionbarTime = 70;
+            actionbarTime = 40;
     }
 
     @SuppressWarnings("ConstantConditions")

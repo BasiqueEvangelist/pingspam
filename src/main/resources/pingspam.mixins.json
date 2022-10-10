@@ -10,7 +10,7 @@
         "SimpleRegistryMixin"
     ],
     "client": [
-        "client.CommandSuggestorMixin"
+        "client.ChatInputSuggestorMixin"
     ],
     "injectors": {
         "defaultRequire": 1
