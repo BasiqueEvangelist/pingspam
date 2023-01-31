@@ -5,15 +5,14 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
 import me.basiqueevangelist.pingspam.utils.OfflineUtil;
-import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,7 +62,7 @@ public class PingspamGlobalData implements ComponentInstance {
                 }
 
                 if (tag.contains("IgnoredPlayers")) {
-                    NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtType.INT_ARRAY);
+                    NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtElement.INT_ARRAY_TYPE);
                     for (NbtElement ignoredPlayerTag : ignoredPlayerListTag) {
                         data.ignoredPlayers().add(NbtHelper.toUuid(ignoredPlayerTag));
                     }
@@ -73,7 +72,7 @@ public class PingspamGlobalData implements ComponentInstance {
                     if (tag.getString("PingSound").equals("null")) {
                         data.setPingSound(null);
                     } else {
-                        data.setPingSound(Registry.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE));
+                        data.setPingSound(Registries.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE));
                     }
                 }
             } catch (Exception e) {

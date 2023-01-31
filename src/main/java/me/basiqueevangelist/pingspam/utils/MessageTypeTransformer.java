@@ -2,12 +2,13 @@ package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.pingspam.access.ExtendedRegistry;
 import net.minecraft.network.message.MessageType;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.text.Decoration;
 import net.minecraft.text.Style;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.DynamicRegistryManager;
-import net.minecraft.util.registry.Registry;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +16,7 @@ import java.util.function.Function;
 
 public class MessageTypeTransformer {
     public static void run(DynamicRegistryManager drm) {
-        Registry<MessageType> reg = drm.get(Registry.MESSAGE_TYPE_KEY);
+        Registry<MessageType> reg = drm.get(RegistryKeys.MESSAGE_TYPE);
 
         Map<Identifier, MessageType> addedTypes = new HashMap<>();
 

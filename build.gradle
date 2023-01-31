@@ -1,8 +1,8 @@
 plugins {
 	id 'com.github.johnrengelman.shadow' version '7.1.2'
 	id 'java'
-	id 'fabric-loom' version '0.12-SNAPSHOT'
-	id 'io.github.juuxel.loom-quiltflower' version '1.7.2'
+	id 'fabric-loom' version '1.1-SNAPSHOT'
+	id 'io.github.juuxel.loom-quiltflower' version '1.8.0'
 	id 'maven-publish'
 }
 
@@ -50,7 +50,7 @@ dependencies {
 
 	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	modImplementation include('me.lucko:fabric-permissions-api:0.1-SNAPSHOT')
+	modImplementation include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
 	modImplementation include('me.basiqueevangelist:onedatastore:0.1.2+1.19') {
@@ -64,10 +64,6 @@ remapJar {
 	dependsOn "shadowJar"
 
 	inputFile.set shadowJar.archiveFile.get()
-}
-
-prepareRemapJar {
-	dependsOn "shadowJar"
 }
 
 shadowJar {

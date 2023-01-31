@@ -4,10 +4,11 @@ import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.MessageTypeTransformer;
 import me.basiqueevangelist.pingspam.utils.PingLogic;
 import net.minecraft.network.ClientConnection;
-import net.minecraft.network.message.MessageSourceProfile;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -15,9 +16,6 @@ import net.minecraft.text.Decoration;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryKey;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -42,8 +40,8 @@ public abstract class PlayerManagerMixin {
         ServerNetworkLogic.sendServerAnnouncement(player, conn);
     }
 
-    @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageSourceProfile;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))
-    public void processPingSigned(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, @Nullable ServerPlayerEntity sender, MessageSourceProfile sourceProfile, MessageType.Parameters params, CallbackInfo ci) {
+    @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))
+    public void processPingSigned(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
         Decoration rule = params.type().chat();
         UUID uuid = sender == null ? Util.NIL_UUID : sender.getUuid();
 
@@ -57,17 +55,17 @@ public abstract class PlayerManagerMixin {
         pong = null;
     }
 
-    @Redirect(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageSourceProfile;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendChatMessage(Lnet/minecraft/network/message/SentMessage;ZLnet/minecraft/network/message/MessageType$Parameters;)V"))
+    @Redirect(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendChatMessage(Lnet/minecraft/network/message/SentMessage;ZLnet/minecraft/network/message/MessageType$Parameters;)V"))
     private void sendMessageSigned(ServerPlayerEntity player, SentMessage message, boolean filterMaskEnabled, MessageType.Parameters params) {
         if (pong != null && pong.pingSucceeded) {
-            var typeRegistry = server.getRegistryManager().get(Registry.MESSAGE_TYPE_KEY);
+            var typeRegistry = server.getRegistryManager().get(RegistryKeys.MESSAGE_TYPE);
             var oldKey = typeRegistry.getKey(params.type()).orElseThrow();
             RegistryKey<MessageType> newKey = null;
 
             if (pong.pingedPlayers.contains(player.getUuid())) {
-                newKey = RegistryKey.of(Registry.MESSAGE_TYPE_KEY, MessageTypeTransformer.wrapPinged(oldKey.getValue()));
+                newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPinged(oldKey.getValue()));
             } else if (pong.sender == player) {
-                newKey = RegistryKey.of(Registry.MESSAGE_TYPE_KEY, MessageTypeTransformer.wrapPingSuccessful(oldKey.getValue()));
+                newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPingSuccessful(oldKey.getValue()));
                 pong.pingedPlayers.add(pong.sender.getUuid());
             }
 
