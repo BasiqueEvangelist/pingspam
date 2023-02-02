@@ -16,14 +16,12 @@ import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class PingspamGlobalData implements ComponentInstance {
     private final static Logger LOGGER = LoggerFactory.getLogger("Pingspam/PingspamGlobalData");
-    private final Map<String, List<UUID>> groups = CaseInsensitiveUtil.mapIgnoringCase();
+    private final Map<String, PingspamGroupData> groups = CaseInsensitiveUtil.mapIgnoringCase();
     private final DataStore store;
 
     public PingspamGlobalData(DataStore store) {
@@ -87,34 +85,48 @@ public class PingspamGlobalData implements ComponentInstance {
     public void fromTag(NbtCompound tag) {
         var groupsTag = tag.getCompound("Groups");
         for (String groupName : groupsTag.getKeys()) {
-            var groupTag = groupsTag.getList(groupName, NbtElement.INT_ARRAY_TYPE);
-            groups.put(groupName, new ArrayList<>());
+            var group = new PingspamGroupData(groupName);
+            groups.put(groupName, group);
+            var groupTag = groupsTag.get(groupName);
 
-            for (NbtElement playerTag : groupTag) {
-                addPlayerToGroup(groupName, NbtHelper.toUuid(playerTag));
+            if (groupTag instanceof NbtList liste) {
+                for (NbtElement playerTag : liste) {
+                    group.members().add(NbtHelper.toUuid(playerTag));
+                }
+            } else if (groupTag instanceof NbtCompound compound) {
+                group.fromTag(compound);
             }
+
+            propagateGroup(group);
         }
+
     }
 
-    public Map<String, List<UUID>> groups() {
+    public Map<String, PingspamGroupData> groups() {
         return groups;
     }
 
+    private void propagateGroup(PingspamGroupData group) {
+        for (var memberId : group.members()) {
+            store.getPlayer(memberId, PingSpam.PLAYER_DATA).groups().add(group.name());
+        }
+    }
+
     public void addPlayerToGroup(String group, UUID playerId) {
-        groups.computeIfAbsent(group, unused -> new ArrayList<>()).add(playerId);
+        groups.computeIfAbsent(group, PingspamGroupData::new).members().add(playerId);
         store.getPlayer(playerId, PingSpam.PLAYER_DATA).groups().add(group);
     }
 
     public void removePlayerFromGroup(String group, UUID playerId) {
         store.getPlayer(playerId, PingSpam.PLAYER_DATA).groups().remove(group);
 
-        List<UUID> playersInGroup = groups.get(group);
+        PingspamGroupData groupData = groups.get(group);
 
-        if (playersInGroup == null) return;
+        if (groupData == null) return;
 
-        playersInGroup.remove(playerId);
+        groupData.members().remove(playerId);
 
-        if (playersInGroup.size() == 0) groups.remove(group);
+        if (groupData.members().size() == 0) groups.remove(group);
     }
 
     @Override
@@ -122,12 +134,7 @@ public class PingspamGlobalData implements ComponentInstance {
         var groupsTag = new NbtCompound();
         tag.put("Groups", groupsTag);
         for (var entry : groups.entrySet()) {
-            var groupTag = new NbtList();
-            groupsTag.put(entry.getKey(), groupTag);
-
-            for (UUID playerId : entry.getValue()) {
-                groupTag.add(NbtHelper.fromUuid(playerId));
-            }
+            groupsTag.put(entry.getKey(), entry.getValue().toTag(new NbtCompound()));
         }
 
         return tag;

@@ -21,6 +21,7 @@ public final class PingspamPlayerData implements ComponentInstance {
     private final List<UUID> ignoredPlayers;
     private @Nullable SoundEvent pingSound;
     private final Set<String> groups;
+    private @Nullable String currentChat;
 
     public PingspamPlayerData(
         List<Text> unreadPings,
@@ -71,6 +72,10 @@ public final class PingspamPlayerData implements ComponentInstance {
                 pingSound = Registries.SOUND_EVENT.getOrEmpty(new Identifier(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
             }
         }
+
+        if (tag.contains("CurrentChat", NbtElement.STRING_TYPE)) {
+            currentChat = tag.getString("CurrentChat");
+        }
     }
 
     @Override
@@ -105,6 +110,10 @@ public final class PingspamPlayerData implements ComponentInstance {
             tag.putString("PingSound", pingSound.getId().toString());
         }
 
+        if (currentChat != null) {
+            tag.putString("CurrentChat", currentChat);
+        }
+
         return tag;
     }
 
@@ -136,5 +145,13 @@ public final class PingspamPlayerData implements ComponentInstance {
 
     public void setPingSound(@Nullable SoundEvent pingSound) {
         this.pingSound = pingSound;
+    }
+
+    public String currentChat() {
+        return currentChat;
+    }
+
+    public void currentChat(String currentChat) {
+        this.currentChat = currentChat;
     }
 }

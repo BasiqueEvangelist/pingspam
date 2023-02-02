@@ -6,9 +6,7 @@ import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 public final class NameLogic {
     private NameLogic() {
@@ -33,7 +31,9 @@ public final class NameLogic {
         }
 
         if (!ignoreGroups) {
-            if (DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().containsKey(name)) {
+            var group = DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().get(name);
+
+            if (group != null && group.isPingable()) {
                 return true;
             }
         }
@@ -58,7 +58,11 @@ public final class NameLogic {
             possibleNames.addAll(entry.get(PingSpam.PLAYER_DATA).aliases());
         }
 
-        possibleNames.addAll(DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().keySet());
+        for (var group : DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().values()) {
+            if (!group.isPingable()) continue;
+
+            possibleNames.add(group.name());
+        }
 
         return possibleNames;
     }

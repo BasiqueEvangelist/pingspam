@@ -3,6 +3,7 @@ package me.basiqueevangelist.pingspam.commands;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -23,7 +24,6 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
@@ -37,7 +37,7 @@ public class GroupCommand {
     private static final DynamicCommandExceptionType NOT_IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
         Text.literal(((GameProfile) x).getName()).append(Text.literal(" isn't in that group")));
     private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(Text.literal("That name is already taken"));
-    private static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(Text.literal("No such group"));
+    public static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(Text.literal("No such group"));
     private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(Text.literal("Invalid group name"));
     private static final Pattern GROUPNAME_PATTERN = Pattern.compile("^[\\w0-9_]{2,16}$", Pattern.UNICODE_CHARACTER_CLASS);
 
@@ -58,8 +58,65 @@ public class GroupCommand {
                             .requires(Permissions.require("pingspam.group.player.add", 2))
                             .then(argument("player", GameProfileArgumentType.gameProfile())
                                 .suggests(CommandUtil::suggestPlayers)
-                                .executes(GroupCommand::removePlayerFromGroup)))))
+                                .executes(GroupCommand::removePlayerFromGroup)))
+                        .then(literal("pingable")
+                            .requires(Permissions.require("pingspam.group.configure", 2))
+                            .then(argument("value", BoolArgumentType.bool())
+                                .executes(GroupCommand::configurePingable)))
+                        .then(literal("haschat")
+                            .requires(Permissions.require("pingspam.group.configure", 2))
+                            .then(argument("value", BoolArgumentType.bool())
+                                .executes(GroupCommand::configureHasChat)))
+                    ))
         );
+    }
+
+    private static int configurePingable(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
+        String groupName = StringArgumentType.getString(ctx, "group");
+        var group = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
+
+        if (group == null)
+            throw NO_SUCH_GROUP.create();
+
+        boolean value = BoolArgumentType.getBool(ctx, "value");
+        boolean old = group.isPingable();
+        group.isPingable(value);
+
+        if (old && !value) {
+            if (!NameLogic.isValidName(src.getServer(), groupName, false))
+                ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), groupName);
+        } else if (!old && value) {
+            ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), groupName);
+        }
+
+        src.sendFeedback(Text.literal((value ? "Enabled" : "Disabled") + " pinging of ")
+            .formatted(Formatting.GREEN)
+            .append(Text.literal("@" + groupName)
+                    .formatted(Formatting.YELLOW))
+            .append("."), true);
+
+        return 1;
+    }
+
+    private static int configureHasChat(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+        ServerCommandSource src = ctx.getSource();
+        String groupName = StringArgumentType.getString(ctx, "group");
+        var group = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
+
+        if (group == null)
+            throw NO_SUCH_GROUP.create();
+
+        boolean value = BoolArgumentType.getBool(ctx, "value");
+        group.hasChat(value);
+
+        src.sendFeedback(Text.literal((value ? "Enabled" : "Disabled") + " group chat for ")
+            .formatted(Formatting.GREEN)
+            .append(Text.literal("@" + groupName)
+                .formatted(Formatting.YELLOW))
+            .append("."), true);
+
+        return 1;
     }
 
     private static CompletableFuture<Suggestions> suggestGroups(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {
@@ -75,24 +132,24 @@ public class GroupCommand {
     private static int listPlayersInGroup(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         String groupName = StringArgumentType.getString(ctx, "group");
-        List<UUID> players = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
+        var group = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
 
-        if (players == null)
+        if (group == null)
             throw NO_SUCH_GROUP.create();
 
         StringBuilder headerBuilder = new StringBuilder();
         StringBuilder contentBuilder = new StringBuilder();
         headerBuilder.append(" has ");
-        headerBuilder.append(players.size());
+        headerBuilder.append(group.members().size());
         headerBuilder.append(" player");
 
-        if (players.size() != 1)
+        if (group.members().size() != 1)
             headerBuilder.append("s");
 
-        if (players.size() > 0) {
+        if (group.members().size() > 0) {
             headerBuilder.append(": ");
             boolean isFirst = true;
-            for (UUID playerId : players) {
+            for (UUID playerId : group.members()) {
                 if (!isFirst)
                     contentBuilder.append(", ");
                 isFirst = false;

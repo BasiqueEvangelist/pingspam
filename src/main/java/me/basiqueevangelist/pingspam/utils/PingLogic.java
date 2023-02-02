@@ -3,6 +3,7 @@ package me.basiqueevangelist.pingspam.utils;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PingspamGroupData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.MinecraftServer;
@@ -84,10 +85,10 @@ public final class PingLogic {
                 }
                 break;
             default:
-                List<UUID> pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
-                if (pingGroup != null) {
+                PingspamGroupData pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
+                if (pingGroup != null && pingGroup.isPingable()) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
-                        for (UUID playerId : pingGroup) {
+                        for (UUID playerId : pingGroup.members()) {
                             pingPlayer(result, playerId, message);
                         }
 

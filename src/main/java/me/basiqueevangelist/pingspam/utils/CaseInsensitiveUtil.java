@@ -4,7 +4,6 @@ import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectOpenCustomHashSet;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -18,7 +17,11 @@ public final class CaseInsensitiveUtil {
         return new Hash.Strategy<>() {
             @Override
             public int hashCode(String o) {
-                return o.toLowerCase(Locale.ROOT).hashCode();
+                int h = 0;
+                for (int i = 0; i < o.length(); i++) {
+                    h = 31 * h + Character.toLowerCase(o.charAt(i));
+                }
+                return h;
             }
 
             @Override
