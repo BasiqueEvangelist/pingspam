@@ -1,18 +1,19 @@
 {
-    "required": true,
-    "minVersion": "0.8",
-    "package": "me.basiqueevangelist.pingspam.mixin",
-    "compatibilityLevel": "JAVA_8",
-    "mixins": [
-        "MinecraftServerMixin",
-        "PlayerManagerMixin",
-        "ServerPlayerEntityMixin",
-        "SimpleRegistryMixin"
-    ],
-    "client": [
-        "client.ChatInputSuggestorMixin"
-    ],
-    "injectors": {
-        "defaultRequire": 1
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.basiqueevangelist.pingspam.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MinecraftServerMixin",
+    "PlayerManagerMixin",
+    "ServerPlayerEntityMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "SimpleRegistryMixin"
+  ],
+  "client": [
+    "client.ChatInputSuggestorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
   }
 }
