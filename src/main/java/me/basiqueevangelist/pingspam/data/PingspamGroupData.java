@@ -4,14 +4,17 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 public class PingspamGroupData {
     private final String name;
-    private final List<UUID> members = new ArrayList<>();
+    final List<UUID> members = new ArrayList<>();
+    private final List<UUID> membersView = Collections.unmodifiableList(members);
     private boolean pingable = true;
     private boolean hasChat = false;
 
@@ -44,8 +47,8 @@ public class PingspamGroupData {
         return tag;
     }
 
-    public List<UUID> members() {
-        return members;
+    public @UnmodifiableView List<UUID> members() {
+        return membersView;
     }
 
     public boolean isPingable() {

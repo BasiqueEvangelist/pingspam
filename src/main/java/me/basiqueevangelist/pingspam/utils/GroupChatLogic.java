@@ -26,12 +26,25 @@ public final class GroupChatLogic {
             .append(": ")
             .append(message.getContent());
 
-        for (var member : group.members()) {
-            PingLogic.sendNotification(server, member, text);
+        PingLogic.ProcessedPing ping =
+            PingLogic.processPings(server, message.getContent(), text, player.getUuid(), group.members()::contains);
 
+        for (var member : group.members()) {
             ServerPlayerEntity online = server.getPlayerManager().getPlayer(member);
-            if (online != null)
-                online.sendMessage(text);
+            if (online == null) continue;
+
+            if (ping.pingSucceeded) {
+                if (ping.pingedPlayers.contains(player.getUuid())) {
+                    online.sendMessage(text.copy().formatted(Formatting.AQUA), false);
+                } else if (ping.sender == player) {
+                    online.sendMessage(text.copy().formatted(Formatting.GOLD), false);
+                    ping.pingedPlayers.add(ping.sender.getUuid());
+                }
+            }
+
+            if (!ping.pingedPlayers.contains(player.getUuid())) {
+                online.sendMessage(text, false);
+            }
         }
     }
 }

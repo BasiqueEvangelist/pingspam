@@ -91,7 +91,7 @@ public class PingspamGlobalData implements ComponentInstance {
 
             if (groupTag instanceof NbtList liste) {
                 for (NbtElement playerTag : liste) {
-                    group.members().add(NbtHelper.toUuid(playerTag));
+                    group.members.add(NbtHelper.toUuid(playerTag));
                 }
             } else if (groupTag instanceof NbtCompound compound) {
                 group.fromTag(compound);
@@ -113,7 +113,7 @@ public class PingspamGlobalData implements ComponentInstance {
     }
 
     public void addPlayerToGroup(String group, UUID playerId) {
-        groups.computeIfAbsent(group, PingspamGroupData::new).members().add(playerId);
+        groups.computeIfAbsent(group, PingspamGroupData::new).members.add(playerId);
         store.getPlayer(playerId, PingSpam.PLAYER_DATA).groups().add(group);
     }
 
@@ -124,7 +124,7 @@ public class PingspamGlobalData implements ComponentInstance {
 
         if (groupData == null) return;
 
-        groupData.members().remove(playerId);
+        groupData.members.remove(playerId);
 
         if (groupData.members().size() == 0) groups.remove(group);
     }

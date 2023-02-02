@@ -46,7 +46,7 @@ public abstract class PlayerManagerMixin {
         UUID uuid = sender == null ? Util.NIL_UUID : sender.getUuid();
 
         if (rule != null) {
-            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid);
+            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid, null);
         }
     }
 
@@ -82,7 +82,7 @@ public abstract class PlayerManagerMixin {
     private void processPing(Text message, Function<ServerPlayerEntity, Text> playerMessageFactory, boolean overlay, CallbackInfo ci) {
         if (overlay) return;
 
-        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID);
+        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID, null);
     }
 
     @Redirect(method = "broadcast(Lnet/minecraft/text/Text;Ljava/util/function/Function;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendMessageToClient(Lnet/minecraft/text/Text;Z)V"))
