@@ -69,7 +69,7 @@ public class PingIgnoreCommand {
 
         data.ignoredPlayers().add(offender.getId());
 
-        src.sendFeedback(Text.literal("You are now ignoring ")
+        src.sendFeedback(() -> Text.literal("You are now ignoring ")
             .formatted(Formatting.GREEN)
             .append(Text.literal(offender.getName())
                 .formatted(Formatting.AQUA))
@@ -89,7 +89,7 @@ public class PingIgnoreCommand {
 
         data.ignoredPlayers().remove(pardonee.getId());
 
-        src.sendFeedback(Text.literal("You are no longer ignoring ")
+        src.sendFeedback(() -> Text.literal("You are no longer ignoring ")
             .formatted(Formatting.GREEN)
             .append(Text.literal(pardonee.getName())
                 .formatted(Formatting.AQUA))
@@ -104,7 +104,7 @@ public class PingIgnoreCommand {
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.ignoredPlayers().isEmpty()) {
-            src.sendFeedback(Text.literal("You are not ignoring any players.")
+            src.sendFeedback(() -> Text.literal("You are not ignoring any players.")
                 .formatted(Formatting.GREEN), false);
             return 0;
         }
@@ -114,7 +114,7 @@ public class PingIgnoreCommand {
             contentBuilder.append("\n - ").append(NameUtil.getNameFromUUID(ignoredPlayerUuid));
         }
 
-        src.sendFeedback(Text.literal("You are ignoring " + data.ignoredPlayers().size() + " player(s):")
+        src.sendFeedback(() -> Text.literal("You are ignoring " + data.ignoredPlayers().size() + " player(s):")
             .formatted(Formatting.GREEN)
             .append(Text.literal(contentBuilder.toString())
                 .formatted(Formatting.AQUA)), false);

@@ -2,7 +2,6 @@ package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.datafixer.DataFixTypes;
-import net.minecraft.datafixer.Schemas;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
@@ -31,8 +30,11 @@ public final class OfflineUtil {
         Path savedPlayersPath = PingSpam.SERVER.getSavePath(WorldSavePath.PLAYERDATA);
         Path savedDataPath = savedPlayersPath.resolve(player.toString() + ".dat");
         NbtCompound rawTag = NbtIo.readCompressed(savedDataPath.toFile());
-        int dataVersion = rawTag.contains("DataVersion", 3) ? rawTag.getInt("DataVersion") : -1;
-        return NbtHelper.update(Schemas.getFixer(), DataFixTypes.PLAYER, rawTag, dataVersion);
+        return DataFixTypes.PLAYER.update(
+            PingSpam.SERVER.getDataFixer(),
+            rawTag,
+            NbtHelper.getDataVersion(rawTag, -1)
+        );
     }
 
     public static List<UUID> listSavedPlayers() {

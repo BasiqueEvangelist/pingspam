@@ -115,7 +115,7 @@ public class AliasCommand {
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
 
         src.sendFeedback(
-            Text.literal("Removed alias ")
+            () -> Text.literal("Removed alias ")
                 .formatted(Formatting.GREEN)
                 .append(Text.literal('"' + alias + '"')
                     .formatted(Formatting.YELLOW))
@@ -149,7 +149,7 @@ public class AliasCommand {
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
 
         src.sendFeedback(
-            Text.literal("Added alias ")
+            () -> Text.literal("Added alias ")
                 .formatted(Formatting.GREEN)
                 .append(Text.literal('"' + newAlias + '"')
                     .formatted(Formatting.YELLOW))
@@ -188,7 +188,7 @@ public class AliasCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(Text.literal(player.getName())
+        src.sendFeedback(() -> Text.literal(player.getName())
             .formatted(Formatting.AQUA)
             .append(
                 Text.literal(headerBuilder.toString())
@@ -219,7 +219,7 @@ public class AliasCommand {
         if (!NameLogic.isValidName(src.getServer(), alias, false))
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), alias);
 
-        src.sendFeedback(Text.literal("Removed alias ")
+        src.sendFeedback(() -> Text.literal("Removed alias ")
             .formatted(Formatting.GREEN)
             .append(Text.literal('"' + alias + '"')
                 .formatted(Formatting.YELLOW))
@@ -249,7 +249,7 @@ public class AliasCommand {
         data.aliases().add(newAlias);
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), newAlias);
 
-        src.sendFeedback(Text.literal("Added alias ")
+        src.sendFeedback(() -> Text.literal("Added alias ")
             .formatted(Formatting.GREEN)
             .append(Text.literal('"' + newAlias + '"')
                 .formatted(Formatting.YELLOW))
@@ -287,7 +287,7 @@ public class AliasCommand {
         }
 
         src.sendFeedback(
-            Text.literal(headerBuilder.toString())
+            () -> Text.literal(headerBuilder.toString())
                 .formatted(Formatting.GREEN)
                 .append(Text.literal(contentBuilder.toString())
                     .formatted(Formatting.YELLOW)), false);

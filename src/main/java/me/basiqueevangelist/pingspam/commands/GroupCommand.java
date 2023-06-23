@@ -102,7 +102,7 @@ public class GroupCommand {
             headerBuilder.append('.');
         }
 
-        src.sendFeedback(Text.literal("Group ")
+        src.sendFeedback(() -> Text.literal("Group ")
             .formatted(Formatting.GREEN)
             .append(Text.literal("@" + groupName)
                 .formatted(Formatting.YELLOW))
@@ -132,7 +132,7 @@ public class GroupCommand {
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
-            Text.literal("Removed player ")
+            () -> Text.literal("Removed player ")
                 .formatted(Formatting.GREEN)
                 .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))
@@ -164,7 +164,7 @@ public class GroupCommand {
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
-            Text.literal("Added player ")
+            () -> Text.literal("Added player ")
                 .formatted(Formatting.GREEN)
                 .append(Text.literal(player.getName())
                     .formatted(Formatting.AQUA))

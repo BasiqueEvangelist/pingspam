@@ -31,21 +31,23 @@ public class NotificationsCommand {
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(src.getPlayerOrThrow().getUuid(), PingSpam.PLAYER_DATA);
 
         if (!data.unreadPings().isEmpty()) {
-            MutableText response = Text.literal("You have " + data.unreadPings().size() + " unread message" + (data.unreadPings().size() != 1 ? "s" : "") + ":")
-                .formatted(Formatting.GREEN);
+            src.sendFeedback(() -> {
+                MutableText response = Text.literal("You have " + data.unreadPings().size() + " unread message" + (data.unreadPings().size() != 1 ? "s" : "") + ":")
+                    .formatted(Formatting.GREEN);
 
-            for (Text notif : data.unreadPings()) {
-                response.append(Text.literal("\n- ")
-                    .formatted(Formatting.WHITE)
-                    .append(notif));
-            }
+                for (Text notif : data.unreadPings()) {
+                    response.append(Text.literal("\n- ")
+                        .formatted(Formatting.WHITE)
+                        .append(notif));
+                }
 
-            src.sendFeedback(response, false);
+                return response;
+            }, false);
             data.unreadPings().clear();
 
             return 1;
         } else {
-            src.sendFeedback(Text.literal("You have no unread messages.")
+            src.sendFeedback(() -> Text.literal("You have no unread messages.")
                 .formatted(Formatting.GREEN), false);
 
             return 0;

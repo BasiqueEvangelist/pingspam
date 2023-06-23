@@ -35,6 +35,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @Unique private PingspamPlayerData pingspamData;
     @Unique private int actionbarTime = 0;
+    @Unique private int prevPingsCount = -1;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void loadPingspamData(MinecraftServer server, ServerWorld world, GameProfile profile, CallbackInfo ci) {
@@ -48,6 +49,11 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
         if (isImpostor()) return;
 
         var pings = pingspamData.unreadPings();
+
+        if (prevPingsCount != pings.size()) {
+            prevPingsCount = pings.size();
+            actionbarTime = 0;
+        }
 
         if (pings.size() > 0 && PingSpam.CONFIG.getConfig().showUnreadMessagesInActionbar) {
             actionbarTime--;

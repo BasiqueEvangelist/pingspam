@@ -45,7 +45,7 @@ public class PingSoundCommand {
 
         data.setPingSound(event);
 
-        src.sendFeedback(Text.literal("Set ping sound to ")
+        src.sendFeedback(() -> Text.literal("Set ping sound to ")
             .formatted(Formatting.GREEN)
             .append(Text.literal(soundId.toString())
                 .formatted(Formatting.YELLOW))
@@ -61,7 +61,7 @@ public class PingSoundCommand {
 
         data.setPingSound(null);
 
-        src.sendFeedback(Text.literal("Disabled ping sound.")
+        src.sendFeedback(() -> Text.literal("Disabled ping sound.")
             .formatted(Formatting.GREEN), false);
 
         return 0;
@@ -73,13 +73,13 @@ public class PingSoundCommand {
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (data.pingSound() != null) {
-            src.sendFeedback(Text.literal("Your current ping sound is ")
+            src.sendFeedback(() -> Text.literal("Your current ping sound is ")
                 .formatted(Formatting.GREEN)
                 .append(Text.literal(data.pingSound().getId().toString())
                     .formatted(Formatting.YELLOW))
                 .append(Text.literal(".")), false);
         } else {
-            src.sendFeedback(Text.literal("You have disabled ping sounds.")
+            src.sendFeedback(() -> Text.literal("You have disabled ping sounds.")
                 .formatted(Formatting.GREEN), false);
         }
 
