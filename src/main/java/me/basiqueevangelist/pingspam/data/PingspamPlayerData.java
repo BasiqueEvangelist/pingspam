@@ -147,11 +147,11 @@ public final class PingspamPlayerData implements ComponentInstance {
         this.pingSound = pingSound;
     }
 
-    public String currentChat() {
+    public @Nullable String currentChat() {
         return currentChat;
     }
 
-    public void currentChat(String currentChat) {
+    public void currentChat(@Nullable String currentChat) {
         this.currentChat = currentChat;
     }
 }

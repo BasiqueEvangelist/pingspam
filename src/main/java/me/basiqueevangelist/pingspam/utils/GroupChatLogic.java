@@ -2,11 +2,15 @@ package me.basiqueevangelist.pingspam.utils;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public final class GroupChatLogic {
     private GroupChatLogic() {
@@ -20,7 +24,7 @@ public final class GroupChatLogic {
         var group = DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
         var text = Text.literal("[")
             .append(Text.literal("@" + groupName)
-                .formatted(Formatting.AQUA))
+                .formatted(Formatting.YELLOW))
             .append("] ")
             .append(player.getName())
             .append(": ")
@@ -46,5 +50,15 @@ public final class GroupChatLogic {
                 online.sendMessage(text, false);
             }
         }
+    }
+
+    public static void changeChat(ServerPlayerEntity player, @Nullable String groupName) {
+        MinecraftServer server = player.getServer();
+        var group = DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
+        var playerData = DataStore.getFor(server).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
+
+        if (Objects.equals(playerData.currentChat(), groupName)) return;
+
+        ServerNetworkLogic.sendServerAnnouncement(player, player.networkHandler.connection);
     }
 }

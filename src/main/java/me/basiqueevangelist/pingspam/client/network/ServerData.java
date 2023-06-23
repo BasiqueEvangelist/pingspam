@@ -16,6 +16,7 @@ public class ServerData {
 
     private boolean canPingPlayers;
     private final Set<String> possibleNames = CaseInsensitiveUtil.treeSetIgnoringCase();
+    private int version = 0;
 
     public boolean canPingPlayers() {
         return canPingPlayers;
@@ -45,6 +46,14 @@ public class ServerData {
         } else {
             possibleNames.remove("offline");
         }
+    }
+
+    public int version() {
+        return version;
+    }
+
+    public void version(int version) {
+        this.version = version;
     }
 
     public void refreshPermissionsIfNeeded() {

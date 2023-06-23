@@ -34,10 +34,9 @@ public abstract class PlayerManagerMixin {
     @Shadow @Final private MinecraftServer server;
     @Unique private PingLogic.ProcessedPing pong;
 
-    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
+    @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendCommandTree(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
     public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
         ServerNetworkLogic.addPossibleName((PlayerManager)(Object) this, player.getGameProfile().getName());
-        ServerNetworkLogic.sendServerAnnouncement(player, conn);
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))

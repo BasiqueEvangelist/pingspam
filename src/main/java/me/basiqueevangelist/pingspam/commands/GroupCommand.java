@@ -66,7 +66,7 @@ public class GroupCommand {
                         .then(literal("haschat")
                             .requires(Permissions.require("pingspam.group.configure", 2))
                             .then(argument("value", BoolArgumentType.bool())
-                                .executes(GroupCommand::configureHasChat)))
+                                .executes(GroupCommand::configureGroupChat)))
                     ))
         );
     }
@@ -99,7 +99,7 @@ public class GroupCommand {
         return 1;
     }
 
-    private static int configureHasChat(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
+    private static int configureGroupChat(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         String groupName = StringArgumentType.getString(ctx, "group");
         var group = DataStore.getFor(src.getServer()).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
