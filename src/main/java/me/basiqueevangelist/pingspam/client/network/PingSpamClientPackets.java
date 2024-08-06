@@ -24,6 +24,9 @@ public class PingSpamClientPackets {
                 data.possibleNames().add(buf.readString());
             }
 
+            if (buf.isReadable())
+                data.version(buf.readVarInt());
+
             PingSpamClient.SERVER_DATA = data;
 
             responseSender.sendPacket(PingSpamPackets.ANNOUNCE, PacketByteBufs.empty());

@@ -16,6 +16,7 @@ public class PingSpamCommands {
         PingSoundCommand.register(dispatcher);
         PingIgnoreCommand.register(dispatcher);
         GroupCommand.register(dispatcher);
+        ChatCommand.register(dispatcher);
 
         dispatcher.register(
             literal("pingspam")

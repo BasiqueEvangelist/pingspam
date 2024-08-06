@@ -34,10 +34,9 @@ public abstract class PlayerManagerMixin {
     @Shadow @Final private MinecraftServer server;
     @Unique private PingLogic.ProcessedPing pong;
 
-    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
+    @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendCommandTree(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
     public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
         ServerNetworkLogic.addPossibleName((PlayerManager)(Object) this, player.getGameProfile().getName());
-        ServerNetworkLogic.sendServerAnnouncement(player, conn);
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))
@@ -46,7 +45,7 @@ public abstract class PlayerManagerMixin {
         UUID uuid = sender == null ? Util.NIL_UUID : sender.getUuid();
 
         if (rule != null) {
-            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid);
+            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid, null);
         }
     }
 
@@ -82,7 +81,7 @@ public abstract class PlayerManagerMixin {
     private void processPing(Text message, Function<ServerPlayerEntity, Text> playerMessageFactory, boolean overlay, CallbackInfo ci) {
         if (overlay) return;
 
-        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID);
+        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID, null);
     }
 
     @Redirect(method = "broadcast(Lnet/minecraft/text/Text;Ljava/util/function/Function;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendMessageToClient(Lnet/minecraft/text/Text;Z)V"))

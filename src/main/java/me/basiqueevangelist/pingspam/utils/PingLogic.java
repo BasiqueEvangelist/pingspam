@@ -3,6 +3,7 @@ package me.basiqueevangelist.pingspam.utils;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PingspamGroupData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.MinecraftServer;
@@ -11,10 +12,12 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,15 +34,18 @@ public final class PingLogic {
         public MinecraftServer server;
         public boolean pingSucceeded = false;
         public ServerPlayerEntity sender;
+        public Predicate<UUID> playerPredicate;
     }
 
-    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, UUID senderUuid) {
+    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, UUID senderUuid,
+                                             @Nullable Predicate<UUID> playerPredicate) {
         String contents = messageContent.getString();
         ServerPlayerEntity sender = server.getPlayerManager().getPlayer(senderUuid);
         Matcher matcher = PING_PATTERN.matcher(contents);
         ProcessedPing result = new ProcessedPing();
         result.sender = sender;
         result.server = server;
+        result.playerPredicate = playerPredicate == null ? unused -> true : playerPredicate;
         if (PingSpam.CONFIG.getConfig().processPingsFromUnknownPlayers || sender != null) {
             while (matcher.find()) {
                 String username = matcher.group(1);
@@ -84,10 +90,10 @@ public final class PingLogic {
                 }
                 break;
             default:
-                List<UUID> pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
-                if (pingGroup != null) {
+                PingspamGroupData pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
+                if (pingGroup != null && pingGroup.isPingable()) {
                     if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
-                        for (UUID playerId : pingGroup) {
+                        for (UUID playerId : pingGroup.members()) {
                             pingPlayer(result, playerId, message);
                         }
 
@@ -103,6 +109,12 @@ public final class PingLogic {
                 if (foundPlayerId == null) {
                     if (result.sender != null)
                         PingLogic.sendPingError(result.sender, "No such player: " + mention + "!");
+                    return;
+                }
+
+                if (!result.playerPredicate.test(foundPlayerId)) {
+                    if (result.sender != null)
+                        PingLogic.sendPingError(result.sender, "@" + mention + " is unreachable in this context");
                     return;
                 }
 
@@ -127,6 +139,7 @@ public final class PingLogic {
 
     public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
+        if (!ping.playerPredicate.test(playerUuid)) return;
 
         ping.pingedPlayers.add(playerUuid);
         sendNotification(ping.server, playerUuid, pingMsg);
