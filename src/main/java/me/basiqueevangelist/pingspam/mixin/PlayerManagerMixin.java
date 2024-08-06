@@ -66,16 +66,15 @@ public abstract class PlayerManagerMixin {
                 newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPinged(oldKey.getValue()));
             } else if (pong.sender == player) {
                 newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPingSuccessful(oldKey.getValue()));
-                pong.pingedPlayers.add(pong.sender.getUuid());
             }
 
-            if (newKey != null)
+            if (newKey != null) {
                 player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.getEntry(newKey).orElseThrow(), params.name(), params.targetName()));
-
+                return;
+            }
         }
 
-        if (pong == null || !pong.pingedPlayers.contains(player.getUuid()))
-            player.sendChatMessage(message, filterMaskEnabled, params);
+        player.sendChatMessage(message, filterMaskEnabled, params);
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/text/Text;Ljava/util/function/Function;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;sendMessage(Lnet/minecraft/text/Text;)V", shift = At.Shift.AFTER))

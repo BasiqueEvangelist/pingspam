@@ -62,9 +62,7 @@ public final class ChatCommand {
         if (!group.hasChat() || !group.members().contains(ctx.getSource().getPlayerOrThrow().getUuid()))
             throw GroupCommand.NO_SUCH_GROUP.create();
 
-        DataStore.getFor(src.getServer())
-            .getPlayer(src.getPlayerOrThrow().getUuid(), PingSpam.PLAYER_DATA)
-            .currentChat(groupName);
+        GroupChatLogic.changeChat(src.getPlayerOrThrow(), groupName);
 
         src.sendFeedback(() -> Text.literal("Switched to the ")
             .formatted(Formatting.GREEN)
@@ -77,11 +75,11 @@ public final class ChatCommand {
 
     private static int clearChat(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        DataStore.getFor(src.getServer())
-            .getPlayer(src.getPlayerOrThrow().getUuid(), PingSpam.PLAYER_DATA)
-            .currentChat(null);
 
-        src.sendFeedback(() -> Text.literal("Switched to the global chat."), false);
+        GroupChatLogic.changeChat(src.getPlayerOrThrow(), null);
+
+        src.sendFeedback(() -> Text.literal("Switched to the global chat.")
+            .formatted(Formatting.GREEN), false);
         return 1;
     }
 

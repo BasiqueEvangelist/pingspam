@@ -38,27 +38,26 @@ public final class GroupChatLogic {
             if (online == null) continue;
 
             if (ping.pingSucceeded) {
-                if (ping.pingedPlayers.contains(player.getUuid())) {
-                    online.sendMessage(text.copy().formatted(Formatting.AQUA), false);
-                } else if (ping.sender == player) {
+                if (ping.sender == online) {
                     online.sendMessage(text.copy().formatted(Formatting.GOLD), false);
-                    ping.pingedPlayers.add(ping.sender.getUuid());
+                } else if (ping.pingedPlayers.contains(member)) {
+                    online.sendMessage(text.copy().formatted(Formatting.AQUA), false);
                 }
+
+                continue;
             }
 
-            if (!ping.pingedPlayers.contains(player.getUuid())) {
-                online.sendMessage(text, false);
-            }
+            online.sendMessage(text, false);
         }
     }
 
     public static void changeChat(ServerPlayerEntity player, @Nullable String groupName) {
         MinecraftServer server = player.getServer();
-        var group = DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
         var playerData = DataStore.getFor(server).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (Objects.equals(playerData.currentChat(), groupName)) return;
 
+        playerData.currentChat(groupName);
         ServerNetworkLogic.sendServerAnnouncement(player, player.networkHandler.connection);
     }
 }
