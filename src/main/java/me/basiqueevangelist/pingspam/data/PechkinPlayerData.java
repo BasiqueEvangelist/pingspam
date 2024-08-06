@@ -15,12 +15,11 @@ import java.util.UUID;
 
 public record PechkinPlayerData(
     List<MailMessage> messages,
-    List<UUID> ignoredPlayers,
     List<UUID> lastCorrespondents,
     LeakyBucket leakyBucket
 ) implements ComponentInstance {
     public PechkinPlayerData(PlayerDataEntry ignored) {
-        this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new LeakyBucket());
+        this(new ArrayList<>(), new ArrayList<>(), new LeakyBucket());
     }
 
     public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
@@ -28,12 +27,6 @@ public record PechkinPlayerData(
 
         for (int i = 0; i < messagesTag.size(); i++) {
             messages.add(MailMessage.fromTag(messagesTag.getCompound(i), registries));
-        }
-
-        var ignoredPlayersTag = tag.getList("IgnoredPlayers", NbtElement.INT_ARRAY_TYPE);
-
-        for (var ignoredPlayerTag : ignoredPlayersTag) {
-            ignoredPlayers.add(NbtHelper.toUuid(ignoredPlayerTag));
         }
 
         var lastCorrespondentsTag = tag.getList("LastCorrespondents", NbtElement.INT_ARRAY_TYPE);
@@ -51,14 +44,6 @@ public record PechkinPlayerData(
             tag.put("Messages", messagesTag);
             for (var message : messages) {
                 messagesTag.add(message.toTag(new NbtCompound(), registries));
-            }
-        }
-
-        if (!ignoredPlayers.isEmpty()) {
-            var ignoresTag = new NbtList();
-            tag.put("IgnoredPlayers", ignoresTag);
-            for (var ignoredPlayer : ignoredPlayers) {
-                ignoresTag.add(NbtHelper.fromUuid(ignoredPlayer));
             }
         }
 

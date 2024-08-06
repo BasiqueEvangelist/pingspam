@@ -22,7 +22,6 @@ public class PingSpamCommands {
         SendCommand.register(dispatcher);
         ListCommand.register(dispatcher);
         DeleteCommand.register(dispatcher);
-        IgnoreCommand.register(dispatcher);
         ClearCommand.register(dispatcher);
 
         dispatcher.register(

@@ -9,6 +9,7 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.MailMessage;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.utils.IgnoreLogic;
 import me.basiqueevangelist.pingspam.utils.MailLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
@@ -79,8 +80,7 @@ public final class SendCommand {
         PechkinPlayerData senderData = DataStore.getFor(src.getServer()).getPlayer(sender.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
         PechkinPlayerData recipientData = DataStore.getFor(src.getServer()).getPlayer(recipientId, PingSpam.PECHKIN_PLAYER_DATA);
 
-        if (recipientData.ignoredPlayers().contains(sender.getUuid()))
-            throw IGNORED.create();
+        IgnoreLogic.throwIfIgnored(sender, recipientId);
 
         if (!Permissions.check(sender, "pechkin.bypass.cooldown", 2)) {
             int sendCost = PingSpam.CONFIG.getConfig().mail.sendCost;
