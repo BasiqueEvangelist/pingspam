@@ -33,10 +33,6 @@ repositories {
 	}
 	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	mavenCentral()
-	maven {
-		name = "Basique's Maven"
-		url = 'https://basique.top/maven'
-	}
 }
 
 dependencies {
@@ -53,9 +49,6 @@ dependencies {
 	modImplementation include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include("me.basiqueevangelist:onedatastore:${project.onedatastore_version}") {
-		transitive = false
-	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }

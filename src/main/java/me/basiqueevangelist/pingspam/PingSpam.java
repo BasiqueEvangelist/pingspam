@@ -3,6 +3,7 @@ package me.basiqueevangelist.pingspam;
 import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
+import me.basiqueevangelist.onedatastore.impl.OneDataStoreInit;
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
 import me.basiqueevangelist.pingspam.data.PingspamGlobalData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
@@ -25,6 +26,8 @@ public class PingSpam implements ModInitializer {
 
     @Override
     public void onInitialize() {
+        new OneDataStoreInit().onInitialize();
+
         LoggerFactory.getLogger("PingSpam").info("Several people are typing...");
 
         PingSpamPackets.register();
