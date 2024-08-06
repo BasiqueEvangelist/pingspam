@@ -4,6 +4,7 @@ import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.onedatastore.impl.OneDataStoreInit;
+import me.basiqueevangelist.pechkin.Pechkin;
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
 import me.basiqueevangelist.pingspam.data.PingspamGlobalData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
@@ -36,5 +37,7 @@ public class PingSpam implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> SERVER = null);
+
+        new Pechkin().onInitialize();
     }
 }

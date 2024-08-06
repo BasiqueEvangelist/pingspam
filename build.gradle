@@ -19,6 +19,21 @@ configurations {
 
 loom {
 	accessWidenerPath = file("src/main/resources/pingspam.accesswidener")
+
+	runs {
+		clientTester1 {
+			client()
+			ideConfigGenerated true
+			name = "Client (Tester 1)"
+			programArgs("--username", "Tester1")
+		}
+		clientTester2 {
+			client()
+			ideConfigGenerated true
+			name = "Client (Tester 2)"
+			programArgs("--username", "Tester2")
+		}
+	}
 }
 
 repositories {
