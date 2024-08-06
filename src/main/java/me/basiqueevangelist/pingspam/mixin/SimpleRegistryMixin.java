@@ -8,6 +8,7 @@ import net.minecraft.registry.entry.RegistryEntry;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,9 +19,7 @@ import java.util.Map;
 
 @Mixin(SimpleRegistry.class)
 public class SimpleRegistryMixin<T> implements ExtendedRegistry {
-    private boolean pingspam$intrusive;
-
-    @Shadow private @Nullable List<RegistryEntry.Reference<T>> cachedEntries;
+    @Unique private boolean pingspam$intrusive;
 
     @Shadow @Nullable private Map<T, RegistryEntry.Reference<T>> intrusiveValueToEntry;
 
@@ -37,7 +36,5 @@ public class SimpleRegistryMixin<T> implements ExtendedRegistry {
 
         if (pingspam$intrusive)
             this.intrusiveValueToEntry = new IdentityHashMap<>();
-
-        cachedEntries = null;
     }
 }

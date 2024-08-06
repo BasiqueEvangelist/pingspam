@@ -1,6 +1,7 @@
 package me.basiqueevangelist.onedatastore.api;
 
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 
 public interface ComponentInstance {
     /**
@@ -11,7 +12,7 @@ public interface ComponentInstance {
 
     }
 
-    void fromTag(NbtCompound tag);
+    void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries);
 
-    NbtCompound toTag(NbtCompound tag);
+    NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries);
 }

@@ -41,7 +41,7 @@ public final class CommandUtil {
             playerNames.add(NameUtil.getNameFromUUID(entry.playerId()));
         }
 
-        playerNames.remove(ctx.getSource().getPlayer().getEntityName());
+        playerNames.remove(ctx.getSource().getPlayerOrThrow().getNameForScoreboard());
 
         return CommandSource.suggestMatching(playerNames, builder);
     }

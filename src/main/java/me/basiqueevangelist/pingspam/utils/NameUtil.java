@@ -1,6 +1,6 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.ProfileResult;
 import me.basiqueevangelist.pingspam.PingSpam;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,11 +22,11 @@ public final class NameUtil {
 
         if (optProfile.isPresent()) return optProfile.get().getName();
 
-        GameProfile profile = PingSpam.SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), true);
+        ProfileResult profile = PingSpam.SERVER.getSessionService().fetchProfile(uuid, true);
 
-        if (profile.getName() != null) {
-            PingSpam.SERVER.getUserCache().add(profile);
-            return profile.getName();
+        if (profile != null) {
+            PingSpam.SERVER.getUserCache().add(profile.profile());
+            return profile.profile().getName();
         }
 
         BAD_UUIDS.add(uuid);

@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Decoration;
 import net.minecraft.text.Text;
@@ -35,13 +36,13 @@ public abstract class PlayerManagerMixin {
     @Unique private PingLogic.ProcessedPing pong;
 
     @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendCommandTree(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
-    public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
+    public void onPlayerConnected(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
         ServerNetworkLogic.addPossibleName((PlayerManager)(Object) this, player.getGameProfile().getName());
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))
     public void processPingSigned(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
-        Decoration rule = params.type().chat();
+        Decoration rule = params.type().value().chat();
         UUID uuid = sender == null ? Util.NIL_UUID : sender.getUuid();
 
         if (rule != null) {
@@ -58,7 +59,7 @@ public abstract class PlayerManagerMixin {
     private void sendMessageSigned(ServerPlayerEntity player, SentMessage message, boolean filterMaskEnabled, MessageType.Parameters params) {
         if (pong != null && pong.pingSucceeded) {
             var typeRegistry = server.getRegistryManager().get(RegistryKeys.MESSAGE_TYPE);
-            var oldKey = typeRegistry.getKey(params.type()).orElseThrow();
+            var oldKey = typeRegistry.getKey(params.type().value()).orElseThrow();
             RegistryKey<MessageType> newKey = null;
 
             if (pong.pingedPlayers.contains(player.getUuid())) {
@@ -69,7 +70,7 @@ public abstract class PlayerManagerMixin {
             }
 
             if (newKey != null)
-                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.get(newKey), params.name(), params.targetName()));
+                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.getEntry(newKey).orElseThrow(), params.name(), params.targetName()));
 
         }
 

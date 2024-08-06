@@ -1,8 +1,7 @@
 plugins {
 	id 'com.github.johnrengelman.shadow' version '8.1.1'
 	id 'java'
-	id 'fabric-loom' version '1.2-SNAPSHOT'
-	id 'io.github.juuxel.loom-quiltflower' version '1.10.0'
+	id 'fabric-loom' version '1.7-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -46,7 +45,6 @@ repositories {
 		name = 'TerraformersMC'
 		url = 'https://maven.terraformersmc.com'
 	}
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	mavenCentral()
 }
 
@@ -61,7 +59,7 @@ dependencies {
 
 	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	modImplementation include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT')
+	modImplementation include('me.lucko:fabric-permissions-api:0.3.1')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.

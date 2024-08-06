@@ -16,7 +16,7 @@ public class Pechkin implements ModInitializer {
     public static final ConfigManager CONFIG = new ConfigManager();
     public static WeakReference<MinecraftServer> server;
 
-    public static final Component<PechkinPlayerData, PlayerDataEntry> PLAYER_DATA = Component.registerPlayer(new Identifier("pechkin", "player_data"), PechkinPlayerData::new);
+    public static final Component<PechkinPlayerData, PlayerDataEntry> PLAYER_DATA = Component.registerPlayer(Identifier.of("pechkin", "player_data"), PechkinPlayerData::new);
 
     @Override
     public void onInitialize() {

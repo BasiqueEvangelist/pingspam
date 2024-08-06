@@ -6,6 +6,7 @@ import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.registry.RegistryWrapper;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,13 +26,13 @@ public class PlayerDataEntryImpl implements PlayerDataEntry {
         }
     }
 
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         for (Map.Entry<Component<?, PlayerDataEntry>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();
 
             if (tag.contains(tagName, NbtElement.COMPOUND_TYPE)) {
                 try {
-                    entry.getValue().fromTag(tag.getCompound(tagName));
+                    entry.getValue().fromTag(tag.getCompound(tagName), registries);
                 } catch (Exception e) {
                     OneDataStoreInit.LOGGER.error("Encountered error while deserializing {} for {}", tagName, playerId, e);
                 }
@@ -63,14 +64,14 @@ public class PlayerDataEntryImpl implements PlayerDataEntry {
         return (T) components.get(component);
     }
 
-    public NbtCompound toTag(NbtCompound tag) {
+    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         tag.put("UUID", NbtHelper.fromUuid(playerId));
 
         for (Map.Entry<Component<?, PlayerDataEntry>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();
 
             try {
-                tag.put(tagName, entry.getValue().toTag(new NbtCompound()));
+                tag.put(tagName, entry.getValue().toTag(new NbtCompound(), registries));
             } catch (Exception e) {
                 OneDataStoreInit.LOGGER.error("Encountered error while serializing {} for {}", tagName, playerId, e);
             }

@@ -7,6 +7,7 @@ import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.PersistentState;
 
@@ -16,12 +17,16 @@ public class OneDataStoreState extends PersistentState implements DataStore {
     private final Map<UUID, PlayerDataEntryImpl> players = new HashMap<>();
     private final Map<Component<?, DataStore>, ComponentInstance> components = new HashMap<>();
     private static final ReentrantLoadProtector SAFEGUARD = new ReentrantLoadProtector(() -> new IllegalStateException("Tried to recursively load OneDataStore state!"));
+    private static final Type<OneDataStoreState> TYPE = new Type<>(
+        OneDataStoreState::new,
+        OneDataStoreState::new,
+        null
+    );
 
     public static OneDataStoreState getFrom(MinecraftServer server) {
         try (var scope = SAFEGUARD.enter()) {
             return server.getOverworld().getPersistentStateManager().getOrCreate(
-                OneDataStoreState::new,
-                OneDataStoreState::new,
+                TYPE,
                 "onedatastore"
             );
         }
@@ -35,7 +40,7 @@ public class OneDataStoreState extends PersistentState implements DataStore {
         }
     }
 
-    private OneDataStoreState(NbtCompound tag) {
+    private OneDataStoreState(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var playersTag = tag.getList("Players", NbtElement.COMPOUND_TYPE);
         for (int i = 0; i < playersTag.size(); i++) {
             var playerTag = playersTag.getCompound(i);
@@ -54,7 +59,7 @@ public class OneDataStoreState extends PersistentState implements DataStore {
 
             UUID playerId = playerTag.getUuid("UUID");
 
-            players.get(playerId).fromTag(playerTag);
+            players.get(playerId).fromTag(playerTag, registries);
         }
 
         for (Map.Entry<Component<?, DataStore>, ComponentInstance> entry : components.entrySet()) {
@@ -62,7 +67,7 @@ public class OneDataStoreState extends PersistentState implements DataStore {
 
             if (tag.contains(tagName, NbtElement.COMPOUND_TYPE)) {
                 try {
-                    entry.getValue().fromTag(tag.getCompound(tagName));
+                    entry.getValue().fromTag(tag.getCompound(tagName), registries);
                 } catch (Exception e) {
                     OneDataStoreInit.LOGGER.error("Encountered error while deserializing {}", tagName, e);
                 }
@@ -109,19 +114,19 @@ public class OneDataStoreState extends PersistentState implements DataStore {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag) {
+    public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var playersTag = new NbtList();
         tag.put("Players", playersTag);
 
         for (var entry : players.entrySet()) {
-            playersTag.add(entry.getValue().toTag(new NbtCompound()));
+            playersTag.add(entry.getValue().toTag(new NbtCompound(), registries));
         }
 
         for (Map.Entry<Component<?, DataStore>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();
 
             try {
-                tag.put(tagName, entry.getValue().toTag(new NbtCompound()));
+                tag.put(tagName, entry.getValue().toTag(new NbtCompound(), registries));
             } catch (Exception e) {
                 OneDataStoreInit.LOGGER.error("Encountered error while serializing {}", tagName, e);
             }

@@ -10,6 +10,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -41,7 +42,7 @@ public class PingspamGlobalData implements ComponentInstance {
                 if (tag.contains("UnreadPings")) {
                     NbtList pingsTag = tag.getList("UnreadPings", 8);
                     for (NbtElement pingTag : pingsTag) {
-                        data.unreadPings().add(Text.Serializer.fromJson(pingTag.asString()));
+                        data.unreadPings().add(Text.Serialization.fromJson(pingTag.asString(), PingSpam.SERVER.getRegistryManager()));
                     }
                 }
 
@@ -70,7 +71,7 @@ public class PingspamGlobalData implements ComponentInstance {
                     if (tag.getString("PingSound").equals("null")) {
                         data.setPingSound(null);
                     } else {
-                        data.setPingSound(Registries.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE));
+                        data.setPingSound(Registries.SOUND_EVENT.getOrEmpty(Identifier.of(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE));
                     }
                 }
             } catch (Exception e) {
@@ -82,7 +83,7 @@ public class PingspamGlobalData implements ComponentInstance {
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var groupsTag = tag.getCompound("Groups");
         for (String groupName : groupsTag.getKeys()) {
             var group = new PingspamGroupData(groupName);
@@ -130,7 +131,7 @@ public class PingspamGlobalData implements ComponentInstance {
     }
 
     @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var groupsTag = new NbtCompound();
         tag.put("Groups", groupsTag);
         for (var entry : groups.entrySet()) {

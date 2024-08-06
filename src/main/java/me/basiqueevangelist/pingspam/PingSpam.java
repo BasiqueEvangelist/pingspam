@@ -22,8 +22,8 @@ public class PingSpam implements ModInitializer {
     @ApiStatus.Internal
     public static MinecraftServer SERVER;
 
-    public static final Component<PingspamPlayerData, PlayerDataEntry> PLAYER_DATA = Component.registerPlayer(new Identifier("pingspam", "player_data"), unused -> new PingspamPlayerData());
-    public static final Component<PingspamGlobalData, DataStore> GLOBAL_DATA = Component.registerGlobal(new Identifier("pingspam", "global_data"), PingspamGlobalData::new);
+    public static final Component<PingspamPlayerData, PlayerDataEntry> PLAYER_DATA = Component.registerPlayer(Identifier.of("pingspam", "player_data"), unused -> new PingspamPlayerData());
+    public static final Component<PingspamGlobalData, DataStore> GLOBAL_DATA = Component.registerGlobal(Identifier.of("pingspam", "global_data"), PingspamGlobalData::new);
 
     @Override
     public void onInitialize() {

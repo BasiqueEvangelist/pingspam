@@ -59,10 +59,10 @@ public class MessageTypeTransformer {
     }
 
     public static Identifier wrapPinged(Identifier id) {
-        return new Identifier("pingspam", "pinged/" + id.getNamespace() + "/" + id.getPath());
+        return Identifier.of("pingspam", "pinged/" + id.getNamespace() + "/" + id.getPath());
     }
 
     public static Identifier wrapPingSuccessful(Identifier id) {
-        return new Identifier("pingspam", "ping_successful/" + id.getNamespace() + "/" + id.getPath());
+        return Identifier.of("pingspam", "ping_successful/" + id.getNamespace() + "/" + id.getPath());
     }
 }

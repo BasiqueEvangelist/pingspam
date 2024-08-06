@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,11 +23,11 @@ public record PechkinPlayerData(
         this(new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new LeakyBucket());
     }
 
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var messagesTag = tag.getList("Messages", NbtElement.COMPOUND_TYPE);
 
         for (int i = 0; i < messagesTag.size(); i++) {
-            messages.add(MailMessage.fromTag(messagesTag.getCompound(i)));
+            messages.add(MailMessage.fromTag(messagesTag.getCompound(i), registries));
         }
 
         var ignoredPlayersTag = tag.getList("IgnoredPlayers", NbtElement.INT_ARRAY_TYPE);
@@ -44,12 +45,12 @@ public record PechkinPlayerData(
         leakyBucket.fromTag(tag);
     }
 
-    public NbtCompound toTag(NbtCompound tag) {
+    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (!messages.isEmpty()) {
             var messagesTag = new NbtList();
             tag.put("Messages", messagesTag);
             for (var message : messages) {
-                messagesTag.add(message.toTag(new NbtCompound()));
+                messagesTag.add(message.toTag(new NbtCompound(), registries));
             }
         }
 

@@ -155,7 +155,7 @@ public final class PingLogic {
             SoundEvent pingSound = data.pingSound();
 
             if (pingSound != null) {
-                onlinePlayer.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                onlinePlayer.playSoundToPlayer(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
             }
         }
     }

@@ -83,11 +83,11 @@ public final class ListCommand {
             .append(" ")
             .append(Text.literal("i")
                 .formatted(Formatting.BLUE)
-                .styled(x -> x.withHoverEvent(HoverEvent.Action.SHOW_TEXT.buildHoverEvent(
+                .styled(x -> x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (
                     Text.literal("Sent ")
                         .append(TimeUtils.formatTime(msg.sentAt()))
                         .append(" ago\nUUID: " + msg.messageId())
-                ))))
+                )))))
             .append("] ")
             .append(Text.literal(NameUtil.getNameFromUUID(msg.sender())).formatted(Formatting.AQUA))
             .append(Text.literal(" -> ").formatted(Formatting.WHITE))

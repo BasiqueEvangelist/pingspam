@@ -4,6 +4,7 @@ import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
 import net.minecraft.nbt.*;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -42,11 +43,11 @@ public final class PingspamPlayerData implements ComponentInstance {
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (tag.contains("UnreadPings")) {
             NbtList pingsTag = tag.getList("UnreadPings", NbtElement.STRING_TYPE);
             for (NbtElement pingTag : pingsTag) {
-                unreadPings.add(Text.Serializer.fromJson(pingTag.asString()));
+                unreadPings.add(Text.Serialization.fromJson(pingTag.asString(), registries));
             }
         }
 
@@ -69,7 +70,7 @@ public final class PingspamPlayerData implements ComponentInstance {
             if (soundText.equals("null")) {
                 pingSound = null;
             } else {
-                pingSound = Registries.SOUND_EVENT.getOrEmpty(new Identifier(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
+                pingSound = Registries.SOUND_EVENT.getOrEmpty(Identifier.of(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
             }
         }
 
@@ -79,12 +80,12 @@ public final class PingspamPlayerData implements ComponentInstance {
     }
 
     @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (!unreadPings.isEmpty()) {
             var unreadPingsTag = new NbtList();
             tag.put("UnreadPings", unreadPingsTag);
             for (var unreadPing : unreadPings) {
-                unreadPingsTag.add(NbtString.of(Text.Serializer.toJson(unreadPing)));
+                unreadPingsTag.add(NbtString.of(Text.Serialization.toJsonString(unreadPing, registries)));
             }
         }
 
