@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.command;
+package me.basiqueevangelist.pingspam.commands.mail;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
@@ -6,11 +6,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.basiqueevangelist.onedatastore.api.DataStore;
-import me.basiqueevangelist.pechkin.Pechkin;
-import me.basiqueevangelist.pechkin.data.MailMessage;
-import me.basiqueevangelist.pechkin.data.PechkinPlayerData;
-import me.basiqueevangelist.pechkin.logic.MailLogic;
-import me.basiqueevangelist.pechkin.util.CommandUtil;
+import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.MailMessage;
+import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.utils.MailLogic;
+import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.MessageArgumentType;
@@ -50,7 +50,7 @@ public final class SendCommand {
 
     private static int send(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity sender = src.getPlayer();
+        ServerPlayerEntity sender = src.getPlayerOrThrow();
         GameProfile recipient = CommandUtil.getOnePlayer(ctx, "player");
         Text message = MessageArgumentType.getMessage(ctx, "message");
 
@@ -61,8 +61,8 @@ public final class SendCommand {
 
     private static int reply(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        ServerPlayerEntity sender = src.getPlayer();
-        PechkinPlayerData senderData = DataStore.getFor(src.getServer()).getPlayer(sender.getUuid(), Pechkin.PLAYER_DATA);
+        ServerPlayerEntity sender = src.getPlayerOrThrow();
+        PechkinPlayerData senderData = DataStore.getFor(src.getServer()).getPlayer(sender.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
         Text message = MessageArgumentType.getMessage(ctx, "message");
 
         if (senderData.lastCorrespondents().size() <= 0)
@@ -76,14 +76,14 @@ public final class SendCommand {
     }
 
     private static void sendMessage(ServerCommandSource src, ServerPlayerEntity sender, UUID recipientId, Text message) throws CommandSyntaxException {
-        PechkinPlayerData senderData = DataStore.getFor(src.getServer()).getPlayer(sender.getUuid(), Pechkin.PLAYER_DATA);
-        PechkinPlayerData recipientData = DataStore.getFor(src.getServer()).getPlayer(recipientId, Pechkin.PLAYER_DATA);
+        PechkinPlayerData senderData = DataStore.getFor(src.getServer()).getPlayer(sender.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
+        PechkinPlayerData recipientData = DataStore.getFor(src.getServer()).getPlayer(recipientId, PingSpam.PECHKIN_PLAYER_DATA);
 
         if (recipientData.ignoredPlayers().contains(sender.getUuid()))
             throw IGNORED.create();
 
         if (!Permissions.check(sender, "pechkin.bypass.cooldown", 2)) {
-            int sendCost = Pechkin.CONFIG.getConfig().sendCost;
+            int sendCost = PingSpam.CONFIG.getConfig().mail.sendCost;
 
             if (!senderData.leakyBucket().hasEnoughFor(sendCost))
                 throw RATELIMIT.create();

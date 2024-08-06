@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.command;
+package me.basiqueevangelist.pingspam.commands.mail;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
@@ -6,10 +6,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import me.basiqueevangelist.onedatastore.api.DataStore;
-import me.basiqueevangelist.pechkin.Pechkin;
-import me.basiqueevangelist.pechkin.data.PechkinPlayerData;
-import me.basiqueevangelist.pechkin.hack.StateTracker;
-import me.basiqueevangelist.pechkin.util.CommandUtil;
+import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.hack.StateTracker;
+import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
@@ -51,7 +51,7 @@ public final class DeleteCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
         UUID messageId = UuidArgumentType.getUuid(ctx, "message");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         data.messages().removeIf(x -> x.messageId().equals(messageId));
 
@@ -62,7 +62,7 @@ public final class DeleteCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
         UUID messageId = UuidArgumentType.getUuid(ctx, "message");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         if (!data.messages().removeIf(x -> x.messageId().equals(messageId))) {
             throw MESSAGE_DOESNT_EXIST.create();
@@ -80,7 +80,7 @@ public final class DeleteCommand {
         ServerCommandSource src = ctx.getSource();
         UUID messageId = UuidArgumentType.getUuid(ctx, "message");
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PECHKIN_PLAYER_DATA);
 
         if (!data.messages().removeIf(x -> x.messageId().equals(messageId))) {
             throw MESSAGE_DOESNT_EXIST.create();

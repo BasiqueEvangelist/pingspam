@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.data;
+package me.basiqueevangelist.pingspam.data;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;

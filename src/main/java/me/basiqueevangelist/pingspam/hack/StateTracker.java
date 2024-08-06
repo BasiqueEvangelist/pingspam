@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.hack;
+package me.basiqueevangelist.pingspam.hack;
 
 // HACK HACK HACK PLEASE FIX
 public final class StateTracker {

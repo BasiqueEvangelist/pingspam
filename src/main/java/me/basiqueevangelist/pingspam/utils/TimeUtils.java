@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.util;
+package me.basiqueevangelist.pingspam.utils;
 
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;

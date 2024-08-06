@@ -1,8 +1,8 @@
-package me.basiqueevangelist.pechkin.data;
+package me.basiqueevangelist.pingspam.data;
 
 import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
-import me.basiqueevangelist.pechkin.Pechkin;
+import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
@@ -76,7 +76,7 @@ public record PechkinPlayerData(
     }
 
     public void addCorrespondent(UUID id) {
-        int maxCorrespondents = Pechkin.CONFIG.getConfig().maxCorrespondents;
+        int maxCorrespondents = PingSpam.CONFIG.getConfig().mail.maxCorrespondents;
 
         if (!lastCorrespondents.contains(id)) {
             if (lastCorrespondents.size() >= maxCorrespondents)
@@ -92,7 +92,7 @@ public record PechkinPlayerData(
     }
 
     public void addMessage(MailMessage msg) {
-        int maxMessages = Pechkin.CONFIG.getConfig().maxInboxMessages;
+        int maxMessages = PingSpam.CONFIG.getConfig().mail.maxInboxMessages;
 
         if (messages.size() >= maxMessages)
             messages.remove(maxMessages - 1);

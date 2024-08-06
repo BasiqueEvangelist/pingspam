@@ -1,8 +1,6 @@
-package me.basiqueevangelist.pechkin.logic;
+package me.basiqueevangelist.pingspam.utils;
 
-import me.basiqueevangelist.pechkin.data.MailMessage;
-import me.basiqueevangelist.pingspam.utils.NameUtil;
-import me.basiqueevangelist.pingspam.utils.PingLogic;
+import me.basiqueevangelist.pingspam.data.MailMessage;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;

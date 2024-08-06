@@ -1,13 +1,13 @@
-package me.basiqueevangelist.pechkin.command;
+package me.basiqueevangelist.pingspam.commands.mail;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.basiqueevangelist.onedatastore.api.DataStore;
-import me.basiqueevangelist.pechkin.Pechkin;
-import me.basiqueevangelist.pechkin.data.PechkinPlayerData;
-import me.basiqueevangelist.pechkin.util.CommandUtil;
+import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
@@ -37,7 +37,7 @@ public final class ClearCommand {
     private static int clear(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         Text sent = Text.literal("Deleted " + data.messages().size() + " message" + (data.messages().size() == 1 ? "" : "s") + " from your inbox.")
             .formatted(Formatting.GREEN);
@@ -52,7 +52,7 @@ public final class ClearCommand {
     private static int clearOther(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PECHKIN_PLAYER_DATA);
 
         Text sent = Text.literal("Deleted " + data.messages().size() + " message" + (data.messages().size() == 1 ? "" : "s") + " from ")
             .append(Text.literal(NameUtil.getNameFromUUID(player.getId())).formatted(Formatting.AQUA))

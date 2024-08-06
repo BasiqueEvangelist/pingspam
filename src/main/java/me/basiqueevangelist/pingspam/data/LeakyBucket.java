@@ -1,6 +1,6 @@
-package me.basiqueevangelist.pechkin.data;
+package me.basiqueevangelist.pingspam.data;
 
-import me.basiqueevangelist.pechkin.Pechkin;
+import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 
@@ -28,7 +28,7 @@ public final class LeakyBucket {
     }
 
     public boolean hasEnoughFor(int cost) {
-        return Pechkin.CONFIG.getConfig().maxTimeDebt - Duration.between(Instant.now(), debtExpiryTime).get(ChronoUnit.SECONDS) > cost;
+        return PingSpam.CONFIG.getConfig().mail.maxTimeDebt - Duration.between(Instant.now(), debtExpiryTime).get(ChronoUnit.SECONDS) > cost;
     }
 
     public boolean isFull() {

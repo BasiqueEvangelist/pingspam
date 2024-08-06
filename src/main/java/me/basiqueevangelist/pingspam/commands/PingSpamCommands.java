@@ -2,6 +2,7 @@ package me.basiqueevangelist.pingspam.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.commands.mail.*;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
@@ -17,6 +18,12 @@ public class PingSpamCommands {
         PingIgnoreCommand.register(dispatcher);
         GroupCommand.register(dispatcher);
         ChatCommand.register(dispatcher);
+
+        SendCommand.register(dispatcher);
+        ListCommand.register(dispatcher);
+        DeleteCommand.register(dispatcher);
+        IgnoreCommand.register(dispatcher);
+        ClearCommand.register(dispatcher);
 
         dispatcher.register(
             literal("pingspam")

@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pechkin.command;
+package me.basiqueevangelist.pingspam.commands.mail;
 
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
@@ -8,9 +8,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.onedatastore.api.DataStore;
-import me.basiqueevangelist.pechkin.Pechkin;
-import me.basiqueevangelist.pechkin.data.PechkinPlayerData;
-import me.basiqueevangelist.pechkin.util.CommandUtil;
+import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -57,7 +57,7 @@ public final class IgnoreCommand {
         if (offender.getId().equals(player.getUuid()))
             throw SELF_IGNORE.create();
 
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         if (data.ignoredPlayers().contains(offender.getId()))
             throw ALREADY_IGNORED.create();
@@ -80,7 +80,7 @@ public final class IgnoreCommand {
         if (offender.getId().equals(player.getUuid()))
             throw SELF_IGNORE.create();
 
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         if (!data.ignoredPlayers().remove(offender.getId()))
             throw NOT_IGNORED.create();
@@ -96,7 +96,7 @@ public final class IgnoreCommand {
     private static CompletableFuture<Suggestions> ignoreAddSuggest(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         for (var playerId : data.lastCorrespondents()) {
             builder.suggest(NameUtil.getNameFromUUID(playerId));
@@ -108,7 +108,7 @@ public final class IgnoreCommand {
     private static CompletableFuture<Suggestions> ignoreRemoveSuggest(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         for (var playerId : data.ignoredPlayers()) {
             builder.suggest(NameUtil.getNameFromUUID(playerId));
@@ -121,7 +121,7 @@ public final class IgnoreCommand {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity player = src.getPlayer();
 
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), Pechkin.PLAYER_DATA);
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PECHKIN_PLAYER_DATA);
 
         MutableText playersBuilder = Text.literal("");
         boolean isFirst = true;

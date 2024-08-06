@@ -1,7 +1,7 @@
 package me.basiqueevangelist.pingspam.mixin;
 
 import com.mojang.brigadier.tree.CommandNode;
-import me.basiqueevangelist.pechkin.hack.StateTracker;
+import me.basiqueevangelist.pingspam.hack.StateTracker;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.network.ServerPlayerEntity;

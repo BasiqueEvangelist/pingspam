@@ -4,8 +4,8 @@ import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.onedatastore.impl.OneDataStoreInit;
-import me.basiqueevangelist.pechkin.Pechkin;
 import me.basiqueevangelist.pingspam.commands.PingSpamCommands;
+import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
 import me.basiqueevangelist.pingspam.data.PingspamGlobalData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.network.PingSpamPackets;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 public class PingSpam implements ModInitializer {
     public static final ConfigManager CONFIG = new ConfigManager();
+    public static final Component<PechkinPlayerData, PlayerDataEntry> PECHKIN_PLAYER_DATA = Component.registerPlayer(Identifier.of("pechkin", "player_data"), PechkinPlayerData::new);
     @ApiStatus.Internal
     public static MinecraftServer SERVER;
 
@@ -37,7 +38,5 @@ public class PingSpam implements ModInitializer {
 
         ServerLifecycleEvents.SERVER_STARTED.register(server -> SERVER = server);
         ServerLifecycleEvents.SERVER_STOPPED.register(server -> SERVER = null);
-
-        new Pechkin().onInitialize();
     }
 }
