@@ -7,9 +7,9 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -29,7 +29,7 @@ public final class ClearCommand {
             .then(literal("clear")
                 .executes(ClearCommand::clear)
                 .then(argument("player", GameProfileArgumentType.gameProfile())
-                    .requires(Permissions.require("pechkin.clear.other", 2))
+                    .requires(PingspamPermissions::clearOtherMail)
                     .suggests(CommandUtil::suggestPlayersExceptSelf)
                     .executes(ClearCommand::clearOther))));
     }

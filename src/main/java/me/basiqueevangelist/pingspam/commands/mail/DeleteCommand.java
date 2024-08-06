@@ -9,8 +9,8 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
 import me.basiqueevangelist.pingspam.hack.StateTracker;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -37,8 +37,8 @@ public final class DeleteCommand {
                     .then(argument("message", UuidArgumentType.uuid())
                         .executes(DeleteCommand::deleteList)))
                 .then(literal("delete_list_other")
-                    .requires(Permissions.require("pechkin.list.other", 2))
-                    .requires(Permissions.require("pechkin.delete.other", 2))
+                    .requires(PingspamPermissions::listOtherMail)
+                    .requires(PingspamPermissions::deleteOtherMail)
                     .then(argument("player", GameProfileArgumentType.gameProfile())
                         .then(argument("message", UuidArgumentType.uuid())
                             .executes(DeleteCommand::deleteListOther))))

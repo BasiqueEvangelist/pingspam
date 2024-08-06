@@ -7,7 +7,6 @@ import me.basiqueevangelist.pingspam.data.PingspamGroupData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.basiqueevangelist.pingspam.utils.PlayerUtils;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -60,7 +59,7 @@ public final class PingLogic {
     private static void processMention(ProcessedPing result, String mention, Text message) {
         switch (mention) {
             case "everyone":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.everyone", 2)) {
+                if (result.sender == null || PingspamPermissions.pingEveryone(result.sender)) {
                     for (UUID playerId : PlayerUtils.getAllPlayers(result.server)) {
                         pingPlayer(result, playerId, message);
                     }
@@ -70,7 +69,7 @@ public final class PingLogic {
                 }
                 break;
             case "online":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.online", 2)) {
+                if (result.sender == null || PingspamPermissions.pingOnline(result.sender)) {
                     for (ServerPlayerEntity player : result.server.getPlayerManager().getPlayerList()) {
                         pingPlayer(result, player.getUuid(), message);
                     }
@@ -80,7 +79,7 @@ public final class PingLogic {
                 }
                 break;
             case "offline":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.offline", 2)) {
+                if (result.sender == null || PingspamPermissions.pingOffline(result.sender)) {
                     for (PlayerDataEntry entry : DataStore.getFor(result.server).players()) {
                         if (result.server.getPlayerManager().getPlayer(entry.playerId()) != null) continue;
 
@@ -94,7 +93,7 @@ public final class PingLogic {
             default:
                 PingspamGroupData pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
                 if (pingGroup != null && pingGroup.isPingable()) {
-                    if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
+                    if (result.sender == null || PingspamPermissions.pingGroup(result.sender)) {
                         for (UUID playerId : pingGroup.members()) {
                             pingPlayer(result, playerId, message);
                         }
@@ -122,14 +121,14 @@ public final class PingLogic {
 
                 PingspamPlayerData foundData = DataStore.getFor(result.server).getPlayer(foundPlayerId, PingSpam.PLAYER_DATA);
 
-                if (result.sender != null && !Permissions.check(result.sender, "pingspam.bypass.ignore", 2)) {
+                if (result.sender != null && !PingspamPermissions.bypassIgnore(result.sender)) {
                     if (foundData.ignoredPlayers().contains(result.sender.getUuid())) {
                         PingLogic.sendPingError(result.sender, NameUtil.getNameFromUUID(foundPlayerId) + " has ignored you, they won't receive your ping.");
                         break;
                     }
                 }
 
-                if (result.sender != null && !Permissions.check(result.sender, "pingspam.ping.player", true)) {
+                if (result.sender != null && !PingspamPermissions.pingPlayer(result.sender)) {
                     PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping @" + mention + "!");
                     return;
                 }

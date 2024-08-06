@@ -8,10 +8,10 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.MailMessage;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.TimeUtils;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -32,7 +32,7 @@ public final class ListCommand {
                 .executes(ListCommand::list)
                 .then(argument("player", GameProfileArgumentType.gameProfile())
                     .suggests(CommandUtil::suggestPlayersExceptSelf)
-                    .requires(Permissions.require("pechkin.list.other", 2))
+                    .requires(PingspamPermissions::listOtherMail)
                     .executes(ListCommand::listOther)))
             .executes(ListCommand::list));
     }

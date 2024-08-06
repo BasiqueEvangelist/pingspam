@@ -12,10 +12,10 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.logic.NameLogic;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -48,11 +48,11 @@ public class AliasCommand {
                     .then(literal("list")
                         .executes(AliasCommand::listAliases))
                     .then(literal("add")
-                        .requires(x -> Permissions.check(x, "pingspam.alias.own.add", true))
+                        .requires(PingspamPermissions::addOwnAlias)
                         .then(argument("alias", StringArgumentType.string())
                             .executes(AliasCommand::addAliases)))
                     .then(literal("remove")
-                        .requires(x -> Permissions.check(x, "pingspam.alias.own.remove", true))
+                        .requires(PingspamPermissions::removeOwnAlias)
                         .then(argument("alias", StringArgumentType.string())
                             .executes(AliasCommand::removeAlias)
                             .suggests(AliasCommand::suggestOwnAliases)))
@@ -62,11 +62,11 @@ public class AliasCommand {
                             .then(literal("list")
                                 .executes(AliasCommand::listPlayerAliases))
                             .then(literal("add")
-                                .requires(x -> Permissions.check(x, "pingspam.alias.player.add", 2))
+                                .requires(PingspamPermissions::addPlayerAlias)
                                 .then(argument("alias", StringArgumentType.string())
                                     .executes(AliasCommand::addPlayerAlias)))
                             .then(literal("remove")
-                                .requires(x -> Permissions.check(x, "pingspam.alias.player.remove", 2))
+                                .requires(PingspamPermissions::removePlayerAlias)
                                 .then(argument("alias", StringArgumentType.string())
                                     .executes(AliasCommand::removePlayerAlias)
                                     .suggests(AliasCommand::suggestPlayerAliases))))))
@@ -142,7 +142,7 @@ public class AliasCommand {
         if (NameLogic.isValidName(src.getServer(), newAlias, false))
             throw ALIAS_COLLISION.create();
 
-        if (data.aliases().size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
+        if (data.aliases().size() >= ALIAS_LIMIT && !PingspamPermissions.bypassAliasLimit(src))
             throw TOO_MANY_ALIASES.create();
 
         data.aliases().add(newAlias);
@@ -243,7 +243,7 @@ public class AliasCommand {
         if (NameLogic.isValidName(src.getServer(), newAlias, false))
             throw ALIAS_COLLISION.create();
 
-        if (data.aliases().size() >= ALIAS_LIMIT && !Permissions.check(src, "pingspam.bypass.aliaslimit", 2))
+        if (data.aliases().size() >= ALIAS_LIMIT && !PingspamPermissions.bypassAliasLimit(src))
             throw TOO_MANY_ALIASES.create();
 
         data.aliases().add(newAlias);

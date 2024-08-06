@@ -14,11 +14,11 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.logic.NameLogic;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
@@ -50,21 +50,21 @@ public class GroupCommand {
                         .then(literal("list")
                             .executes(GroupCommand::listPlayersInGroup))
                         .then(literal("add")
-                            .requires(Permissions.require("pingspam.group.player.add", 2))
+                            .requires(PingspamPermissions::addGroupPlayer)
                             .then(argument("player", GameProfileArgumentType.gameProfile())
                                 .suggests(CommandUtil::suggestPlayers)
                                 .executes(GroupCommand::addPlayerToGroup)))
                         .then(literal("remove")
-                            .requires(Permissions.require("pingspam.group.player.add", 2))
+                            .requires(PingspamPermissions::addGroupPlayer)
                             .then(argument("player", GameProfileArgumentType.gameProfile())
                                 .suggests(CommandUtil::suggestPlayers)
                                 .executes(GroupCommand::removePlayerFromGroup)))
                         .then(literal("pingable")
-                            .requires(Permissions.require("pingspam.group.configure", 2))
+                            .requires(PingspamPermissions::configureGroup)
                             .then(argument("value", BoolArgumentType.bool())
                                 .executes(GroupCommand::configurePingable)))
                         .then(literal("haschat")
-                            .requires(Permissions.require("pingspam.group.configure", 2))
+                            .requires(PingspamPermissions::configureGroup)
                             .then(argument("value", BoolArgumentType.bool())
                                 .executes(GroupCommand::configureGroupChat)))
                     ))

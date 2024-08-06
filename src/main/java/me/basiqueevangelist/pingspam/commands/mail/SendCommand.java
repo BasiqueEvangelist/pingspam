@@ -11,8 +11,8 @@ import me.basiqueevangelist.pingspam.data.MailMessage;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
 import me.basiqueevangelist.pingspam.logic.IgnoreLogic;
 import me.basiqueevangelist.pingspam.logic.MailLogic;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
-import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.MessageArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
@@ -40,12 +40,12 @@ public final class SendCommand {
                 .then(argument("player", GameProfileArgumentType.gameProfile())
                     .suggests(CommandUtil::suggestPlayers)
                     .then(argument("message", MessageArgumentType.message())
-                        .requires(Permissions.require("pechkin.send", true))
+                        .requires(PingspamPermissions::sendMail)
                         .executes(SendCommand::send)))));
 
         dispatcher.register(literal("r")
             .then(argument("message", MessageArgumentType.message())
-                .requires(Permissions.require("pechkin.send", true))
+                .requires(PingspamPermissions::sendMail)
                 .executes(SendCommand::reply)));
     }
 
@@ -82,7 +82,7 @@ public final class SendCommand {
 
         IgnoreLogic.throwIfIgnored(sender, recipientId);
 
-        if (!Permissions.check(sender, "pechkin.bypass.cooldown", 2)) {
+        if (!PingspamPermissions.bypassCooldown(sender)) {
             int sendCost = PingSpam.CONFIG.getConfig().mail.sendCost;
 
             if (!senderData.leakyBucket().hasEnoughFor(sendCost))

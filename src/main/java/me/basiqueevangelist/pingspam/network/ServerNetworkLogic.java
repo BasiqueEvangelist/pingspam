@@ -3,7 +3,7 @@ package me.basiqueevangelist.pingspam.network;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.logic.NameLogic;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.ClientConnection;
@@ -39,10 +39,10 @@ public final class ServerNetworkLogic {
         newBuf.writeCollection(possibleNames, PacketByteBuf::writeString);
 
         var payload = new AnnounceS2CPayload(
-            Permissions.check(player, "pingspam.ping.everyone", 2),
-            Permissions.check(player, "pingspam.ping.online", 2),
-            Permissions.check(player, "pingspam.ping.offline", 2),
-            Permissions.check(player, "pingspam.ping.player", true),
+            PingspamPermissions.pingEveryone(player),
+            PingspamPermissions.pingOnline(player),
+            PingspamPermissions.pingOffline(player),
+            PingspamPermissions.pingPlayer(player),
             possibleNames
         );
 

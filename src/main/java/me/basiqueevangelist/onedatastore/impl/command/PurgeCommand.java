@@ -11,11 +11,10 @@ import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.impl.OneDataStoreInit;
 import me.basiqueevangelist.onedatastore.impl.OneDataStoreState;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
-import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -39,7 +38,7 @@ public class PurgeCommand {
         dispatcher.register(
             literal("onedatastore")
                 .then(literal("purge")
-                    .requires(Permissions.require("onedatastore.purge", 4))
+                    .requires(PingspamPermissions::purge)
                     .then(literal("player")
                         .then(argument("target", GameProfileArgumentType.gameProfile())
                             .executes(PurgeCommand::purgePlayer)))

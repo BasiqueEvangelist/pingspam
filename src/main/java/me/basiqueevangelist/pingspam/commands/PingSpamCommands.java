@@ -3,7 +3,7 @@ package me.basiqueevangelist.pingspam.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.commands.mail.*;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -27,7 +27,7 @@ public class PingSpamCommands {
         dispatcher.register(
             literal("pingspam")
                 .then(literal("reload")
-                    .requires(x -> Permissions.check(x, "pingspam.reload", 2))
+                    .requires(PingspamPermissions::reload)
                     .executes(ctx -> {
                         PingSpam.CONFIG.load();
 
