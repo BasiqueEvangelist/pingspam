@@ -1,6 +1,6 @@
 package me.basiqueevangelist.pingspam.api;
 
-import me.basiqueevangelist.pingspam.utils.PingLogic;
+import me.basiqueevangelist.pingspam.logic.PingLogic;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 

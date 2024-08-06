@@ -1,8 +1,10 @@
-package me.basiqueevangelist.pingspam.utils;
+package me.basiqueevangelist.pingspam.logic;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
+import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 

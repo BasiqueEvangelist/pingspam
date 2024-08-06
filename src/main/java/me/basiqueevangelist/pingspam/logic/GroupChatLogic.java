@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam.utils;
+package me.basiqueevangelist.pingspam.logic;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;

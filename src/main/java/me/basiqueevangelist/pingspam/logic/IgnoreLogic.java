@@ -1,4 +1,4 @@
-package me.basiqueevangelist.pingspam.utils;
+package me.basiqueevangelist.pingspam.logic;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;

@@ -1,10 +1,12 @@
-package me.basiqueevangelist.pingspam.utils;
+package me.basiqueevangelist.pingspam.logic;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamGroupData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
+import me.basiqueevangelist.pingspam.utils.NameUtil;
+import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;

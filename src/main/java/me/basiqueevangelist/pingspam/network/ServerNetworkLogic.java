@@ -2,7 +2,7 @@ package me.basiqueevangelist.pingspam.network;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.utils.NameLogic;
+import me.basiqueevangelist.pingspam.logic.NameLogic;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

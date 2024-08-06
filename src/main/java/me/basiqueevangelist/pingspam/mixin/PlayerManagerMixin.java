@@ -2,7 +2,7 @@ package me.basiqueevangelist.pingspam.mixin;
 
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.MessageTypeTransformer;
-import me.basiqueevangelist.pingspam.utils.PingLogic;
+import me.basiqueevangelist.pingspam.logic.PingLogic;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
