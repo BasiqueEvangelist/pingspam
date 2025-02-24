@@ -17,12 +17,17 @@ public class PingSpamCommands {
         PingSoundCommand.register(dispatcher);
         PingIgnoreCommand.register(dispatcher);
         GroupCommand.register(dispatcher);
-        ChatCommand.register(dispatcher);
 
-        SendCommand.register(dispatcher);
-        ListCommand.register(dispatcher);
-        DeleteCommand.register(dispatcher);
-        ClearCommand.register(dispatcher);
+        if (PingSpam.CONFIG.getConfig().groupChatsEnabled) {
+            ChatCommand.register(dispatcher);
+        }
+
+        if (PingSpam.CONFIG.getConfig().mailEnabled) {
+            SendCommand.register(dispatcher);
+            ListCommand.register(dispatcher);
+            DeleteCommand.register(dispatcher);
+            ClearCommand.register(dispatcher);
+        }
 
         dispatcher.register(
             literal("pingspam")

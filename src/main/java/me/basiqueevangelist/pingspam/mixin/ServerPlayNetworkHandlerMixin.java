@@ -26,6 +26,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
 
     @Inject(method = "handleDecoratedMessage", at = @At("HEAD"), cancellable = true)
     private void trySendToChat(SignedMessage message, CallbackInfo ci) {
+        if (!PingSpam.CONFIG.getConfig().groupChatsEnabled) return;
+
         String currentChat = DataStore.getFor(server).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA).currentChat();
 
         if (currentChat != null) {

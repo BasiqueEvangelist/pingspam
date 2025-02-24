@@ -19,6 +19,18 @@ public class PingSpamConfig {
         """)
     public boolean ignoreCanSend = false;
 
+    @Comment("""
+        !!!EXPERIMENTAL!!!
+        
+        Enables mail support. Not finished or tested.""")
+    public boolean mailEnabled = false;
+
+
+    @Comment("""
+        !!!EXPERIMENTAL!!!
+        Enables group chat support. Not finished or tested.""")
+    public boolean groupChatsEnabled = false;
+
     public MailConfig mail = new MailConfig();
 
     public static class MailConfig {
