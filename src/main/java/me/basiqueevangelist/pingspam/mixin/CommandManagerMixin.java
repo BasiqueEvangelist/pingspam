@@ -13,8 +13,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CommandManager.class)
 public class CommandManagerMixin {
-    @Redirect(method = "makeTreeForSource", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/CommandNode;canUse(Ljava/lang/Object;)Z"))
-    private boolean canUse(CommandNode<Object> node, Object source) {
+    // TODO: convert to @WrapOperation
+    @Redirect(method = "deepCopyNodes", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/CommandNode;canUse(Ljava/lang/Object;)Z"))
+    private static boolean canUse(CommandNode<Object> node, Object source) {
         StateTracker.IS_IN_COMMAND_TREE_CREATION = true;
         try {
             return node.canUse(source);

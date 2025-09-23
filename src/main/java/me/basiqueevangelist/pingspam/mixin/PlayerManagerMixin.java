@@ -1,8 +1,8 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.logic.PingLogic;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.MessageTypeTransformer;
-import me.basiqueevangelist.pingspam.logic.PingLogic;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
@@ -58,7 +58,7 @@ public abstract class PlayerManagerMixin {
     @Redirect(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendChatMessage(Lnet/minecraft/network/message/SentMessage;ZLnet/minecraft/network/message/MessageType$Parameters;)V"))
     private void sendMessageSigned(ServerPlayerEntity player, SentMessage message, boolean filterMaskEnabled, MessageType.Parameters params) {
         if (pong != null && pong.pingSucceeded) {
-            var typeRegistry = server.getRegistryManager().get(RegistryKeys.MESSAGE_TYPE);
+            var typeRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.MESSAGE_TYPE);
             var oldKey = typeRegistry.getKey(params.type().value()).orElseThrow();
             RegistryKey<MessageType> newKey = null;
 
@@ -69,7 +69,7 @@ public abstract class PlayerManagerMixin {
             }
 
             if (newKey != null) {
-                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.getEntry(newKey).orElseThrow(), params.name(), params.targetName()));
+                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.getEntry(newKey.getValue()).orElseThrow(), params.name(), params.targetName()));
                 return;
             }
         }

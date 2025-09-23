@@ -16,7 +16,9 @@ import java.util.function.Function;
 
 public class MessageTypeTransformer {
     public static void run(DynamicRegistryManager drm) {
-        Registry<MessageType> reg = drm.get(RegistryKeys.MESSAGE_TYPE);
+        Registry<MessageType> reg = drm.getOrThrow(RegistryKeys.MESSAGE_TYPE);
+
+        if (reg.getIds().stream().anyMatch(x -> x.getNamespace().equals("pingspam"))) return;
 
         Map<Identifier, MessageType> addedTypes = new HashMap<>();
 

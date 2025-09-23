@@ -1,9 +1,7 @@
 package me.basiqueevangelist.pingspam.data;
 
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
+import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.UnmodifiableView;
 
 import java.util.ArrayList;
@@ -22,25 +20,16 @@ public class PingspamGroupData {
         this.name = name;
     }
     public void fromTag(NbtCompound tag) {
-        var membersTag = tag.getList("Members", NbtElement.INT_ARRAY_TYPE);
-        members.clear();
+        var members = tag.get("Members", Uuids.CODEC.listOf()).orElse(List.of());
+        this.members.clear();
+        this.members.addAll(members);
 
-        for (NbtElement playerTag : membersTag) {
-            members.add(NbtHelper.toUuid(playerTag));
-        }
-
-        pingable = tag.getBoolean("Pingable");
-        hasChat = tag.getBoolean("HasChat");
+        pingable = tag.getBoolean("Pingable").orElse(true);
+        hasChat = tag.getBoolean("HasChat").orElse(false);
     }
 
     public NbtCompound toTag(NbtCompound tag) {
-        var membersTag = new NbtList();
-        tag.put("Members", membersTag);
-
-        for (UUID playerId : members) {
-            membersTag.add(NbtHelper.fromUuid(playerId));
-        }
-
+        tag.put("Members", Uuids.CODEC.listOf(), members);
         tag.putBoolean("Pingable", pingable);
         tag.putBoolean("HasChat", hasChat);
 

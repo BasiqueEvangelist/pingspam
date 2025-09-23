@@ -5,7 +5,6 @@ import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.UUID;
 
 @ApiStatus.NonExtendable

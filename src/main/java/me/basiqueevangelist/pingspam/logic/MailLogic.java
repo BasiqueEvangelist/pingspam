@@ -27,8 +27,8 @@ public final class MailLogic {
             .append(Text.literal("✔")
                 .formatted(Formatting.GREEN)
                 .styled(x -> x
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Acknowledge and delete message")))
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/mail internal delete_silent " + message.messageId()))))
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Acknowledge and delete message")))
+                    .withClickEvent(new ClickEvent.RunCommand("/mail internal delete_silent " + message.messageId()))))
             .append("]");
 
         ServerPlayerEntity onlinePlayer = server.getPlayerManager().getPlayer(receiverId);

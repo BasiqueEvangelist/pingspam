@@ -2,7 +2,10 @@ package me.basiqueevangelist.pingspam.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.commands.mail.*;
+import me.basiqueevangelist.pingspam.commands.mail.ClearCommand;
+import me.basiqueevangelist.pingspam.commands.mail.DeleteCommand;
+import me.basiqueevangelist.pingspam.commands.mail.ListCommand;
+import me.basiqueevangelist.pingspam.commands.mail.SendCommand;
 import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;

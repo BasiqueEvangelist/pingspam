@@ -9,13 +9,16 @@ import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.MailMessage;
 import me.basiqueevangelist.pingspam.data.PechkinPlayerData;
 import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
-import me.basiqueevangelist.pingspam.utils.TimeUtils;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
+import me.basiqueevangelist.pingspam.utils.TimeUtils;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.*;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -78,12 +81,12 @@ public final class ListCommand {
             .append(Text.literal("✘")
                 .formatted(Formatting.RED)
                 .styled(x -> x
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, deleteCmdPrefix + msg.messageId()))
-                    .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.literal("Delete message")))))
+                    .withClickEvent(new ClickEvent.RunCommand(deleteCmdPrefix + msg.messageId()))
+                    .withHoverEvent(new HoverEvent.ShowText(Text.literal("Delete message")))))
             .append(" ")
             .append(Text.literal("i")
                 .formatted(Formatting.BLUE)
-                .styled(x -> x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (
+                .styled(x -> x.withHoverEvent(new HoverEvent.ShowText((
                     Text.literal("Sent ")
                         .append(TimeUtils.formatTime(msg.sentAt()))
                         .append(" ago\nUUID: " + msg.messageId())

@@ -1,29 +1,19 @@
 package me.basiqueevangelist.pingspam.data;
 
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.registry.RegistryWrapper;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import me.basiqueevangelist.pingspam.utils.CodecUtil;
 import net.minecraft.text.Text;
+import net.minecraft.util.Uuids;
 
 import java.time.Instant;
 import java.util.UUID;
 
 public record MailMessage(Text contents, UUID sender, UUID messageId, Instant sentAt) {
-    public static MailMessage fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
-        Text contents = Text.Serialization.fromJson(tag.getString("Contents"), registries);
-        UUID sender = tag.getUuid("Sender");
-        UUID messageId = tag.getUuid("UUID");
-        Instant sentAt = Instant.ofEpochMilli(tag.getLong("SentAt"));
-
-        return new MailMessage(contents, sender, messageId, sentAt);
-    }
-
-    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
-        tag.putString("Contents", Text.Serialization.toJsonString(contents, registries));
-        tag.put("Sender", NbtHelper.fromUuid(sender));
-        tag.put("UUID", NbtHelper.fromUuid(messageId));
-        tag.putLong("SentAt", sentAt.toEpochMilli());
-
-        return tag;
-    }
+    public static final Codec<MailMessage> CODEC = RecordCodecBuilder.create(i -> i.group(
+        CodecUtil.TEXT_JSON.fieldOf("Contents").forGetter(MailMessage::contents),
+        Uuids.CODEC.fieldOf("Sender").forGetter(MailMessage::sender),
+        Uuids.CODEC.fieldOf("UUID").forGetter(MailMessage::messageId),
+        Codec.LONG.xmap(Instant::ofEpochMilli, Instant::toEpochMilli).fieldOf("SentAt").forGetter(MailMessage::sentAt)
+    ).apply(i, MailMessage::new));
 }

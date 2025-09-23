@@ -31,9 +31,9 @@ public final class ServerNetworkLogic {
         var group = data.currentChat() == null ? null : store.get(PingSpam.GLOBAL_DATA).groups().get(data.currentChat());
 
         if (group != null) {
-            possibleNames = NameLogic.listValidNames(player.server, group.members()::contains, false);
+            possibleNames = NameLogic.listValidNames(player.getServer(), group.members()::contains, false);
         } else {
-            possibleNames = NameLogic.listValidNames(player.server, uuid -> true, true);
+            possibleNames = NameLogic.listValidNames(player.getServer(), uuid -> true, true);
         }
 
         newBuf.writeCollection(possibleNames, PacketByteBuf::writeString);

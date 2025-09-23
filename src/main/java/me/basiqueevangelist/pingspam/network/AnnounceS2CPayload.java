@@ -8,7 +8,6 @@ import net.minecraft.util.Identifier;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public record AnnounceS2CPayload(boolean canPingEveryone, boolean canPingOnline, boolean canPingOffline,
@@ -16,10 +15,10 @@ public record AnnounceS2CPayload(boolean canPingEveryone, boolean canPingOnline,
     public static final Id<AnnounceS2CPayload> ID = new Id<>(Identifier.of("pingspam", "announce"));
 
     public static final PacketCodec<PacketByteBuf, AnnounceS2CPayload> V0 = PacketCodec.tuple(
-        PacketCodecs.BOOL, AnnounceS2CPayload::canPingEveryone,
-        PacketCodecs.BOOL, AnnounceS2CPayload::canPingOnline,
-        PacketCodecs.BOOL, AnnounceS2CPayload::canPingOffline,
-        PacketCodecs.BOOL, AnnounceS2CPayload::canPingPlayers,
+        PacketCodecs.BOOLEAN, AnnounceS2CPayload::canPingEveryone,
+        PacketCodecs.BOOLEAN, AnnounceS2CPayload::canPingOnline,
+        PacketCodecs.BOOLEAN, AnnounceS2CPayload::canPingOffline,
+        PacketCodecs.BOOLEAN, AnnounceS2CPayload::canPingPlayers,
         PacketCodecs.STRING.collect(PacketCodecs.toList()).xmap(HashSet::new, ArrayList::new), AnnounceS2CPayload::possibleNames,
         AnnounceS2CPayload::new
     );

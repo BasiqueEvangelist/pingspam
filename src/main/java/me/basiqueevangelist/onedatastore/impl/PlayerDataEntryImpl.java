@@ -4,9 +4,8 @@ import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.Uuids;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,9 +29,9 @@ public class PlayerDataEntryImpl implements PlayerDataEntry {
         for (Map.Entry<Component<?, PlayerDataEntry>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();
 
-            if (tag.contains(tagName, NbtElement.COMPOUND_TYPE)) {
+            if (tag.contains(tagName)) {
                 try {
-                    entry.getValue().fromTag(tag.getCompound(tagName), registries);
+                    entry.getValue().fromTag(tag.getCompoundOrEmpty(tagName), registries);
                 } catch (Exception e) {
                     OneDataStoreInit.LOGGER.error("Encountered error while deserializing {} for {}", tagName, playerId, e);
                 }
@@ -65,7 +64,7 @@ public class PlayerDataEntryImpl implements PlayerDataEntry {
     }
 
     public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
-        tag.put("UUID", NbtHelper.fromUuid(playerId));
+        tag.put("UUID", Uuids.CODEC, playerId);
 
         for (Map.Entry<Component<?, PlayerDataEntry>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();

@@ -2,12 +2,10 @@ package me.basiqueevangelist.pingspam.client.network;
 
 import me.basiqueevangelist.pingspam.client.PingSpamClient;
 import me.basiqueevangelist.pingspam.network.AnnounceS2CPayload;
-import me.basiqueevangelist.pingspam.network.PingSpamPackets;
 import me.basiqueevangelist.pingspam.network.PossibleNamesDiffS2CPacket;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 
 @Environment(EnvType.CLIENT)
 public class PingSpamClientPackets {

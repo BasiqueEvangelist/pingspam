@@ -1,20 +1,22 @@
 package me.basiqueevangelist.pingspam.data;
 
+import com.mojang.serialization.Codec;
 import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
-import net.minecraft.nbt.*;
+import me.basiqueevangelist.pingspam.utils.CodecUtil;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 public final class PingspamPlayerData implements ComponentInstance {
     private final List<Text> unreadPings;
@@ -45,70 +47,54 @@ public final class PingspamPlayerData implements ComponentInstance {
     @Override
     public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (tag.contains("UnreadPings")) {
-            NbtList pingsTag = tag.getList("UnreadPings", NbtElement.STRING_TYPE);
-            for (NbtElement pingTag : pingsTag) {
-                unreadPings.add(Text.Serialization.fromJson(pingTag.asString(), registries));
-            }
+            List<Text> pings = tag.get("UnreadPings", CodecUtil.TEXT_JSON.listOf()).orElse(List.of());
+            unreadPings.addAll(pings);
         }
 
         if (tag.contains("Aliases")) {
-            NbtList aliasesTag = tag.getList("Aliases", NbtElement.STRING_TYPE);
+            NbtList aliasesTag = tag.getListOrEmpty("Aliases");
             for (NbtElement aliasTag : aliasesTag) {
-                aliases.add(aliasTag.asString());
+                aliasTag.asString().ifPresent(aliases::add);
             }
         }
 
         if (tag.contains("IgnoredPlayers")) {
-            NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtElement.INT_ARRAY_TYPE);
-            for (NbtElement ignoredPlayerTag : ignoredPlayerListTag) {
-                ignoredPlayers.add(NbtHelper.toUuid(ignoredPlayerTag));
-            }
+            List<UUID> ignoredPlayerList = tag.get("IgnoredPlayers", Uuids.CODEC.listOf()).orElse(List.of());
+            ignoredPlayers.addAll(ignoredPlayerList);
         }
 
-        if (tag.contains("PingSound", NbtElement.STRING_TYPE)) {
-            var soundText = tag.getString("PingSound");
+        if (tag.contains("PingSound")) {
+            var soundText = tag.getString("PingSound").orElse("null");
             if (soundText.equals("null")) {
                 pingSound = null;
             } else {
-                pingSound = Registries.SOUND_EVENT.getOrEmpty(Identifier.of(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
+                pingSound = Registries.SOUND_EVENT.getOptionalValue(Identifier.of(soundText)).orElse(SoundEvents.BLOCK_BELL_USE);
             }
         }
 
-        if (tag.contains("CurrentChat", NbtElement.STRING_TYPE)) {
-            currentChat = tag.getString("CurrentChat");
+        if (tag.contains("CurrentChat")) {
+            currentChat = tag.getString("CurrentChat").orElse(null);
         }
     }
 
     @Override
     public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (!unreadPings.isEmpty()) {
-            var unreadPingsTag = new NbtList();
-            tag.put("UnreadPings", unreadPingsTag);
-            for (var unreadPing : unreadPings) {
-                unreadPingsTag.add(NbtString.of(Text.Serialization.toJsonString(unreadPing, registries)));
-            }
+            tag.put("UnreadPings", CodecUtil.TEXT_JSON.listOf(), unreadPings);
         }
 
         if (!aliases.isEmpty()) {
-            var aliasesTag = new NbtList();
-            tag.put("Aliases", aliasesTag);
-            for (var alias : aliases) {
-                aliasesTag.add(NbtString.of(alias));
-            }
+            tag.put("Aliases", Codec.STRING.listOf().xmap(LinkedHashSet::new, ArrayList::new), aliases);
         }
 
         if (!ignoredPlayers.isEmpty()) {
-            var ignoresTag = new NbtList();
-            tag.put("IgnoredPlayers", ignoresTag);
-            for (var ignoredPlayer : ignoredPlayers) {
-                ignoresTag.add(NbtHelper.fromUuid(ignoredPlayer));
-            }
+            tag.put("IgnoredPlayers", Uuids.CODEC.listOf(), ignoredPlayers);
         }
 
         if (pingSound == null) {
             tag.putString("PingSound", "null");
         } else if (pingSound != SoundEvents.BLOCK_BELL_USE) {
-            tag.putString("PingSound", pingSound.getId().toString());
+            tag.putString("PingSound", pingSound.id().toString());
         }
 
         if (currentChat != null) {

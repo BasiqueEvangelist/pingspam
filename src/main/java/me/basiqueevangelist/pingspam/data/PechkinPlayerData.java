@@ -4,10 +4,8 @@ import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.Uuids;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,36 +21,22 @@ public record PechkinPlayerData(
     }
 
     public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
-        var messagesTag = tag.getList("Messages", NbtElement.COMPOUND_TYPE);
+        var messagesTag = tag.get("Messages", MailMessage.CODEC.listOf()).orElse(List.of());
+        messages.addAll(messagesTag);
 
-        for (int i = 0; i < messagesTag.size(); i++) {
-            messages.add(MailMessage.fromTag(messagesTag.getCompound(i), registries));
-        }
-
-        var lastCorrespondentsTag = tag.getList("LastCorrespondents", NbtElement.INT_ARRAY_TYPE);
-
-        for (var correspondentTag : lastCorrespondentsTag) {
-            lastCorrespondents.add(NbtHelper.toUuid(correspondentTag));
-        }
+        var lastCorrespondentsTag = tag.get("LastCorrespondents", Uuids.CODEC.listOf()).orElse(List.of());
+        lastCorrespondents.addAll(lastCorrespondentsTag);
 
         leakyBucket.fromTag(tag);
     }
 
     public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         if (!messages.isEmpty()) {
-            var messagesTag = new NbtList();
-            tag.put("Messages", messagesTag);
-            for (var message : messages) {
-                messagesTag.add(message.toTag(new NbtCompound(), registries));
-            }
+            tag.put("Messages", MailMessage.CODEC.listOf(), messages);
         }
 
         if (!lastCorrespondents.isEmpty()) {
-            var lastCorrespondentsTag = new NbtList();
-            tag.put("LastCorrespondents", lastCorrespondentsTag);
-            for (var correspondent : lastCorrespondents) {
-                lastCorrespondentsTag.add(NbtHelper.fromUuid(correspondent));
-            }
+            tag.put("LastCorrespondents", Uuids.CODEC.listOf(), lastCorrespondents);
         }
 
         leakyBucket.toTag(tag);

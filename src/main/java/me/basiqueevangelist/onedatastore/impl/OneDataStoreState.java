@@ -4,12 +4,14 @@ import me.basiqueevangelist.onedatastore.api.Component;
 import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
+import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Uuids;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateType;
 
 import java.util.*;
 
@@ -17,17 +19,17 @@ public class OneDataStoreState extends PersistentState implements DataStore {
     private final Map<UUID, PlayerDataEntryImpl> players = new HashMap<>();
     private final Map<Component<?, DataStore>, ComponentInstance> components = new HashMap<>();
     private static final ReentrantLoadProtector SAFEGUARD = new ReentrantLoadProtector(() -> new IllegalStateException("Tried to recursively load OneDataStore state!"));
-    private static final Type<OneDataStoreState> TYPE = new Type<>(
+    private static final PersistentStateType<OneDataStoreState> TYPE = new PersistentStateType<>(
+        "onedatastore",
         OneDataStoreState::new,
-        OneDataStoreState::new,
+        NbtCompound.CODEC.xmap(x -> new OneDataStoreState(x, PingSpam.SERVER.getRegistryManager()), x -> x.writeNbt(new NbtCompound(), PingSpam.SERVER.getRegistryManager())),
         null
     );
 
     public static OneDataStoreState getFrom(MinecraftServer server) {
         try (var scope = SAFEGUARD.enter()) {
             return server.getOverworld().getPersistentStateManager().getOrCreate(
-                TYPE,
-                "onedatastore"
+                TYPE
             );
         }
     }
@@ -41,11 +43,11 @@ public class OneDataStoreState extends PersistentState implements DataStore {
     }
 
     private OneDataStoreState(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
-        var playersTag = tag.getList("Players", NbtElement.COMPOUND_TYPE);
+        var playersTag = tag.getListOrEmpty("Players");
         for (int i = 0; i < playersTag.size(); i++) {
-            var playerTag = playersTag.getCompound(i);
+            var playerTag = playersTag.getCompoundOrEmpty(i);
 
-            UUID playerId = playerTag.getUuid("UUID");
+            UUID playerId = playerTag.get("UUID", Uuids.CODEC).orElseThrow();
 
             players.put(playerId, new PlayerDataEntryImpl(this, playerId));
         }
@@ -55,9 +57,9 @@ public class OneDataStoreState extends PersistentState implements DataStore {
         }
 
         for (int i = 0; i < playersTag.size(); i++) {
-            var playerTag = playersTag.getCompound(i);
+            var playerTag = playersTag.getCompoundOrEmpty(i);
 
-            UUID playerId = playerTag.getUuid("UUID");
+            UUID playerId = playerTag.get("UUID", Uuids.CODEC).orElseThrow();
 
             players.get(playerId).fromTag(playerTag, registries);
         }
@@ -65,9 +67,9 @@ public class OneDataStoreState extends PersistentState implements DataStore {
         for (Map.Entry<Component<?, DataStore>, ComponentInstance> entry : components.entrySet()) {
             var tagName = entry.getKey().id().toString();
 
-            if (tag.contains(tagName, NbtElement.COMPOUND_TYPE)) {
+            if (tag.contains(tagName)) {
                 try {
-                    entry.getValue().fromTag(tag.getCompound(tagName), registries);
+                    entry.getValue().fromTag(tag.getCompoundOrEmpty(tagName), registries);
                 } catch (Exception e) {
                     OneDataStoreInit.LOGGER.error("Encountered error while deserializing {}", tagName, e);
                 }
@@ -113,7 +115,6 @@ public class OneDataStoreState extends PersistentState implements DataStore {
         components.put(component, inst);
     }
 
-    @Override
     public NbtCompound writeNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var playersTag = new NbtList();
         tag.put("Players", playersTag);

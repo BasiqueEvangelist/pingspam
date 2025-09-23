@@ -2,7 +2,6 @@ package me.basiqueevangelist.pingspam.data;
 
 import me.basiqueevangelist.pingspam.PingSpam;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -36,8 +35,8 @@ public final class LeakyBucket {
     }
 
     public void fromTag(NbtCompound tag) {
-        if (tag.contains("LeakyBucketFillTime", NbtElement.LONG_TYPE)) {
-            debtExpiryTime = Instant.ofEpochMilli(tag.getLong("LeakyBucketFillTime"));
+        if (tag.contains("LeakyBucketFillTime")) {
+            debtExpiryTime = Instant.ofEpochMilli(tag.getLong("LeakyBucketFillTime").orElse(Instant.now().toEpochMilli()));
         }
     }
 

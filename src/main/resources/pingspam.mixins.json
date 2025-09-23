@@ -5,8 +5,8 @@
     "compatibilityLevel": "JAVA_8",
     "mixins": [
         "CommandManagerMixin",
-        "MinecraftServerMixin",
         "PlayerManagerMixin",
+        "SaveLoadingMixin",
         "ServerPlayerEntityMixin",
         "ServerPlayNetworkHandlerMixin",
         "SimpleRegistryMixin"

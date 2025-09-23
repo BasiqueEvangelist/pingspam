@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Lifecycle;
 import me.basiqueevangelist.pingspam.access.ExtendedRegistry;
 import net.minecraft.registry.RegistryKey;
@@ -14,7 +15,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Mixin(SimpleRegistry.class)
@@ -28,6 +28,11 @@ public class SimpleRegistryMixin<T> implements ExtendedRegistry {
     @Inject(method = "<init>(Lnet/minecraft/registry/RegistryKey;Lcom/mojang/serialization/Lifecycle;Z)V", at = @At("TAIL"))
     private void saveIntrusiveness(RegistryKey<?> key, Lifecycle lifecycle, boolean intrusive, CallbackInfo ci) {
         pingspam$intrusive = intrusive;
+    }
+
+    @ModifyExpressionValue(method = "freeze", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/SimpleRegistry$TagLookup;isBound()Z"))
+    private boolean noItsNotBound(boolean original) {
+        return false;
     }
 
     @Override
