@@ -20,7 +20,7 @@ public final class GroupChatLogic {
     public static void sendIn(ServerPlayerEntity player, String groupName, SignedMessage message) {
         // TODO: actually use secure chat.
 
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.getEntityWorld().getServer();
         var group = DataStore.getFor(server).get(PingSpam.GLOBAL_DATA).groups().get(groupName);
         var text = Text.literal("[")
             .append(Text.literal("@" + groupName)
@@ -52,7 +52,7 @@ public final class GroupChatLogic {
     }
 
     public static void changeChat(ServerPlayerEntity player, @Nullable String groupName) {
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.getEntityWorld().getServer();
         var playerData = DataStore.getFor(server).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         if (Objects.equals(playerData.currentChat(), groupName)) return;

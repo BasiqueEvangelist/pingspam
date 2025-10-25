@@ -1,6 +1,5 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
@@ -10,6 +9,7 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
@@ -25,8 +25,8 @@ public final class CommandUtil {
 
     }
 
-    public static GameProfile getOnePlayer(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException {
-        Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
+    public static PlayerConfigEntry getOnePlayer(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException {
+        Collection<PlayerConfigEntry> profiles = GameProfileArgumentType.getProfileArgument(ctx, "player");
 
         if (profiles.size() > 1)
             throw TOO_MANY_PLAYERS.create();

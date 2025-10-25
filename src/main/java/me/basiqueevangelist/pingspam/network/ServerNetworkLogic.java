@@ -22,7 +22,7 @@ public final class ServerNetworkLogic {
     }
 
     public static void sendServerAnnouncement(ServerPlayerEntity player, ClientConnection conn) {
-        DataStore store = DataStore.getFor(player.getWorld().getServer());
+        DataStore store = DataStore.getFor(player.getEntityWorld().getServer());
         var data = store.getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         PacketByteBuf newBuf = PacketByteBufs.create();
@@ -31,9 +31,9 @@ public final class ServerNetworkLogic {
         var group = data.currentChat() == null ? null : store.get(PingSpam.GLOBAL_DATA).groups().get(data.currentChat());
 
         if (group != null) {
-            possibleNames = NameLogic.listValidNames(player.getServer(), group.members()::contains, false);
+            possibleNames = NameLogic.listValidNames(player.getEntityWorld().getServer(), group.members()::contains, false);
         } else {
-            possibleNames = NameLogic.listValidNames(player.getServer(), uuid -> true, true);
+            possibleNames = NameLogic.listValidNames(player.getEntityWorld().getServer(), uuid -> true, true);
         }
 
         newBuf.writeCollection(possibleNames, PacketByteBuf::writeString);

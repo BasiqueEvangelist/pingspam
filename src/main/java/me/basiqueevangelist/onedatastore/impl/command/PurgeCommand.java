@@ -1,6 +1,5 @@
 package me.basiqueevangelist.onedatastore.impl.command;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -15,6 +14,7 @@ import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -47,8 +47,8 @@ public class PurgeCommand {
                         .executes(PurgeCommand::purgeGlobalComponent))));
     }
 
-    public static GameProfile getOnePlayer(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException {
-        Collection<GameProfile> profiles = GameProfileArgumentType.getProfileArgument(ctx, argName);
+    public static PlayerConfigEntry getOnePlayer(CommandContext<ServerCommandSource> ctx, String argName) throws CommandSyntaxException {
+        Collection<PlayerConfigEntry> profiles = GameProfileArgumentType.getProfileArgument(ctx, argName);
 
         if (profiles.size() > 1)
             throw TOO_MANY_PLAYERS.create();
@@ -92,12 +92,12 @@ public class PurgeCommand {
         var profile = getOnePlayer(ctx, "target");
         var store = OneDataStoreState.getFrom(ctx.getSource().getServer());
 
-        if (store.playersMap().remove(profile.getId()) == null)
+        if (store.playersMap().remove(profile.id()) == null)
             throw NO_PLAYER_FOUND.create();
 
         src.sendFeedback(() -> Text.literal("Purged ")
             .formatted(Formatting.GREEN)
-            .append(Text.literal(profile.getName())
+            .append(Text.literal(profile.name())
                 .formatted(Formatting.AQUA))
             .append("'s custom data."), false);
 

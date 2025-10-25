@@ -20,6 +20,7 @@ import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -33,9 +34,9 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 public class GroupCommand {
     private static final DynamicCommandExceptionType IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        Text.literal(((GameProfile) x).getName()).append(Text.literal(" is already in that group")));
+        Text.literal(((GameProfile) x).name()).append(Text.literal(" is already in that group")));
     private static final DynamicCommandExceptionType NOT_IN_GROUP_OTHER = new DynamicCommandExceptionType(x ->
-        Text.literal(((GameProfile) x).getName()).append(Text.literal(" isn't in that group")));
+        Text.literal(((GameProfile) x).name()).append(Text.literal(" isn't in that group")));
     private static final SimpleCommandExceptionType NAME_COLLISION = new SimpleCommandExceptionType(Text.literal("That name is already taken"));
     public static final SimpleCommandExceptionType NO_SUCH_GROUP = new SimpleCommandExceptionType(Text.literal("No such group"));
     private static final SimpleCommandExceptionType INVALID_GROUPNAME = new SimpleCommandExceptionType(Text.literal("Invalid group name"));
@@ -174,8 +175,8 @@ public class GroupCommand {
         ServerCommandSource src = ctx.getSource();
         DataStore store = DataStore.getFor(src.getServer());
         String group = StringArgumentType.getString(ctx, "group");
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
+        PlayerConfigEntry player = CommandUtil.getOnePlayer(ctx, "player");
+        PingspamPlayerData data = store.getPlayer(player.id(), PingSpam.PLAYER_DATA);
 
         if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
@@ -183,7 +184,7 @@ public class GroupCommand {
         if (!data.groups().contains(group))
             throw NOT_IN_GROUP_OTHER.create(player);
 
-        store.get(PingSpam.GLOBAL_DATA).removePlayerFromGroup(group, player.getId());
+        store.get(PingSpam.GLOBAL_DATA).removePlayerFromGroup(group, player.id());
 
         if (!NameLogic.isValidName(src.getServer(), group, false))
             ServerNetworkLogic.removePossibleName(src.getServer().getPlayerManager(), group);
@@ -191,7 +192,7 @@ public class GroupCommand {
         src.sendFeedback(
             () -> Text.literal("Removed player ")
                 .formatted(Formatting.GREEN)
-                .append(Text.literal(player.getName())
+                .append(Text.literal(player.name())
                     .formatted(Formatting.AQUA))
                 .append(" from group ")
                 .append(Text.literal(group)
@@ -205,8 +206,8 @@ public class GroupCommand {
         var src = ctx.getSource();
         DataStore store = DataStore.getFor(src.getServer());
         String group = StringArgumentType.getString(ctx, "group");
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PingspamPlayerData data = store.getPlayer(player.getId(), PingSpam.PLAYER_DATA);
+        PlayerConfigEntry player = CommandUtil.getOnePlayer(ctx, "player");
+        PingspamPlayerData data = store.getPlayer(player.id(), PingSpam.PLAYER_DATA);
 
         if (!GROUPNAME_PATTERN.asPredicate().test(group))
             throw INVALID_GROUPNAME.create();
@@ -217,13 +218,13 @@ public class GroupCommand {
         if (NameLogic.isValidName(src.getServer(), group, true))
             throw NAME_COLLISION.create();
 
-        store.get(PingSpam.GLOBAL_DATA).addPlayerToGroup(group, player.getId());
+        store.get(PingSpam.GLOBAL_DATA).addPlayerToGroup(group, player.id());
         ServerNetworkLogic.addPossibleName(src.getServer().getPlayerManager(), group);
 
         src.sendFeedback(
             () -> Text.literal("Added player ")
                 .formatted(Formatting.GREEN)
-                .append(Text.literal(player.getName())
+                .append(Text.literal(player.name())
                     .formatted(Formatting.AQUA))
                 .append(" to group ")
                 .append(Text.literal("@" + group)

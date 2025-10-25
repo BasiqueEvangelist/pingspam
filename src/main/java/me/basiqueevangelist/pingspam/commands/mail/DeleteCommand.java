@@ -13,6 +13,7 @@ import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.UuidArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -79,8 +80,8 @@ public final class DeleteCommand {
     private static int deleteListOther(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         UUID messageId = UuidArgumentType.getUuid(ctx, "message");
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PECHKIN_PLAYER_DATA);
+        PlayerConfigEntry player = CommandUtil.getOnePlayer(ctx, "player");
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.id(), PingSpam.PECHKIN_PLAYER_DATA);
 
         if (!data.messages().removeIf(x -> x.messageId().equals(messageId))) {
             throw MESSAGE_DOESNT_EXIST.create();

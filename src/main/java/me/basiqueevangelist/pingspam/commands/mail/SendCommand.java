@@ -15,6 +15,7 @@ import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
 import net.minecraft.command.argument.MessageArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -52,10 +53,10 @@ public final class SendCommand {
     private static int send(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
         ServerPlayerEntity sender = src.getPlayerOrThrow();
-        GameProfile recipient = CommandUtil.getOnePlayer(ctx, "player");
+        PlayerConfigEntry recipient = CommandUtil.getOnePlayer(ctx, "player");
         Text message = MessageArgumentType.getMessage(ctx, "message");
 
-        sendMessage(src, sender, recipient.getId(), message);
+        sendMessage(src, sender, recipient.id(), message);
 
         return 1;
     }

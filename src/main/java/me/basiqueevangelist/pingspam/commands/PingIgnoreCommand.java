@@ -13,6 +13,7 @@ import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -59,19 +60,19 @@ public class PingIgnoreCommand {
 
     private static int addIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        GameProfile offender = CommandUtil.getOnePlayer(ctx, "player");
+        PlayerConfigEntry offender = CommandUtil.getOnePlayer(ctx, "player");
         ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
-        if (data.ignoredPlayers().contains(offender.getId())) {
+        if (data.ignoredPlayers().contains(offender.id())) {
             throw PLAYER_ALREADY_IGNORED.create();
         }
 
-        data.ignoredPlayers().add(offender.getId());
+        data.ignoredPlayers().add(offender.id());
 
         src.sendFeedback(() -> Text.literal("You are now ignoring ")
             .formatted(Formatting.GREEN)
-            .append(Text.literal(offender.getName())
+            .append(Text.literal(offender.name())
                 .formatted(Formatting.AQUA))
             .append(Text.literal(".")), false);
 
@@ -80,18 +81,18 @@ public class PingIgnoreCommand {
 
     private static int removeIgnoredPlayer(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        GameProfile pardonee = CommandUtil.getOnePlayer(ctx, "player");
+        PlayerConfigEntry pardonee = CommandUtil.getOnePlayer(ctx, "player");
         ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
-        if (!data.ignoredPlayers().contains(pardonee.getId()))
+        if (!data.ignoredPlayers().contains(pardonee.id()))
             throw PLAYER_NOT_IGNORED.create();
 
-        data.ignoredPlayers().remove(pardonee.getId());
+        data.ignoredPlayers().remove(pardonee.id());
 
         src.sendFeedback(() -> Text.literal("You are no longer ignoring ")
             .formatted(Formatting.GREEN)
-            .append(Text.literal(pardonee.getName())
+            .append(Text.literal(pardonee.name())
                 .formatted(Formatting.AQUA))
             .append("."), false);
 

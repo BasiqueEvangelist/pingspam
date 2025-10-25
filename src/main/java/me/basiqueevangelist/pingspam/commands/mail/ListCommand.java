@@ -13,6 +13,7 @@ import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import me.basiqueevangelist.pingspam.utils.TimeUtils;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -42,9 +43,9 @@ public final class ListCommand {
 
     public static int listOther(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PECHKIN_PLAYER_DATA);
-        Text playerName = Text.literal(player.getName())
+        PlayerConfigEntry player = CommandUtil.getOnePlayer(ctx, "player");
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.id(), PingSpam.PECHKIN_PLAYER_DATA);
+        Text playerName = Text.literal(player.name())
             .formatted(Formatting.AQUA);
 
         MutableText complete = Text.literal("")
@@ -52,7 +53,7 @@ public final class ListCommand {
             .append(" has " + data.messages().size() + " message" + (data.messages().size() != 1 ? "s" : "") + " stored:");
 
         for (var message : data.messages()) {
-            complete.append(writeMessageDesc(message, playerName, "/mail internal delete_list_other " + player.getName() + " "));
+            complete.append(writeMessageDesc(message, playerName, "/mail internal delete_list_other " + player.name() + " "));
         }
 
         src.sendFeedback(() -> complete, false);

@@ -10,12 +10,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(CommandManager.class)
 public class CommandManagerMixin {
-    @WrapOperation(method = "deepCopyNodes", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/CommandNode;canUse(Ljava/lang/Object;)Z"))
+    @WrapOperation(method = "deepCopyNodes", at = @At(value = "INVOKE", target = "Lcom/mojang/brigadier/tree/CommandNode;canUse(Ljava/lang/Object;)Z", remap = false))
     private static boolean canUse(CommandNode<?> instance, Object source, Operation<Boolean> original) {
         StateTracker.IS_IN_COMMAND_TREE_CREATION = true;
         try {

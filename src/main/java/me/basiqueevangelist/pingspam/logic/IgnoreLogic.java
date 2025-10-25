@@ -19,7 +19,7 @@ public final class IgnoreLogic {
     public static boolean isIgnored(ServerPlayerEntity player, UUID by) {
         if (PingspamPermissions.bypassIgnore(player)) return false;
 
-        return DataStore.getFor(player.getServer()).getPlayer(by, PingSpam.PLAYER_DATA).ignoredPlayers().contains(player.getUuid());
+        return DataStore.getFor(player.getEntityWorld().getServer()).getPlayer(by, PingSpam.PLAYER_DATA).ignoredPlayers().contains(player.getUuid());
     }
 
     public static void throwIfIgnored(ServerPlayerEntity player, UUID by) throws CommandSyntaxException {

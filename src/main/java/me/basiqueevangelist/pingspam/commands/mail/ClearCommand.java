@@ -11,6 +11,7 @@ import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import me.basiqueevangelist.pingspam.utils.CommandUtil;
 import me.basiqueevangelist.pingspam.utils.NameUtil;
 import net.minecraft.command.argument.GameProfileArgumentType;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
@@ -51,11 +52,11 @@ public final class ClearCommand {
 
     private static int clearOther(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         ServerCommandSource src = ctx.getSource();
-        GameProfile player = CommandUtil.getOnePlayer(ctx, "player");
-        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getId(), PingSpam.PECHKIN_PLAYER_DATA);
+        PlayerConfigEntry player = CommandUtil.getOnePlayer(ctx, "player");
+        PechkinPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.id(), PingSpam.PECHKIN_PLAYER_DATA);
 
         Text sent = Text.literal("Deleted " + data.messages().size() + " message" + (data.messages().size() == 1 ? "" : "s") + " from ")
-            .append(Text.literal(NameUtil.getNameFromUUID(player.getId())).formatted(Formatting.AQUA))
+            .append(Text.literal(NameUtil.getNameFromUUID(player.id())).formatted(Formatting.AQUA))
             .append("'s inbox.")
             .formatted(Formatting.GREEN);
 

@@ -22,7 +22,7 @@ public final class NameLogic {
             return true;
 
         for (ServerPlayerEntity onlinePlayer : server.getPlayerManager().getPlayerList()) {
-            if (onlinePlayer.getGameProfile().getName().equalsIgnoreCase(name))
+            if (onlinePlayer.getGameProfile().name().equalsIgnoreCase(name))
                 return true;
         }
 
@@ -52,7 +52,7 @@ public final class NameLogic {
         for (ServerPlayerEntity otherPlayer : server.getPlayerManager().getPlayerList()) {
             if (!playerPredicate.test(otherPlayer.getUuid())) continue;
 
-            String playerName = otherPlayer.getGameProfile().getName();
+            String playerName = otherPlayer.getGameProfile().name();
             possibleNames.add(playerName);
         }
 
