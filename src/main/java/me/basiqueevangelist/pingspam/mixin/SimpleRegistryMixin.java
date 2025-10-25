@@ -1,5 +1,6 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.mojang.serialization.Lifecycle;
 import me.basiqueevangelist.pingspam.access.ExtendedRegistry;
 import net.minecraft.registry.RegistryKey;
@@ -8,19 +9,17 @@ import net.minecraft.registry.entry.RegistryEntry;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 @Mixin(SimpleRegistry.class)
 public class SimpleRegistryMixin<T> implements ExtendedRegistry {
-    private boolean pingspam$intrusive;
-
-    @Shadow private @Nullable List<RegistryEntry.Reference<T>> cachedEntries;
+    @Unique private boolean pingspam$intrusive;
 
     @Shadow @Nullable private Map<T, RegistryEntry.Reference<T>> intrusiveValueToEntry;
 
@@ -31,13 +30,16 @@ public class SimpleRegistryMixin<T> implements ExtendedRegistry {
         pingspam$intrusive = intrusive;
     }
 
+    @ModifyExpressionValue(method = "freeze", at = @At(value = "INVOKE", target = "Lnet/minecraft/registry/SimpleRegistry$TagLookup;isBound()Z"))
+    private boolean noItsNotBound(boolean original) {
+        return false;
+    }
+
     @Override
     public void pingspam$unfreeze() {
         frozen = false;
 
         if (pingspam$intrusive)
             this.intrusiveValueToEntry = new IdentityHashMap<>();
-
-        cachedEntries = null;
     }
 }

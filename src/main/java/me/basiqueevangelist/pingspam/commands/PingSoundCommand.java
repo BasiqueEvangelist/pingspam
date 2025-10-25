@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
@@ -23,12 +24,13 @@ import static net.minecraft.server.command.CommandManager.literal;
 public class PingSoundCommand {
     private static final SimpleCommandExceptionType INVALID_SOUND = new SimpleCommandExceptionType(Text.literal("Invalid sound type!"));
 
+    @SuppressWarnings("unchecked") // it'll be fine, i swear
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         dispatcher.register(
             literal("pingspam")
                 .then(literal("sound")
                     .then(argument("sound", IdentifierArgumentType.identifier())
-                        .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
+                        .suggests((SuggestionProvider<ServerCommandSource>)(Object) SuggestionProviders.AVAILABLE_SOUNDS)
                         .executes(PingSoundCommand::setPingSound))
                     .then(literal("none")
                         .executes(PingSoundCommand::removePingSound))
@@ -41,7 +43,7 @@ public class PingSoundCommand {
         ServerPlayerEntity player = src.getPlayerOrThrow();
         PingspamPlayerData data = DataStore.getFor(src.getServer()).getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
         Identifier soundId = IdentifierArgumentType.getIdentifier(ctx, "sound");
-        SoundEvent event = Registries.SOUND_EVENT.getOrEmpty(soundId).orElseThrow(INVALID_SOUND::create);
+        SoundEvent event = Registries.SOUND_EVENT.getOptionalValue(soundId).orElseThrow(INVALID_SOUND::create);
 
         data.setPingSound(event);
 
@@ -75,7 +77,7 @@ public class PingSoundCommand {
         if (data.pingSound() != null) {
             src.sendFeedback(() -> Text.literal("Your current ping sound is ")
                 .formatted(Formatting.GREEN)
-                .append(Text.literal(data.pingSound().getId().toString())
+                .append(Text.literal(data.pingSound().id().toString())
                     .formatted(Formatting.YELLOW))
                 .append(Text.literal(".")), false);
         } else {

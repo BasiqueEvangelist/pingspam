@@ -1,29 +1,30 @@
 package me.basiqueevangelist.pingspam.data;
 
+import com.mojang.serialization.Codec;
 import me.basiqueevangelist.onedatastore.api.ComponentInstance;
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.utils.CaseInsensitiveUtil;
+import me.basiqueevangelist.pingspam.utils.CodecUtil;
 import me.basiqueevangelist.pingspam.utils.OfflineUtil;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class PingspamGlobalData implements ComponentInstance {
     private final static Logger LOGGER = LoggerFactory.getLogger("Pingspam/PingspamGlobalData");
-    private final Map<String, List<UUID>> groups = CaseInsensitiveUtil.mapIgnoringCase();
+    private final Map<String, PingspamGroupData> groups = CaseInsensitiveUtil.mapIgnoringCase();
     private final DataStore store;
 
     public PingspamGlobalData(DataStore store) {
@@ -41,38 +42,32 @@ public class PingspamGlobalData implements ComponentInstance {
                 PingspamPlayerData data = store.getPlayer(playerId, PingSpam.PLAYER_DATA);
 
                 if (tag.contains("UnreadPings")) {
-                    NbtList pingsTag = tag.getList("UnreadPings", 8);
-                    for (NbtElement pingTag : pingsTag) {
-                        data.unreadPings().add(Text.Serializer.fromJson(pingTag.asString()));
-                    }
+                    List<Text> pings = tag.get("UnreadPings", CodecUtil.TEXT_JSON.listOf()).orElse(List.of());
+                    data.unreadPings().addAll(pings);
                 }
 
                 if (tag.contains("Shortnames")) {
-                    NbtList aliasesTag = tag.getList("Shortnames", 8);
-                    for (NbtElement aliasTag : aliasesTag) {
-                        data.aliases().add(aliasTag.asString());
-                    }
+                    List<String> aliases = tag.get("Shortnames", Codec.STRING.listOf()).orElse(List.of());
+                    data.aliases().addAll(aliases);
                 }
 
                 if (tag.contains("PingGroups")) {
-                    NbtList pingGroupsTag = tag.getList("PingGroups", 8);
-                    for (NbtElement pingGroupTag : pingGroupsTag) {
-                        addPlayerToGroup(pingGroupTag.asString(), playerId);
+                    List<String> pingGroups = tag.get("PingGroups", Codec.STRING.listOf()).orElse(List.of());
+                    for (String pingGroup : pingGroups) {
+                        addPlayerToGroup(pingGroup, playerId);
                     }
                 }
 
                 if (tag.contains("IgnoredPlayers")) {
-                    NbtList ignoredPlayerListTag = tag.getList("IgnoredPlayers", NbtElement.INT_ARRAY_TYPE);
-                    for (NbtElement ignoredPlayerTag : ignoredPlayerListTag) {
-                        data.ignoredPlayers().add(NbtHelper.toUuid(ignoredPlayerTag));
-                    }
+                    List<UUID> ignoredPlayerList = tag.get("IgnoredPlayers", Uuids.CODEC.listOf()).orElse(List.of());
+                    data.ignoredPlayers().addAll(ignoredPlayerList);
                 }
 
                 if (tag.contains("PingSound")) {
-                    if (tag.getString("PingSound").equals("null")) {
+                    if (tag.getString("PingSound").orElse("").equals("null")) {
                         data.setPingSound(null);
                     } else {
-                        data.setPingSound(Registries.SOUND_EVENT.getOrEmpty(new Identifier(tag.getString("PingSound"))).orElse(SoundEvents.BLOCK_BELL_USE));
+                        data.setPingSound(Registries.SOUND_EVENT.getOptionalValue(Identifier.of(tag.getString("PingSound").orElseThrow())).orElse(SoundEvents.BLOCK_BELL_USE));
                     }
                 }
             } catch (Exception e) {
@@ -84,50 +79,57 @@ public class PingspamGlobalData implements ComponentInstance {
     }
 
     @Override
-    public void fromTag(NbtCompound tag) {
-        var groupsTag = tag.getCompound("Groups");
+    public void fromTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
+        var groupsTag = tag.getCompoundOrEmpty("Groups");
         for (String groupName : groupsTag.getKeys()) {
-            var groupTag = groupsTag.getList(groupName, NbtElement.INT_ARRAY_TYPE);
-            groups.put(groupName, new ArrayList<>());
+            var group = new PingspamGroupData(groupName);
+            groups.put(groupName, group);
+            var groupTag = groupsTag.get(groupName);
 
-            for (NbtElement playerTag : groupTag) {
-                addPlayerToGroup(groupName, NbtHelper.toUuid(playerTag));
+            if (groupTag instanceof NbtList) {
+                throw new UnsupportedOperationException();
+            } else if (groupTag instanceof NbtCompound compound) {
+                group.fromTag(compound);
             }
+
+            propagateGroup(group);
         }
+
     }
 
-    public Map<String, List<UUID>> groups() {
+    public Map<String, PingspamGroupData> groups() {
         return groups;
     }
 
+    private void propagateGroup(PingspamGroupData group) {
+        for (var memberId : group.members()) {
+            store.getPlayer(memberId, PingSpam.PLAYER_DATA).groups().add(group.name());
+        }
+    }
+
     public void addPlayerToGroup(String group, UUID playerId) {
-        groups.computeIfAbsent(group, unused -> new ArrayList<>()).add(playerId);
+        groups.computeIfAbsent(group, PingspamGroupData::new).members.add(playerId);
         store.getPlayer(playerId, PingSpam.PLAYER_DATA).groups().add(group);
     }
 
     public void removePlayerFromGroup(String group, UUID playerId) {
         store.getPlayer(playerId, PingSpam.PLAYER_DATA).groups().remove(group);
 
-        List<UUID> playersInGroup = groups.get(group);
+        PingspamGroupData groupData = groups.get(group);
 
-        if (playersInGroup == null) return;
+        if (groupData == null) return;
 
-        playersInGroup.remove(playerId);
+        groupData.members.remove(playerId);
 
-        if (playersInGroup.size() == 0) groups.remove(group);
+        if (groupData.members().size() == 0) groups.remove(group);
     }
 
     @Override
-    public NbtCompound toTag(NbtCompound tag) {
+    public NbtCompound toTag(NbtCompound tag, RegistryWrapper.WrapperLookup registries) {
         var groupsTag = new NbtCompound();
         tag.put("Groups", groupsTag);
         for (var entry : groups.entrySet()) {
-            var groupTag = new NbtList();
-            groupsTag.put(entry.getKey(), groupTag);
-
-            for (UUID playerId : entry.getValue()) {
-                groupTag.add(NbtHelper.fromUuid(playerId));
-            }
+            groupsTag.put(entry.getKey(), entry.getValue().toTag(new NbtCompound()));
         }
 
         return tag;

@@ -16,7 +16,9 @@ import java.util.function.Function;
 
 public class MessageTypeTransformer {
     public static void run(DynamicRegistryManager drm) {
-        Registry<MessageType> reg = drm.get(RegistryKeys.MESSAGE_TYPE);
+        Registry<MessageType> reg = drm.getOrThrow(RegistryKeys.MESSAGE_TYPE);
+
+        if (reg.getIds().stream().anyMatch(x -> x.getNamespace().equals("pingspam"))) return;
 
         Map<Identifier, MessageType> addedTypes = new HashMap<>();
 
@@ -59,10 +61,10 @@ public class MessageTypeTransformer {
     }
 
     public static Identifier wrapPinged(Identifier id) {
-        return new Identifier("pingspam", "pinged/" + id.getNamespace() + "/" + id.getPath());
+        return Identifier.of("pingspam", "pinged/" + id.getNamespace() + "/" + id.getPath());
     }
 
     public static Identifier wrapPingSuccessful(Identifier id) {
-        return new Identifier("pingspam", "ping_successful/" + id.getNamespace() + "/" + id.getPath());
+        return Identifier.of("pingspam", "ping_successful/" + id.getNamespace() + "/" + id.getPath());
     }
 }

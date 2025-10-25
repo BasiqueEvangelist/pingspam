@@ -2,7 +2,11 @@ package me.basiqueevangelist.pingspam.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.commands.mail.ClearCommand;
+import me.basiqueevangelist.pingspam.commands.mail.DeleteCommand;
+import me.basiqueevangelist.pingspam.commands.mail.ListCommand;
+import me.basiqueevangelist.pingspam.commands.mail.SendCommand;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -17,10 +21,21 @@ public class PingSpamCommands {
         PingIgnoreCommand.register(dispatcher);
         GroupCommand.register(dispatcher);
 
+        if (PingSpam.CONFIG.getConfig().groupChatsEnabled) {
+            ChatCommand.register(dispatcher);
+        }
+
+        if (PingSpam.CONFIG.getConfig().mailEnabled) {
+            SendCommand.register(dispatcher);
+            ListCommand.register(dispatcher);
+            DeleteCommand.register(dispatcher);
+            ClearCommand.register(dispatcher);
+        }
+
         dispatcher.register(
             literal("pingspam")
                 .then(literal("reload")
-                    .requires(x -> Permissions.check(x, "pingspam.reload", 2))
+                    .requires(PingspamPermissions::reload)
                     .executes(ctx -> {
                         PingSpam.CONFIG.load();
 

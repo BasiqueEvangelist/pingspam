@@ -1,20 +1,24 @@
-package me.basiqueevangelist.pingspam.utils;
+package me.basiqueevangelist.pingspam.logic;
 
 import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.onedatastore.api.PlayerDataEntry;
 import me.basiqueevangelist.pingspam.PingSpam;
+import me.basiqueevangelist.pingspam.data.PingspamGroupData;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.utils.NameUtil;
+import me.basiqueevangelist.pingspam.utils.PlayerUtils;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,15 +35,18 @@ public final class PingLogic {
         public MinecraftServer server;
         public boolean pingSucceeded = false;
         public ServerPlayerEntity sender;
+        public Predicate<UUID> playerPredicate;
     }
 
-    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, UUID senderUuid) {
+    public static ProcessedPing processPings(MinecraftServer server, Text messageContent, Text message, UUID senderUuid,
+                                             @Nullable Predicate<UUID> playerPredicate) {
         String contents = messageContent.getString();
         ServerPlayerEntity sender = server.getPlayerManager().getPlayer(senderUuid);
         Matcher matcher = PING_PATTERN.matcher(contents);
         ProcessedPing result = new ProcessedPing();
         result.sender = sender;
         result.server = server;
+        result.playerPredicate = playerPredicate == null ? unused -> true : playerPredicate;
         if (PingSpam.CONFIG.getConfig().processPingsFromUnknownPlayers || sender != null) {
             while (matcher.find()) {
                 String username = matcher.group(1);
@@ -52,7 +59,7 @@ public final class PingLogic {
     private static void processMention(ProcessedPing result, String mention, Text message) {
         switch (mention) {
             case "everyone":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.everyone", 2)) {
+                if (result.sender == null || PingspamPermissions.pingEveryone(result.sender)) {
                     for (UUID playerId : PlayerUtils.getAllPlayers(result.server)) {
                         pingPlayer(result, playerId, message);
                     }
@@ -62,7 +69,7 @@ public final class PingLogic {
                 }
                 break;
             case "online":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.online", 2)) {
+                if (result.sender == null || PingspamPermissions.pingOnline(result.sender)) {
                     for (ServerPlayerEntity player : result.server.getPlayerManager().getPlayerList()) {
                         pingPlayer(result, player.getUuid(), message);
                     }
@@ -72,7 +79,7 @@ public final class PingLogic {
                 }
                 break;
             case "offline":
-                if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.offline", 2)) {
+                if (result.sender == null || PingspamPermissions.pingOffline(result.sender)) {
                     for (PlayerDataEntry entry : DataStore.getFor(result.server).players()) {
                         if (result.server.getPlayerManager().getPlayer(entry.playerId()) != null) continue;
 
@@ -84,10 +91,10 @@ public final class PingLogic {
                 }
                 break;
             default:
-                List<UUID> pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
-                if (pingGroup != null) {
-                    if (result.sender == null || Permissions.check(result.sender, "pingspam.ping.group", true)) {
-                        for (UUID playerId : pingGroup) {
+                PingspamGroupData pingGroup = DataStore.getFor(result.server).get(PingSpam.GLOBAL_DATA).groups().get(mention);
+                if (pingGroup != null && pingGroup.isPingable()) {
+                    if (result.sender == null || PingspamPermissions.pingGroup(result.sender)) {
+                        for (UUID playerId : pingGroup.members()) {
                             pingPlayer(result, playerId, message);
                         }
 
@@ -106,16 +113,22 @@ public final class PingLogic {
                     return;
                 }
 
+                if (!result.playerPredicate.test(foundPlayerId)) {
+                    if (result.sender != null)
+                        PingLogic.sendPingError(result.sender, "@" + mention + " is unreachable in this context");
+                    return;
+                }
+
                 PingspamPlayerData foundData = DataStore.getFor(result.server).getPlayer(foundPlayerId, PingSpam.PLAYER_DATA);
 
-                if (result.sender != null && !Permissions.check(result.sender, "pingspam.bypass.ignore", 2)) {
+                if (result.sender != null && !PingspamPermissions.bypassIgnore(result.sender)) {
                     if (foundData.ignoredPlayers().contains(result.sender.getUuid())) {
                         PingLogic.sendPingError(result.sender, NameUtil.getNameFromUUID(foundPlayerId) + " has ignored you, they won't receive your ping.");
                         break;
                     }
                 }
 
-                if (result.sender != null && !Permissions.check(result.sender, "pingspam.ping.player", true)) {
+                if (result.sender != null && !PingspamPermissions.pingPlayer(result.sender)) {
                     PingLogic.sendPingError(result.sender, "You do not have enough permissions to ping @" + mention + "!");
                     return;
                 }
@@ -127,6 +140,7 @@ public final class PingLogic {
 
     public static void pingPlayer(ProcessedPing ping, UUID playerUuid, Text pingMsg) {
         if (ping.pingedPlayers.contains(playerUuid)) return;
+        if (!ping.playerPredicate.test(playerUuid)) return;
 
         ping.pingedPlayers.add(playerUuid);
         sendNotification(ping.server, playerUuid, pingMsg);
@@ -142,7 +156,7 @@ public final class PingLogic {
             SoundEvent pingSound = data.pingSound();
 
             if (pingSound != null) {
-                onlinePlayer.playSound(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
+                onlinePlayer.playSoundToPlayer(pingSound, SoundCategory.PLAYERS, 1.0F, 1.0F);
             }
         }
     }

@@ -1,7 +1,8 @@
 package me.basiqueevangelist.pingspam.utils;
 
-import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.yggdrasil.ProfileResult;
 import me.basiqueevangelist.pingspam.PingSpam;
+import net.minecraft.server.PlayerConfigEntry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
@@ -18,15 +19,15 @@ public final class NameUtil {
     public static @Nullable String getNameFromUUIDOrNull(UUID uuid) {
         if (BAD_UUIDS.contains(uuid)) return null;
 
-        var optProfile = PingSpam.SERVER.getUserCache().getByUuid(uuid);
+        var optProfile = PingSpam.SERVER.getApiServices().nameToIdCache().getByUuid(uuid);
 
-        if (optProfile.isPresent()) return optProfile.get().getName();
+        if (optProfile.isPresent()) return optProfile.get().name();
 
-        GameProfile profile = PingSpam.SERVER.getSessionService().fillProfileProperties(new GameProfile(uuid, null), true);
+        ProfileResult profile = PingSpam.SERVER.getApiServices().sessionService().fetchProfile(uuid, true);
 
-        if (profile.getName() != null) {
-            PingSpam.SERVER.getUserCache().add(profile);
-            return profile.getName();
+        if (profile != null) {
+            PingSpam.SERVER.getApiServices().nameToIdCache().add(new PlayerConfigEntry(profile.profile()));
+            return profile.profile().name();
         }
 
         BAD_UUIDS.add(uuid);

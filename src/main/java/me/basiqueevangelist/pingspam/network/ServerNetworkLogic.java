@@ -1,17 +1,19 @@
 package me.basiqueevangelist.pingspam.network;
 
+import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
-import me.basiqueevangelist.pingspam.utils.NameLogic;
-import me.lucko.fabric.api.permissions.v0.Permissions;
+import me.basiqueevangelist.pingspam.logic.NameLogic;
+import me.basiqueevangelist.pingspam.logic.PingspamPermissions;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
 
+import java.util.List;
 import java.util.Set;
 
 public final class ServerNetworkLogic {
@@ -20,41 +22,45 @@ public final class ServerNetworkLogic {
     }
 
     public static void sendServerAnnouncement(ServerPlayerEntity player, ClientConnection conn) {
-        if (!ServerPlayNetworking.canSend(player, PingSpamPackets.ANNOUNCE)) return;
+        DataStore store = DataStore.getFor(player.getEntityWorld().getServer());
+        var data = store.getPlayer(player.getUuid(), PingSpam.PLAYER_DATA);
 
         PacketByteBuf newBuf = PacketByteBufs.create();
 
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.everyone", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.online", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.offline", 2));
-        newBuf.writeBoolean(Permissions.check(player, "pingspam.ping.player", true));
+        Set<String> possibleNames;
+        var group = data.currentChat() == null ? null : store.get(PingSpam.GLOBAL_DATA).groups().get(data.currentChat());
 
-        Set<String> possibleNames = NameLogic.listValidNames(player.server);
+        if (group != null) {
+            possibleNames = NameLogic.listValidNames(player.getEntityWorld().getServer(), group.members()::contains, false);
+        } else {
+            possibleNames = NameLogic.listValidNames(player.getEntityWorld().getServer(), uuid -> true, true);
+        }
+
         newBuf.writeCollection(possibleNames, PacketByteBuf::writeString);
 
-        conn.send(ServerPlayNetworking.createS2CPacket(PingSpamPackets.ANNOUNCE, newBuf));
+        var payload = new AnnounceS2CPayload(
+            PingspamPermissions.pingEveryone(player),
+            PingspamPermissions.pingOnline(player),
+            PingspamPermissions.pingOffline(player),
+            PingspamPermissions.pingPlayer(player),
+            possibleNames
+        );
+
+        conn.send(ServerPlayNetworking.createS2CPacket(payload));
     }
 
     public static void removePossibleName(PlayerManager manager, String possibleName) {
-        PacketByteBuf diffBuf = PacketByteBufs.create();
-        diffBuf.writeVarInt(0);
-        diffBuf.writeVarInt(1);
-        diffBuf.writeString(possibleName);
-        sendToAll(manager, PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf);
+        sendToAll(manager, new PossibleNamesDiffS2CPacket(List.of(), List.of(possibleName)));
     }
 
     public static void addPossibleName(PlayerManager manager, String possibleName) {
-        PacketByteBuf diffBuf = PacketByteBufs.create();
-        diffBuf.writeVarInt(1);
-        diffBuf.writeString(possibleName);
-        diffBuf.writeVarInt(0);
-        sendToAll(manager, PingSpamPackets.POSSIBLE_NAMES_DIFF, diffBuf);
+        sendToAll(manager, new PossibleNamesDiffS2CPacket(List.of(possibleName), List.of()));
     }
 
-    public static void sendToAll(PlayerManager manager, Identifier channel, PacketByteBuf buf) {
-        Packet<?> packet = ServerPlayNetworking.createS2CPacket(channel, buf);
+    public static void sendToAll(PlayerManager manager, CustomPayload payload) {
+        Packet<?> packet = ServerPlayNetworking.createS2CPacket(payload);
         for (ServerPlayerEntity player : manager.getPlayerList()) {
-            if (ServerPlayNetworking.canSend(player, channel) || PingSpam.CONFIG.getConfig().ignoreCanSend)
+            if (ServerPlayNetworking.canSend(player, payload.getId()) || PingSpam.CONFIG.getConfig().ignoreCanSend)
                 player.networkHandler.sendPacket(packet);
         }
     }

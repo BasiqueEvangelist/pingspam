@@ -5,13 +5,11 @@ import me.basiqueevangelist.onedatastore.api.DataStore;
 import me.basiqueevangelist.pingspam.PingSpam;
 import me.basiqueevangelist.pingspam.data.PingspamPlayerData;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -24,12 +22,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Unique private static final int ACTIONBAR_TIME = 10;
 
-    public ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile gameProfile) {
-        super(world, pos, yaw, gameProfile);
+    public ServerPlayerEntityMixin(World world, GameProfile profile) {
+        super(world, profile);
     }
-
-    @Shadow public abstract void playSound(SoundEvent event, SoundCategory category, float volume, float pitch);
-
 
     @Shadow public abstract void sendMessage(Text message, boolean actionBar);
 
@@ -38,15 +33,15 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
     @Unique private int prevPingsCount = -1;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void loadPingspamData(MinecraftServer server, ServerWorld world, GameProfile profile, CallbackInfo ci) {
-        if (isImpostor()) return;
+    private void loadPingspamData(MinecraftServer server, ServerWorld world, GameProfile profile, SyncedClientOptions clientOptions, CallbackInfo ci) {
+        if (isSus()) return;
 
         pingspamData = DataStore.getFor(server).getPlayer(uuid, PingSpam.PLAYER_DATA);
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
-        if (isImpostor()) return;
+        if (isSus()) return;
 
         var pings = pingspamData.unreadPings();
 
@@ -78,7 +73,7 @@ public abstract class ServerPlayerEntityMixin extends PlayerEntity {
 
     @SuppressWarnings("ConstantConditions")
     @Unique
-    private boolean isImpostor() {
+    private boolean isSus() {
         return (Class<?>) getClass() != ServerPlayerEntity.class;
     }
 }

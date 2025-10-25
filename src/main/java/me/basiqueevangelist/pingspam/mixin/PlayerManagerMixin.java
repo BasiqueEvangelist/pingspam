@@ -1,8 +1,8 @@
 package me.basiqueevangelist.pingspam.mixin;
 
+import me.basiqueevangelist.pingspam.logic.PingLogic;
 import me.basiqueevangelist.pingspam.network.ServerNetworkLogic;
 import me.basiqueevangelist.pingspam.utils.MessageTypeTransformer;
-import me.basiqueevangelist.pingspam.utils.PingLogic;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
@@ -11,6 +11,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Decoration;
 import net.minecraft.text.Text;
@@ -34,19 +35,18 @@ public abstract class PlayerManagerMixin {
     @Shadow @Final private MinecraftServer server;
     @Unique private PingLogic.ProcessedPing pong;
 
-    @Inject(method = "onPlayerConnect", at = @At("TAIL"))
-    public void onPlayerConnected(ClientConnection conn, ServerPlayerEntity player, CallbackInfo ci) {
-        ServerNetworkLogic.addPossibleName((PlayerManager)(Object) this, player.getGameProfile().getName());
-        ServerNetworkLogic.sendServerAnnouncement(player, conn);
+    @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/PlayerManager;sendCommandTree(Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
+    public void onPlayerConnected(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci) {
+        ServerNetworkLogic.addPossibleName((PlayerManager)(Object) this, player.getGameProfile().name());
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;logChatMessage(Lnet/minecraft/text/Text;Lnet/minecraft/network/message/MessageType$Parameters;Ljava/lang/String;)V", shift = At.Shift.AFTER))
     public void processPingSigned(SignedMessage message, Predicate<ServerPlayerEntity> shouldSendFiltered, ServerPlayerEntity sender, MessageType.Parameters params, CallbackInfo ci) {
-        Decoration rule = params.type().chat();
+        Decoration rule = params.type().value().chat();
         UUID uuid = sender == null ? Util.NIL_UUID : sender.getUuid();
 
         if (rule != null) {
-            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid);
+            pong = PingLogic.processPings(server, message.getContent(), rule.apply(message.getContent(), params), uuid, null);
         }
     }
 
@@ -58,31 +58,30 @@ public abstract class PlayerManagerMixin {
     @Redirect(method = "broadcast(Lnet/minecraft/network/message/SignedMessage;Ljava/util/function/Predicate;Lnet/minecraft/server/network/ServerPlayerEntity;Lnet/minecraft/network/message/MessageType$Parameters;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendChatMessage(Lnet/minecraft/network/message/SentMessage;ZLnet/minecraft/network/message/MessageType$Parameters;)V"))
     private void sendMessageSigned(ServerPlayerEntity player, SentMessage message, boolean filterMaskEnabled, MessageType.Parameters params) {
         if (pong != null && pong.pingSucceeded) {
-            var typeRegistry = server.getRegistryManager().get(RegistryKeys.MESSAGE_TYPE);
-            var oldKey = typeRegistry.getKey(params.type()).orElseThrow();
+            var typeRegistry = server.getRegistryManager().getOrThrow(RegistryKeys.MESSAGE_TYPE);
+            var oldKey = typeRegistry.getKey(params.type().value()).orElseThrow();
             RegistryKey<MessageType> newKey = null;
 
             if (pong.pingedPlayers.contains(player.getUuid())) {
                 newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPinged(oldKey.getValue()));
             } else if (pong.sender == player) {
                 newKey = RegistryKey.of(RegistryKeys.MESSAGE_TYPE, MessageTypeTransformer.wrapPingSuccessful(oldKey.getValue()));
-                pong.pingedPlayers.add(pong.sender.getUuid());
             }
 
-            if (newKey != null)
-                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.get(newKey), params.name(), params.targetName()));
-
+            if (newKey != null) {
+                player.sendChatMessage(message, filterMaskEnabled, new MessageType.Parameters(typeRegistry.getEntry(newKey.getValue()).orElseThrow(), params.name(), params.targetName()));
+                return;
+            }
         }
 
-        if (pong == null || !pong.pingedPlayers.contains(player.getUuid()))
-            player.sendChatMessage(message, filterMaskEnabled, params);
+        player.sendChatMessage(message, filterMaskEnabled, params);
     }
 
     @Inject(method = "broadcast(Lnet/minecraft/text/Text;Ljava/util/function/Function;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/MinecraftServer;sendMessage(Lnet/minecraft/text/Text;)V", shift = At.Shift.AFTER))
     private void processPing(Text message, Function<ServerPlayerEntity, Text> playerMessageFactory, boolean overlay, CallbackInfo ci) {
         if (overlay) return;
 
-        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID);
+        pong = PingLogic.processPings(server, message, message, Util.NIL_UUID, null);
     }
 
     @Redirect(method = "broadcast(Lnet/minecraft/text/Text;Ljava/util/function/Function;Z)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;sendMessageToClient(Lnet/minecraft/text/Text;Z)V"))

@@ -18,7 +18,7 @@ public final class PlayerUtils {
 
     public static @Nullable UUID tryFindPlayer(MinecraftServer server, String name) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            if (player.getGameProfile().getName().equalsIgnoreCase(name))
+            if (player.getGameProfile().name().equalsIgnoreCase(name))
                 return player.getUuid();
         }
 

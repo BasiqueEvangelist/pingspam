@@ -5,6 +5,7 @@ import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.util.WorldSavePath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ public final class OfflineUtil {
     public static NbtCompound get(UUID player) throws IOException {
         Path savedPlayersPath = PingSpam.SERVER.getSavePath(WorldSavePath.PLAYERDATA);
         Path savedDataPath = savedPlayersPath.resolve(player.toString() + ".dat");
-        NbtCompound rawTag = NbtIo.readCompressed(savedDataPath.toFile());
+        NbtCompound rawTag = NbtIo.readCompressed(savedDataPath, NbtSizeTracker.ofUnlimitedBytes());
         return DataFixTypes.PLAYER.update(
             PingSpam.SERVER.getDataFixer(),
             rawTag,

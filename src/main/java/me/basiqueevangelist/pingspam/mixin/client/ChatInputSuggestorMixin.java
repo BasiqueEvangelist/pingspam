@@ -34,7 +34,6 @@ public abstract class ChatInputSuggestorMixin {
         if (data == null)
             return CommandSource.suggestMatching(suggestions, builder);
 
-        data.refreshPermissionsIfNeeded();
         String afterString = textField.getText().substring(0, textField.getCursor());
         int lastStart = getStartOfCurrentWord(afterString);
         if (lastStart >= afterString.length() || afterString.charAt(lastStart) != '@' || !data.canPingPlayers())

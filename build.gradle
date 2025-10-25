@@ -1,8 +1,7 @@
 plugins {
 	id 'com.github.johnrengelman.shadow' version '8.1.1'
 	id 'java'
-	id 'fabric-loom' version '1.2-SNAPSHOT'
-	id 'io.github.juuxel.loom-quiltflower' version '1.10.0'
+	id 'fabric-loom' version '1.11-SNAPSHOT'
 	id 'maven-publish'
 }
 
@@ -19,6 +18,21 @@ configurations {
 
 loom {
 	accessWidenerPath = file("src/main/resources/pingspam.accesswidener")
+
+	runs {
+		clientTester1 {
+			client()
+			ideConfigGenerated true
+			name = "Client (Tester 1)"
+			programArgs("--username", "Tester1")
+		}
+		clientTester2 {
+			client()
+			ideConfigGenerated true
+			name = "Client (Tester 2)"
+			programArgs("--username", "Tester2")
+		}
+	}
 }
 
 repositories {
@@ -31,12 +45,7 @@ repositories {
 		name = 'TerraformersMC'
 		url = 'https://maven.terraformersmc.com'
 	}
-	maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 	mavenCentral()
-	maven {
-		name = "Basique's Maven"
-		url = 'https://basique.top/maven'
-	}
 }
 
 dependencies {
@@ -50,12 +59,9 @@ dependencies {
 
 	modLocalRuntime "com.terraformersmc:modmenu:${project.modmenu_version}"
 
-	modImplementation include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT')
+	modImplementation include('me.lucko:fabric-permissions-api:0.4.1')
 	shadow implementation("blue.endless:jankson:1.2.0")
 
-	modImplementation include("me.basiqueevangelist:onedatastore:${project.onedatastore_version}") {
-		transitive = false
-	}
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
 }
